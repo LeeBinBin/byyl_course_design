@@ -160,6 +160,44 @@ static QPair<int, int> buildFrom(NFA& nfa, ASTNode* ast)
         nfa.states[a.second].accept = false;
         return p;
     }
+    // 非运算（~）：构建补集NFA
+    // 方法：先构建原表达式的NFA，然后创建新的起始状态，
+    // 对于字母表中每个符号，如果原NFA当前状态没有该符号的转移，则添加到新接受状态的转移
+    if (ast->type == ASTNode::Negation)
+    {
+        auto inner = buildFrom(nfa, ast->children[0]);
+        auto p     = newFrag(nfa);
+        NFAEdge e_start;
+        e_start.epsilon = true;
+        e_start.to      = inner.first;
+        nfa.states[p.first].edges.push_back(e_start);
+        nfa.states[inner.second].accept = false;
+        QList<int> keys = nfa.states.keys();
+        for (int key : keys)
+        {
+            NFAState& state = nfa.states[key];
+            QSet<QString> existingSymbols;
+            for (auto& edge : state.edges)
+            {
+                if (!edge.epsilon)
+                {
+                    existingSymbols.insert(edge.symbol);
+                }
+            }
+            for (auto symbol : nfa.alpha.symbols)
+            {
+                if (!existingSymbols.contains(symbol))
+                {
+                    NFAEdge e;
+                    e.to      = p.second;
+                    e.epsilon = false;
+                    e.symbol  = symbol;
+                    state.edges.push_back(e);
+                }
+            }
+        }
+        return p;
+    }
     return newFrag(nfa);
 }
 NFA Thompson::build(ASTNode* ast, Alphabet alpha)

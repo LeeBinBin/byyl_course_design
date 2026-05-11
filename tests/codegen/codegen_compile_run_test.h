@@ -100,7 +100,10 @@ class CodegenTest : public QObject
         tmp.mkpath(".");
         QString outPath = tmp.absoluteFilePath("gen_lex.cpp");
         QFile   of(outPath);
-        of.open(QIODevice::WriteOnly | QIODevice::Text);
+        if (!of.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QFAIL("无法打开输出文件");
+            return;
+        }
         of.write(src.toUtf8());
         of.close();
         QProcess proc;

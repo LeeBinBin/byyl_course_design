@@ -9,6 +9,26 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Test)
 
+option(BYYL_BUILD_INTEGRATION_TESTS "Build integration tests (flow/codegen/cli)" ON)
+option(BYYL_ENABLE_PCH "Enable precompiled headers" ON)
+option(BYYL_ENABLE_CCACHE "Enable ccache/sccache caching" ON)
+
+if(BYYL_ENABLE_CCACHE)
+    find_program(CCACHE_PROGRAM ccache)
+    if(CCACHE_PROGRAM)
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+        message(STATUS "Using ccache for faster builds")
+    else()
+        find_program(SCCACHE_PROGRAM sccache)
+        if(SCCACHE_PROGRAM)
+            set(CMAKE_CXX_COMPILER_LAUNCHER "${SCCACHE_PROGRAM}")
+            message(STATUS "Using sccache for faster builds")
+        endif()
+    endif()
+endif()
+
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+
 set(CORE_SOURCES
     src/syntax/Grammar.h
     src/syntax/Grammar.cpp
@@ -92,7 +112,6 @@ set(APP_SOURCES
     app/experiments/exp2/dialogs/LR0TableDialog.cpp
     app/experiments/exp2/dialogs/GrammarProcessDialog.h
     app/experiments/exp2/dialogs/GrammarProcessDialog.cpp
-    app/components/ExportGraphButton/ExportGraphButton.cpp
     app/experiments/exp2/tabs/grammar/GrammarEditorTab.h
     app/experiments/exp2/tabs/grammar/GrammarEditorTab.cpp
     app/experiments/exp2/tabs/grammar/FirstFollowTab.h
@@ -145,11 +164,33 @@ add_library(byyl_core STATIC ${CORE_SOURCES})
 target_include_directories(byyl_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(byyl_core PRIVATE Qt6::Core)
 
-qt_add_executable(byyl
-    ${APP_SOURCES}
-)
+if(BYYL_ENABLE_PCH)
+    target_precompile_headers(byyl_core PRIVATE
+        <QCoreApplication>
+        <QString>
+        <QVector>
+        <QMap>
+        <QList>
+        <QDebug>
+        <memory>
+        <vector>
+        <map>
+        <string>
+        <optional>
+        <variant>
+        <algorithm>
+        <set>
+        <stack>
+        <queue>
+    )
+endif()
 
+qt_add_executable(byyl ${APP_SOURCES})
 target_link_libraries(byyl PRIVATE Qt6::Widgets byyl_core)
+
+if(BYYL_ENABLE_PCH)
+    target_precompile_headers(byyl REUSE_FROM byyl_core)
+endif()
 
 if(APPLE)
     set_target_properties(byyl PROPERTIES
@@ -157,44 +198,34 @@ if(APPLE)
     )
 endif()
 
-add_executable(FACoreTest tests/automata/fa_core_test.cpp)
-target_sources(FACoreTest PRIVATE
-    src/Engine.cpp
-    src/regex/RegexLexer.cpp
-    src/regex/TokenHeaderParser.cpp
-    src/regex/RegexParser.cpp
-    src/automata/Thompson.cpp
-    src/automata/SubsetConstruction.cpp
-    src/automata/Hopcroft.cpp
-    src/generator/CodeGenerator.cpp
-    src/syntax/Grammar.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/LL1.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(FACoreTest PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME FA核心测试 COMMAND FACoreTest)
-
-add_executable(LongestMatchTest tests/lexer/longest_match_test.cpp)
-target_sources(LongestMatchTest PRIVATE
-    src/Engine.cpp
-    src/regex/RegexLexer.cpp
-    src/regex/TokenHeaderParser.cpp
-    src/regex/RegexParser.cpp
-    src/automata/Thompson.cpp
-    src/automata/SubsetConstruction.cpp
-    src/automata/Hopcroft.cpp
-    src/generator/CodeGenerator.cpp
-    src/syntax/Grammar.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/LL1.cpp
-    src/syntax/TokenMapBuilder.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(LongestMatchTest PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME 最长匹配测试 COMMAND LongestMatchTest)
 enable_testing()
-option(BYYL_BUILD_INTEGRATION_TESTS "Build integration tests (flow/codegen/cli)" ON)
+
+function(add_byyl_test TARGET_NAME TEST_DISPLAY_NAME TEST_SRC)
+    add_executable(${TARGET_NAME} ${TEST_SRC})
+    target_sources(${TARGET_NAME} PRIVATE ${ARGN})
+    target_link_libraries(${TARGET_NAME} PRIVATE Qt6::Core Qt6::Test byyl_core)
+    target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    if(BYYL_ENABLE_PCH)
+        target_precompile_headers(${TARGET_NAME} REUSE_FROM byyl_core)
+    endif()
+    add_test(NAME "${TEST_DISPLAY_NAME}" COMMAND ${TARGET_NAME})
+endfunction()
+
+add_byyl_test(FACoreTest "FA核心测试" tests/automata/fa_core_test.cpp)
+add_byyl_test(LongestMatchTest "最长匹配测试" tests/lexer/longest_match_test.cpp)
+add_byyl_test(GrammarParserTest "文法解析测试" tests/syntax/grammar_parser_test.cpp)
+add_byyl_test(LL1Test "LL1算法测试" tests/syntax/ll1_test.cpp)
+add_byyl_test(LR1Test "LR1算法测试" tests/syntax/lr1_test.cpp)
+add_byyl_test(LR1SemanticTreeExampleTest "语义树示例测试" tests/syntax/lr1_semantic_tree_example_test.cpp)
+add_byyl_test(LR1SemanticTreeFullTest "语义树完整结构测试" tests/syntax/lr1_semantic_tree_full_test.cpp)
+add_byyl_test(LR0Test "LR0算法测试" tests/syntax/lr0_test.cpp)
+add_byyl_test(SLRTest "SLR算法测试" tests/syntax/slr_test.cpp)
+
+if(BYYL_BUILD_INTEGRATION_TESTS)
+    add_byyl_test(CliRegexTest "命令行正则测试" tests/cli/cli_regex_test.cpp tests/cli/cli_regex_test.h)
+    add_byyl_test(CodegenTest "代码生成器测试" tests/codegen/codegen_compile_run_test.cpp tests/codegen/codegen_compile_run_test.h)
+endif()
+
 add_executable(GuiTest tests/ui/auto_test_ui.cpp)
 target_sources(GuiTest PRIVATE
     app/mainwindow.cpp
@@ -242,158 +273,13 @@ target_sources(GuiTest PRIVATE
     app/experiments/exp1/tabs/automata/MinDFAViewTab.cpp
     app/experiments/exp1/tabs/code/CodeViewTab.cpp
     app/experiments/exp1/tabs/test/TestValidationTab.cpp
-    src/syntax/Grammar.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/LL1.cpp
-    src/syntax/LR0.cpp
-    src/syntax/LR1.cpp
-    src/syntax/LR1Parser.cpp
-    src/syntax/TokenMapBuilder.cpp
-    src/syntax/SLR.cpp
-    src/syntax/SyntaxParser.cpp
     src/syntax/DotGenerator.cpp
     src/generator/SyntaxCodeGenerator.cpp
     src/visual/DotExporter.cpp
-    src/regex/RegexLexer.cpp
-    src/regex/TokenHeaderParser.cpp
-    src/regex/RegexParser.cpp
-    src/automata/Thompson.cpp
-    src/automata/SubsetConstruction.cpp
-    src/automata/Hopcroft.cpp
-    src/generator/CodeGenerator.cpp
-    src/Engine.cpp
-    src/syntax/Grammar.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/LL1.cpp
-    src/config/Config.cpp
     app/controllers/RegexController/RegexController.cpp
 )
-target_link_libraries(GuiTest PRIVATE Qt6::Widgets Qt6::Test)
+target_link_libraries(GuiTest PRIVATE Qt6::Widgets Qt6::Test byyl_core)
+if(BYYL_ENABLE_PCH)
+    target_precompile_headers(GuiTest REUSE_FROM byyl_core)
+endif()
 add_test(NAME 界面测试 COMMAND GuiTest)
-
-
-add_executable(GrammarParserTest tests/syntax/grammar_parser_test.cpp)
-target_sources(GrammarParserTest PRIVATE
-    src/syntax/GrammarParser.cpp
-    src/syntax/Grammar.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(GrammarParserTest PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME 文法解析测试 COMMAND GrammarParserTest)
-
-add_executable(LL1Test tests/syntax/ll1_test.cpp)
-target_sources(LL1Test PRIVATE
-    src/syntax/LL1.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/Grammar.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(LL1Test PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME LL1算法测试 COMMAND LL1Test)
-
-add_executable(LR1Test tests/syntax/lr1_test.cpp)
-target_sources(LR1Test PRIVATE
-    src/syntax/LR1.cpp
-    src/syntax/LL1.cpp
-    src/syntax/TokenMapBuilder.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/Grammar.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(LR1Test PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME LR1算法测试 COMMAND LR1Test)
-
-add_executable(LR1SemanticTreeExampleTest tests/syntax/lr1_semantic_tree_example_test.cpp)
-target_sources(LR1SemanticTreeExampleTest PRIVATE
-    src/syntax/LR1.cpp
-    src/syntax/LL1.cpp
-    src/syntax/LR1Parser.cpp
-    src/syntax/TokenMapBuilder.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/Grammar.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(LR1SemanticTreeExampleTest PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME 语义树示例测试 COMMAND LR1SemanticTreeExampleTest)
-
-add_executable(LR1SemanticTreeFullTest tests/syntax/lr1_semantic_tree_full_test.cpp)
-target_sources(LR1SemanticTreeFullTest PRIVATE
-    src/syntax/LR1.cpp
-    src/syntax/LL1.cpp
-    src/syntax/LR1Parser.cpp
-    src/syntax/TokenMapBuilder.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/Grammar.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(LR1SemanticTreeFullTest PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME 语义树完整结构测试 COMMAND LR1SemanticTreeFullTest)
-
-## TinyLR1FlowTest removed
-
-
-add_executable(LR0Test tests/syntax/lr0_test.cpp)
-target_sources(LR0Test PRIVATE
-    src/syntax/LR0.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/Grammar.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(LR0Test PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME LR0算法测试 COMMAND LR0Test)
-
-add_executable(SLRTest tests/syntax/slr_test.cpp)
-target_sources(SLRTest PRIVATE
-    src/syntax/SLR.cpp
-    src/syntax/LR0.cpp
-    src/syntax/LL1.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/Grammar.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(SLRTest PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME SLR算法测试 COMMAND SLRTest)
-
-if(BYYL_BUILD_INTEGRATION_TESTS)
-add_executable(CliRegexTest tests/cli/cli_regex_test.cpp)
-target_sources(CliRegexTest PRIVATE
-    tests/cli/cli_regex_test.h
-    src/visual/DotExporter.cpp
-    src/regex/RegexLexer.cpp
-    src/regex/TokenHeaderParser.cpp
-    src/regex/RegexParser.cpp
-    src/automata/Thompson.cpp
-    src/automata/SubsetConstruction.cpp
-    src/automata/Hopcroft.cpp
-    src/generator/CodeGenerator.cpp
-    src/Engine.cpp
-    src/syntax/Grammar.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/LL1.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(CliRegexTest PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME 命令行正则测试 COMMAND CliRegexTest)
-endif()
-
-if(BYYL_BUILD_INTEGRATION_TESTS)
-add_executable(CodegenTest tests/codegen/codegen_compile_run_test.cpp)
-target_sources(CodegenTest PRIVATE
-    tests/codegen/codegen_compile_run_test.h
-    src/visual/DotExporter.cpp
-    src/regex/RegexLexer.cpp
-    src/regex/TokenHeaderParser.cpp
-    src/regex/RegexParser.cpp
-    src/automata/Thompson.cpp
-    src/automata/SubsetConstruction.cpp
-    src/automata/Hopcroft.cpp
-    src/generator/CodeGenerator.cpp
-    src/Engine.cpp
-    src/syntax/Grammar.cpp
-    src/syntax/GrammarParser.cpp
-    src/syntax/LL1.cpp
-    src/config/Config.cpp
-)
-target_link_libraries(CodegenTest PRIVATE Qt6::Core Qt6::Test)
-add_test(NAME 代码生成器测试 COMMAND CodegenTest)
-endif()

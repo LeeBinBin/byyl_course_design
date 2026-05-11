@@ -29,7 +29,8 @@ struct ASTNode
         Question,
         CharSet,
         Symbol,
-        Ref
+        Ref,
+        Negation
     } type;
     QString           value;
     QVector<ASTNode*> children;

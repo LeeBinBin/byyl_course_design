@@ -17,7 +17,7 @@ static ASTNode* parseExpr(const QString& s, int& i, const QMap<QString, Rule>& m
 static bool     isMeta(QChar c)
 {
     return c == '|' || c == '*' || c == '+' || c == '?' || c == '(' || c == ')' || c == '[' ||
-           c == ']';
+           c == ']' || c == '~';
 }
 static ASTNode* make(ASTNode::Type t, const QString& v = QString())
 {
@@ -138,6 +138,20 @@ static ASTNode* parseAtom(const QString& s, int& i, const QMap<QString, Rule>& m
 }
 static ASTNode* parseFactor(const QString& s, int& i, const QMap<QString, Rule>& macros)
 {
+    while (i < s.size() && (s[i] == ' ' || s[i] == '\t' || s[i] == '\n' || s[i] == '\r'))
+    {
+        i++;
+    }
+    if (i >= s.size())
+        return nullptr;
+    if (s[i] == '~')
+    {
+        i++;
+        auto operand = parseFactor(s, i, macros);
+        if (!operand)
+            return nullptr;
+        return unary(ASTNode::Negation, operand);
+    }
     auto a = parseAtom(s, i, macros);
     if (!a)
         return nullptr;
