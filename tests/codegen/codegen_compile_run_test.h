@@ -1,13 +1,13 @@
 /*
- * 版权信息：Copyright (c) 2023 林展星
+ * 版权信息：Copyright (c) 2026 李彬彬
  * 文件名称：codegen_compile_run_test.h
  *
  * 当前版本：1.0.0
- * 作    者：林展星
- * 完成日期：2023年12月07日
+ * 作    者：李彬彬
+ * 完成日期：2026年5月11日
  *
  * 版本历史：
- * 1.0.0 2023-12-07 林展星 初始版本
+ * 1.0.0 2026年5月11日 李彬彬 初始版本
  */
 #pragma once
 #include <QtTest/QtTest>
@@ -124,7 +124,8 @@ class CodegenTest : public QObject
         run.closeWriteChannel();
         run.waitForFinished();
         auto output = run.readAllStandardOutput();
-        QTextStream(stdout) << "【关键步骤】跳过空白/注释 → 逐字符步进（Step） → 不可移停止 → 接受判定（AcceptState） → 编码输出\n";
+        QTextStream(stdout) << "【关键步骤】跳过空白/注释 → 逐字符步进（Step） → 不可移停止 → "
+                               "接受判定（AcceptState） → 编码输出\n";
         QTextStream(stdout) << "【生成器运行输出】" << QString::fromUtf8(output) << "\n";
         QVERIFY(!output.isEmpty());
         QFile::remove(outPath);
