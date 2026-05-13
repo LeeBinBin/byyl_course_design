@@ -487,7 +487,8 @@ static int matchLen(const MinDFA& mdfa, const QString& src, int pos)
 QString Engine::runMultiple(const QVector<MinDFA>& mdfas,
                             const QVector<int>&    codes,
                             const QString&         source,
-                            const QSet<int>&       identifierCodes)
+                            const QSet<int>&       identifierCodes,
+                            const QSet<int>&       blacklistCodes)
 {
     QString out;
     int     pos = 0;
@@ -628,6 +629,12 @@ QString Engine::runMultiple(const QVector<MinDFA>& mdfas,
         if (bestLen > 0)
         {
             int code = codes[bestIdx];
+            // 如果在黑名单中且启用了黑名单，则完全跳过这个token，不输出
+            if (Config::useBlacklistForTokenOutput() && blacklistCodes.contains(code))
+            {
+                pos += bestLen;
+                continue;
+            }
             out += QString::number(code) + " ";
             if (Config::emitIdentifierLexeme() && identifierCodes.contains(code))
             {

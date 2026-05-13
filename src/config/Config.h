@@ -63,8 +63,13 @@ class Config
     static QVector<QString> grammarSingleOps();
     static bool             emitIdentifierLexeme();
     static QVector<QString> identifierTokenNames();
-    static void             setEmitIdentifierLexeme(bool v);
-    static void             setIdentifierTokenNames(const QVector<QString>& names);
+    static void setEmitIdentifierLexeme(bool v);
+    static void setIdentifierTokenNames(const QVector<QString>& names);
+    static bool             useBlacklistForTokenOutput();
+    static void             setUseBlacklistForTokenOutput(bool v);
+    static QVector<QString> tokenOutputBlacklist();
+    static void             setTokenOutputBlacklist(const QVector<QString>& names);
+    static bool shouldEmitLexemeForTokenName(const QString& tokenName);
     static QString          tokenHeaderPrefix();
     static QString          tokenHeaderNameFirstRanges();
     static QString          tokenHeaderNameRestRanges();
@@ -170,6 +175,8 @@ class Config
     static QVector<QString>    s_cfgSearchPaths;
     static bool                s_emitIdentifierLexeme;
     static QVector<QString>    s_identifierNames;
+    static bool                s_useBlacklistForTokenOutput;
+    static QVector<QString>    s_tokenOutputBlacklist;
     static QString             s_tokPrefix;
     static QString             s_tokNameFirst;
     static QString             s_tokNameRest;

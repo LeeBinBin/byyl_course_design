@@ -45,6 +45,8 @@ QString                     Config::s_dotEpsLabel;
 QVector<QString>            Config::s_cfgSearchPaths;
 bool                        Config::s_emitIdentifierLexeme = true;
 QVector<QString>            Config::s_identifierNames;
+bool                        Config::s_useBlacklistForTokenOutput = true;
+QVector<QString>            Config::s_tokenOutputBlacklist;
 QString                     Config::s_tokPrefix;
 QString                     Config::s_tokNameFirst;
 QString                     Config::s_tokNameRest;
@@ -98,7 +100,7 @@ void Config::load()
     s_graphvizExe           = QString("dot");
     s_graphvizDpi           = 150;
     s_graphvizTimeout       = 20000;
-    s_epsilon               = QString("#");
+    s_epsilon               = QString("@");
     s_eof                   = QString("$");
     s_augSuffix             = QString("'");
     s_lr1Policy             = QString("prefer_reduce");
@@ -115,13 +117,15 @@ void Config::load()
     s_dotEpsLabel   = QStringLiteral("ε");
     s_cfgSearchPaths.clear();
     s_emitIdentifierLexeme = true;
-    s_identifierNames      = QVector<QString>(
-        {QStringLiteral("identifier"), QStringLiteral("number"), QStringLiteral("comment")});
-    s_tokPrefix              = QStringLiteral("_");
+    s_identifierNames = QVector<QString>({QStringLiteral("identifier"), QStringLiteral("number")});
+    s_useBlacklistForTokenOutput = true;
+    s_tokenOutputBlacklist =
+        QVector<QString>({QStringLiteral("comment"), QStringLiteral("comments")});
+    s_tokPrefix              = QStringLiteral("");
     s_tokNameFirst           = QStringLiteral("A-Za-z");
     s_tokNameRest            = QStringLiteral("A-Za-z0-9_");
     s_tokDigitRanges         = QStringLiteral("0-9");
-    s_tokGroupSuffix         = QStringLiteral("S");
+    s_tokGroupSuffix         = QStringLiteral("B");
     s_tokGroupSuffixOptional = true;
     s_hasOutDirOverride      = false;
     s_hasTiersOverride       = false;
@@ -263,13 +267,22 @@ void Config::load()
                     }
                     if (s_identifierNames.isEmpty())
                         s_identifierNames.push_back(QStringLiteral("identifier"));
-                    bool hasComment = false;
-                    for (auto s : s_identifierNames)
-                        if (s.trimmed().compare(QStringLiteral("comment"), Qt::CaseInsensitive) ==
-                            0)
-                            hasComment = true;
-                    if (!hasComment)
-                        s_identifierNames.push_back(QStringLiteral("comment"));
+                }
+                if (obj.contains("use_blacklist_for_token_output"))
+                    s_useBlacklistForTokenOutput =
+                        obj.value("use_blacklist_for_token_output").toBool(true);
+                if (obj.contains("token_output_blacklist") &&
+                    obj.value("token_output_blacklist").isArray())
+                {
+                    s_tokenOutputBlacklist.clear();
+                    for (auto v : obj.value("token_output_blacklist").toArray())
+                    {
+                        auto s = v.toString().trimmed();
+                        if (!s.isEmpty())
+                            s_tokenOutputBlacklist.push_back(s);
+                    }
+                    if (s_tokenOutputBlacklist.isEmpty())
+                        s_tokenOutputBlacklist.push_back(QStringLiteral("comment"));
                 }
                 if (obj.contains("token_header") && obj.value("token_header").isObject())
                 {
@@ -997,6 +1010,12 @@ bool Config::saveJson(const QString& path)
         for (const auto& s : s_identifierNames) arr.append(s);
         obj.insert("identifier_token_names", arr);
     }
+    obj.insert("use_blacklist_for_token_output", s_useBlacklistForTokenOutput);
+    {
+        QJsonArray arr;
+        for (const auto& s : s_tokenOutputBlacklist) arr.append(s);
+        obj.insert("token_output_blacklist", arr);
+    }
     {
         QJsonObject th;
         th.insert("prefix", s_tokPrefix);
@@ -1320,6 +1339,52 @@ void Config::setEmitIdentifierLexeme(bool v)
     load();
     s_emitIdentifierLexeme = v;
 }
+bool Config::useBlacklistForTokenOutput()
+{
+    load();
+    return s_useBlacklistForTokenOutput;
+}
+
+void Config::setUseBlacklistForTokenOutput(bool v)
+{
+    load();
+    s_useBlacklistForTokenOutput = v;
+}
+
+QVector<QString> Config::tokenOutputBlacklist()
+{
+    load();
+    return s_tokenOutputBlacklist;
+}
+
+void Config::setTokenOutputBlacklist(const QVector<QString>& names)
+{
+    load();
+    s_tokenOutputBlacklist.clear();
+    for (auto s : names)
+    {
+        auto t = s.trimmed();
+        if (!t.isEmpty())
+            s_tokenOutputBlacklist.push_back(t);
+    }
+    if (s_tokenOutputBlacklist.isEmpty())
+        s_tokenOutputBlacklist.push_back(QStringLiteral("comment"));
+}
+
+bool Config::shouldEmitLexemeForTokenName(const QString& tokenName)
+{
+    load();
+    if (!s_useBlacklistForTokenOutput)
+        return true;
+    QString nameLower = tokenName.trimmed().toLower();
+    for (const auto& keyword : s_tokenOutputBlacklist)
+    {
+        if (nameLower.contains(keyword.toLower()))
+            return false;
+    }
+    return true;
+}
+
 void Config::setIdentifierTokenNames(const QVector<QString>& names)
 {
     load();

@@ -103,10 +103,14 @@ void GeneratorController::generateCode()
     QVector<int> codes;
     auto         mdfas = engine_->buildAllMinDFA(*mw_->getParsed(), codes);
     QSet<int>    idCodes;
+    QSet<int>    blacklistCodes;
     {
         auto             names = Config::identifierTokenNames();
+        auto             blacklist = Config::tokenOutputBlacklist();
         QVector<QString> lowers;
+        QVector<QString> blacklistLowers;
         for (auto s : names) lowers.push_back(s.trimmed().toLower());
+        for (auto s : blacklist) blacklistLowers.push_back(s.trimmed().toLower());
         for (const auto& pt : mw_->getParsed()->tokens)
         {
             QString n = pt.rule.name.trimmed().toLower();
@@ -118,9 +122,17 @@ void GeneratorController::generateCode()
                     break;
                 }
             }
+            for (const auto& k : blacklistLowers)
+            {
+                if (!k.isEmpty() && n.contains(k))
+                {
+                    blacklistCodes.insert(pt.rule.code);
+                    break;
+                }
+            }
         }
     }
-    auto s        = CodeGenerator::generateCombined(mdfas, codes, mw_->getParsed()->alpha, idCodes);
+    auto s        = CodeGenerator::generateCombined(mdfas, codes, mw_->getParsed()->alpha, idCodes, blacklistCodes);
     auto codeView = codeTab_->findChild<QPlainTextEdit*>("txtGeneratedCode");
     if (codeView)
         codeView->setPlainText(s);

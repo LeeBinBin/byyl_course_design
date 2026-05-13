@@ -39,5 +39,6 @@ class CodeGenerator
     static QString generateCombined(const QVector<MinDFA>& mdfas,
                                     const QVector<int>&    codes,
                                     const Alphabet&        alpha,
-                                    const QSet<int>&       identifierCodes);
+                                    const QSet<int>&       identifierCodes,
+                                    const QSet<int>&       blacklistCodes);
 };

@@ -125,7 +125,8 @@ class Engine
     QString runMultiple(const QVector<MinDFA>& mdfas,
                         const QVector<int>&    codes,
                         const QString&         source,
-                        const QSet<int>&       identifierCodes);
+                        const QSet<int>&       identifierCodes,
+                        const QSet<int>&       blacklistCodes);
     /**
      * @param {QString} text - 文法文本（BNF）
      * @param {QString&} error - 输出：错误信息

@@ -162,6 +162,13 @@ void SettingsDialog::buildUi()
         edtIdentifierNames = new QLineEdit;
         lId->addWidget(edtIdentifierNames);
         v->addLayout(lId);
+        chkUseBlacklist = new QCheckBox("启用Token输出黑名单");
+        v->addWidget(chkUseBlacklist);
+        auto lBlacklist = new QHBoxLayout;
+        lBlacklist->addWidget(new QLabel("黑名单规则名（逗号分隔）"));
+        edtBlacklist = new QLineEdit;
+        lBlacklist->addWidget(edtBlacklist);
+        v->addLayout(lBlacklist);
         v->addStretch(1);
     }
     stacked->addWidget(pageLexerId);
@@ -319,7 +326,9 @@ void SettingsDialog::buildUi()
                 chkSkipDouble->setChecked(false);
                 chkSkipTemplate->setChecked(false);
                 chkEmitIdLexeme->setChecked(true);
-                edtIdentifierNames->setText("identifier");
+                edtIdentifierNames->setText("identifier,number");
+                chkUseBlacklist->setChecked(true);
+                edtBlacklist->setText("comment,comments");
             });
     connect(btnSave,
             &QPushButton::clicked,
@@ -491,6 +500,18 @@ void SettingsDialog::loadCurrent()
         }
         edtIdentifierNames->setText(s);
     }
+    chkUseBlacklist->setChecked(Config::useBlacklistForTokenOutput());
+    {
+        auto    names = Config::tokenOutputBlacklist();
+        QString s;
+        for (int i = 0; i < names.size(); ++i)
+        {
+            s += names[i];
+            if (i + 1 < names.size())
+                s += ",";
+        }
+        edtBlacklist->setText(s);
+    }
 }
 
 static bool parseInt(const QString& s, int& out)
@@ -606,6 +627,13 @@ bool SettingsDialog::collectAndApply()
         for (auto x : edtIdentifierNames->text().split(',', Qt::SkipEmptyParts))
             names.push_back(x.trimmed());
         Config::setIdentifierTokenNames(names);
+    }
+    Config::setUseBlacklistForTokenOutput(chkUseBlacklist->isChecked());
+    {
+        QVector<QString> names;
+        for (auto x : edtBlacklist->text().split(',', Qt::SkipEmptyParts))
+            names.push_back(x.trimmed());
+        Config::setTokenOutputBlacklist(names);
     }
     return true;
 }

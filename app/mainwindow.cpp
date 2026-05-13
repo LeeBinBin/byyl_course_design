@@ -464,24 +464,43 @@ void MainWindow::onGenCodeClicked(bool)
     QVector<int> codes;
     auto         mdfas = engine->buildAllMinDFA(*parsedPtr, codes);
     QSet<int>    idCodes;
+    QSet<int>    blacklistCodes;
     {
-        auto             names = Config::identifierTokenNames();
+        auto             names     = Config::identifierTokenNames();
+        auto             blacklist = Config::tokenOutputBlacklist();
         QVector<QString> lowers;
+        QVector<QString> blacklistLowers;
         for (auto s : names) lowers.push_back(s.trimmed().toLower());
+        for (auto s : blacklist) blacklistLowers.push_back(s.trimmed().toLower());
         for (const auto& pt : parsedPtr->tokens)
         {
-            QString n = pt.rule.name.trimmed().toLower();
+            QString n            = pt.rule.name.trimmed().toLower();
+            bool    isIdentifier = false;
             for (const auto& k : lowers)
             {
                 if (!k.isEmpty() && n.contains(k))
                 {
-                    idCodes.insert(pt.rule.code);
+                    isIdentifier = true;
+                    break;
+                }
+            }
+            // 只有是标识符且不是注释的 token 才加入 idCodes
+            if (isIdentifier && Config::shouldEmitLexemeForTokenName(pt.rule.name))
+            {
+                idCodes.insert(pt.rule.code);
+            }
+            for (const auto& k : blacklistLowers)
+            {
+                if (!k.isEmpty() && n.contains(k))
+                {
+                    blacklistCodes.insert(pt.rule.code);
                     break;
                 }
             }
         }
     }
-    auto s = CodeGenerator::generateCombined(mdfas, codes, parsedPtr->alpha, idCodes);
+    auto s =
+        CodeGenerator::generateCombined(mdfas, codes, parsedPtr->alpha, idCodes, blacklistCodes);
     txtGeneratedCode->setPlainText(s);
     QString base     = ensureGenDir();
     QString ts       = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
@@ -544,10 +563,14 @@ void MainWindow::onRunLexerClicked(bool)
         QVector<int> codes;
         auto         mdfas = engine->buildAllMinDFA(*parsedPtr, codes);
         QSet<int>    idCodes;
+        QSet<int>    blacklistCodes;
         {
-            auto             names = Config::identifierTokenNames();
+            auto             names     = Config::identifierTokenNames();
+            auto             blacklist = Config::tokenOutputBlacklist();
             QVector<QString> lowers;
+            QVector<QString> blacklistLowers;
             for (auto s : names) lowers.push_back(s.trimmed().toLower());
+            for (auto s : blacklist) blacklistLowers.push_back(s.trimmed().toLower());
             for (const auto& pt : parsedPtr->tokens)
             {
                 QString n = pt.rule.name.trimmed().toLower();
@@ -559,9 +582,17 @@ void MainWindow::onRunLexerClicked(bool)
                         break;
                     }
                 }
+                for (const auto& k : blacklistLowers)
+                {
+                    if (!k.isEmpty() && n.contains(k))
+                    {
+                        blacklistCodes.insert(pt.rule.code);
+                        break;
+                    }
+                }
             }
         }
-        auto output = engine->runMultiple(mdfas, codes, src, idCodes);
+        auto output = engine->runMultiple(mdfas, codes, src, idCodes, blacklistCodes);
         txtLexResult->setPlainText(output.isEmpty() ? QStringLiteral("100 100") : output);
         QString dir = Config::generatedOutputDir() + "/syntax";
         QDir    d(dir);
@@ -605,10 +636,14 @@ void MainWindow::onRunLexerClicked(bool)
         QVector<int> codes;
         auto         mdfas = engine->buildAllMinDFA(*parsedPtr, codes);
         QSet<int>    idCodes3;
+        QSet<int>    blacklistCodes3;
         {
-            auto             names = Config::identifierTokenNames();
+            auto             names     = Config::identifierTokenNames();
+            auto             blacklist = Config::tokenOutputBlacklist();
             QVector<QString> lowers;
+            QVector<QString> blacklistLowers;
             for (auto s : names) lowers.push_back(s.trimmed().toLower());
+            for (auto s : blacklist) blacklistLowers.push_back(s.trimmed().toLower());
             for (const auto& pt : parsedPtr->tokens)
             {
                 QString n = pt.rule.name.trimmed().toLower();
@@ -620,11 +655,20 @@ void MainWindow::onRunLexerClicked(bool)
                         break;
                     }
                 }
+                for (const auto& k : blacklistLowers)
+                {
+                    if (!k.isEmpty() && n.contains(k))
+                    {
+                        blacklistCodes3.insert(pt.rule.code);
+                        break;
+                    }
+                }
             }
         }
-        auto    s    = CodeGenerator::generateCombined(mdfas, codes, parsedPtr->alpha, idCodes3);
-        QString base = ensureGenDir();
-        QString ts   = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+        auto s = CodeGenerator::generateCombined(
+            mdfas, codes, parsedPtr->alpha, idCodes3, blacklistCodes3);
+        QString base     = ensureGenDir();
+        QString ts       = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
         QString savePath = base + "/lex_" + ts + "_" + hashNow.mid(0, 12) + ".cpp";
         QFile   f(savePath);
         if (f.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -647,25 +691,43 @@ void MainWindow::onRunLexerClicked(bool)
     }
     QVector<int> codes;
     auto         mdfas = engine->buildAllMinDFA(*parsedPtr, codes);
-    QSet<int>    idCodes;
+    QSet<int> idCodes;
+    QSet<int> blacklistCodes;
     {
         auto             names = Config::identifierTokenNames();
+        auto             blacklist = Config::tokenOutputBlacklist();
         QVector<QString> lowers;
+        QVector<QString> blacklistLowers;
         for (auto s : names) lowers.push_back(s.trimmed().toLower());
+        for (auto s : blacklist) blacklistLowers.push_back(s.trimmed().toLower());
         for (const auto& pt : parsedPtr->tokens)
         {
-            QString n = pt.rule.name.trimmed().toLower();
+            QString n            = pt.rule.name.trimmed().toLower();
+            bool    isIdentifier = false;
             for (const auto& k : lowers)
             {
                 if (!k.isEmpty() && n.contains(k))
                 {
-                    idCodes.insert(pt.rule.code);
+                    isIdentifier = true;
+                    break;
+                }
+            }
+            // 只有是标识符且不是注释的 token 才加入 idCodes
+            if (isIdentifier && Config::shouldEmitLexemeForTokenName(pt.rule.name))
+            {
+                idCodes.insert(pt.rule.code);
+            }
+            for (const auto& k : blacklistLowers)
+            {
+                if (!k.isEmpty() && n.contains(k))
+                {
+                    blacklistCodes.insert(pt.rule.code);
                     break;
                 }
             }
         }
     }
-    auto output = engine->runMultiple(mdfas, codes, src, idCodes);
+    auto output = engine->runMultiple(mdfas, codes, src, idCodes, blacklistCodes);
     txtLexResult->setPlainText(output);
     // 自动保存到内部
     QString dir = Config::generatedOutputDir() + "/syntax";
@@ -800,10 +862,14 @@ void MainWindow::onCompileRunClicked(bool)
     QString      outCpp =
         currentCodePath.isEmpty() ? (base + "/lex_" + ts + "_" + hash + ".cpp") : currentCodePath;
     QSet<int> idCodes4;
+    QSet<int> blacklistCodes4;
     {
-        auto             names = Config::identifierTokenNames();
+        auto             names     = Config::identifierTokenNames();
+        auto             blacklist = Config::tokenOutputBlacklist();
         QVector<QString> lowers;
+        QVector<QString> blacklistLowers;
         for (auto s : names) lowers.push_back(s.trimmed().toLower());
+        for (auto s : blacklist) blacklistLowers.push_back(s.trimmed().toLower());
         for (const auto& pt : parsedPtr->tokens)
         {
             QString n = pt.rule.name.trimmed().toLower();
@@ -815,9 +881,18 @@ void MainWindow::onCompileRunClicked(bool)
                     break;
                 }
             }
+            for (const auto& k : blacklistLowers)
+            {
+                if (!k.isEmpty() && n.contains(k))
+                {
+                    blacklistCodes4.insert(pt.rule.code);
+                    break;
+                }
+            }
         }
     }
-    auto  srcCombined = CodeGenerator::generateCombined(mdfas, codes, parsedPtr->alpha, idCodes4);
+    auto srcCombined =
+        CodeGenerator::generateCombined(mdfas, codes, parsedPtr->alpha, idCodes4, blacklistCodes4);
     QFile f(outCpp);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
     {

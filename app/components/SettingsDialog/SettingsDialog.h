@@ -50,6 +50,8 @@ class SettingsDialog : public QDialog
     QCheckBox*     chkSkipTemplate;
     QCheckBox*     chkEmitIdLexeme;
     QLineEdit*     edtIdentifierNames;
+    QCheckBox*     chkUseBlacklist;
+    QLineEdit*     edtBlacklist;
     QPushButton*   btnAddRow;
     QPushButton*   btnDelRow;
     QPushButton*   btnDefaults;

@@ -209,7 +209,8 @@ static QString genStepI(const MinDFA& mdfa, int idx)
 QString CodeGenerator::generateCombined(const QVector<MinDFA>& mdfas,
                                         const QVector<int>&    codes,
                                         const Alphabet&        alpha,
-                                        const QSet<int>&       identifierCodes)
+                                        const QSet<int>&       identifierCodes,
+                                        const QSet<int>&       blacklistCodes)
 {
     QString out;
     out += "#include <cctype>\n";
@@ -285,6 +286,27 @@ QString CodeGenerator::generateCombined(const QVector<MinDFA>& mdfas,
         out +=
             "static inline bool emitIdLex(){ const char* "
             "e=getenv(\"LEXER_EMIT_IDENTIFIER_LEXEME\"); if(!e) return true; string v(e); for(auto "
+            "&ch:v) ch=tolower(ch); return (v==\"1\"||v==\"true\"||v==\"yes\"); }\n\n";
+
+        // 添加黑名单配置
+        QList<int> bls = QList<int>(blacklistCodes.begin(), blacklistCodes.end());
+        std::sort(bls.begin(), bls.end());
+        out += "static int BLACKLIST_CODES[" + QString::number(bls.size()) + "]={";
+        for (int i = 0; i < bls.size(); ++i)
+        {
+            out += QString::number(bls[i]);
+            if (i + 1 < bls.size())
+                out += ",";
+        }
+        out += "};\n";
+        out +=
+            "static inline bool isBlacklistCode(int c){ for(size_t "
+            "i=0;i<sizeof(BLACKLIST_CODES)/sizeof(int);++i){ if(BLACKLIST_CODES[i]==c) return "
+            "true;} "
+            "return false;}\n";
+        out +=
+            "static inline bool useBlacklist(){ const char* "
+            "e=getenv(\"LEXER_USE_BLACKLIST\"); if(!e) return true; string v(e); for(auto "
             "&ch:v) ch=tolower(ch); return (v==\"1\"||v==\"true\"||v==\"yes\"); }\n\n";
     }
 
@@ -487,8 +509,14 @@ QString CodeGenerator::generateCombined(const QVector<MinDFA>& mdfas,
     out += "        }\n";
     out += "        if (bestLen > 0)\n";
     out += "        {\n";
-    out += "            if (!out.empty()) out += ' ';\n";
     out += "            int code = codeList[bestIdx];\n";
+    out += "            // 如果在黑名单中且启用了黑名单，则完全跳过这个 token\n";
+    out += "            if (useBlacklist() && isBlacklistCode(code))\n";
+    out += "            {\n";
+    out += "                pos += bestLen;\n";
+    out += "                continue;\n";
+    out += "            }\n";
+    out += "            if (!out.empty()) out += ' ';\n";
     out += "            out += to_string(code);\n";
     out +=
         "            if (emitIdLex() && isIdentifierCode(code)) { out += ' '; out += "
