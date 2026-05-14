@@ -126,7 +126,24 @@ class Engine
                         const QVector<int>&    codes,
                         const QString&         source,
                         const QSet<int>&       identifierCodes,
-                        const QSet<int>&       blacklistCodes);
+                        const QSet<int>&       blacklistCodes,
+                        const QMap<QString, int>& keywordLexemeMap = {});
+    /**
+     * @param {ParsedFile} pf - 解析后的正则文件
+     * @return {QMap<QString, QVector<QString>>} 关键词规则名到关键词列表的映射
+     */
+    static QMap<QString, QVector<QString>> extractKeywords(const ParsedFile& pf);
+    /**
+     * @param {ParsedFile} pf - 解析后的正则文件
+     * @param {QVector<int>} codes - 对应的codes数组（来自buildAllMinDFA）
+     * @return {QMap<QString, int>} 关键词词素（小写）到对应code的映射
+     */
+    static QMap<QString, int> buildKeywordLexemeMap(const ParsedFile& pf, const QVector<int>& codes);
+    /**
+     * @param {QString} expr - 正则表达式
+     * @return {QVector<QString>} 提取的关键词列表
+     */
+    static QVector<QString> extractKeywordsForRule(const QString& expr);
     /**
      * @param {QString} text - 文法文本（BNF）
      * @param {QString&} error - 输出：错误信息

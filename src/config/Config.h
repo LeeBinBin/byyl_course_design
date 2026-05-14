@@ -65,6 +65,8 @@ class Config
     static QVector<QString> identifierTokenNames();
     static void setEmitIdentifierLexeme(bool v);
     static void setIdentifierTokenNames(const QVector<QString>& names);
+    static QVector<QString> keywordTokenNames();
+    static void setKeywordTokenNames(const QVector<QString>& names);
     static bool             useBlacklistForTokenOutput();
     static void             setUseBlacklistForTokenOutput(bool v);
     static QVector<QString> tokenOutputBlacklist();
@@ -180,6 +182,7 @@ class Config
     static QVector<QString>    s_cfgSearchPaths;
     static bool                s_emitIdentifierLexeme;
     static QVector<QString>    s_identifierNames;
+    static QVector<QString>    s_keywordNames;
     static bool                s_useBlacklistForTokenOutput;
     static QVector<QString>    s_tokenOutputBlacklist;
     static bool                s_useDfaSkip;

@@ -45,6 +45,7 @@ QString                     Config::s_dotEpsLabel;
 QVector<QString>            Config::s_cfgSearchPaths;
 bool                        Config::s_emitIdentifierLexeme = true;
 QVector<QString>            Config::s_identifierNames;
+QVector<QString>            Config::s_keywordNames;
 bool                        Config::s_useBlacklistForTokenOutput = true;
 QVector<QString>            Config::s_tokenOutputBlacklist;
 bool                        Config::s_useDfaSkip = true;
@@ -119,7 +120,9 @@ void Config::load()
     s_dotEpsLabel   = QStringLiteral("ε");
     s_cfgSearchPaths.clear();
     s_emitIdentifierLexeme = true;
-    s_identifierNames = QVector<QString>({QStringLiteral("identifier"), QStringLiteral("number")});
+    s_identifierNames =
+        QVector<QString>({QStringLiteral("identifier"), QStringLiteral("identifiers")});
+    s_keywordNames = QVector<QString>({QStringLiteral("keyword"), QStringLiteral("keywords")});
     s_useBlacklistForTokenOutput = true;
     s_tokenOutputBlacklist =
         QVector<QString>({QStringLiteral("comment"), QStringLiteral("comments")});
@@ -271,6 +274,19 @@ void Config::load()
                     if (s_identifierNames.isEmpty())
                         s_identifierNames.push_back(QStringLiteral("identifier"));
                 }
+                if (obj.contains("keyword_token_names") &&
+                    obj.value("keyword_token_names").isArray())
+                {
+                    s_keywordNames.clear();
+                    for (auto v : obj.value("keyword_token_names").toArray())
+                    {
+                        auto s = v.toString().trimmed();
+                        if (!s.isEmpty())
+                            s_keywordNames.push_back(s);
+                    }
+                    if (s_keywordNames.isEmpty())
+                        s_keywordNames.push_back(QStringLiteral("keyword"));
+                }
                 if (obj.contains("use_blacklist_for_token_output"))
                     s_useBlacklistForTokenOutput =
                         obj.value("use_blacklist_for_token_output").toBool(true);
@@ -288,20 +304,20 @@ void Config::load()
                         s_tokenOutputBlacklist.push_back(QStringLiteral("comment"));
                 }
                 if (obj.contains("use_dfa_skip"))
-            s_useDfaSkip = obj.value("use_dfa_skip").toBool(true);
-        if (obj.contains("dfa_skip_token_names") &&
-            obj.value("dfa_skip_token_names").isArray())
-        {
-            s_dfaSkipTokenNames.clear();
-            for (auto v : obj.value("dfa_skip_token_names").toArray())
-            {
-                auto s = v.toString().trimmed();
-                if (!s.isEmpty())
-                    s_dfaSkipTokenNames.push_back(s);
-            }
-            if (s_dfaSkipTokenNames.isEmpty())
-                s_dfaSkipTokenNames.push_back(QStringLiteral("keyword"));
-        }
+                    s_useDfaSkip = obj.value("use_dfa_skip").toBool(true);
+                if (obj.contains("dfa_skip_token_names") &&
+                    obj.value("dfa_skip_token_names").isArray())
+                {
+                    s_dfaSkipTokenNames.clear();
+                    for (auto v : obj.value("dfa_skip_token_names").toArray())
+                    {
+                        auto s = v.toString().trimmed();
+                        if (!s.isEmpty())
+                            s_dfaSkipTokenNames.push_back(s);
+                    }
+                    if (s_dfaSkipTokenNames.isEmpty())
+                        s_dfaSkipTokenNames.push_back(QStringLiteral("keyword"));
+                }
                 if (obj.contains("token_header") && obj.value("token_header").isObject())
                 {
                     auto th          = obj.value("token_header").toObject();
@@ -1028,6 +1044,11 @@ bool Config::saveJson(const QString& path)
         for (const auto& s : s_identifierNames) arr.append(s);
         obj.insert("identifier_token_names", arr);
     }
+    {
+        QJsonArray arr;
+        for (const auto& s : s_keywordNames) arr.append(s);
+        obj.insert("keyword_token_names", arr);
+    }
     obj.insert("use_blacklist_for_token_output", s_useBlacklistForTokenOutput);
     {
         QJsonArray arr;
@@ -1298,6 +1319,24 @@ QVector<QString> Config::identifierTokenNames()
     load();
     return s_identifierNames;
 }
+QVector<QString> Config::keywordTokenNames()
+{
+    load();
+    return s_keywordNames;
+}
+void Config::setKeywordTokenNames(const QVector<QString>& names)
+{
+    load();
+    s_keywordNames.clear();
+    for (auto s : names)
+    {
+        auto t = s.trimmed();
+        if (!t.isEmpty())
+            s_keywordNames.push_back(t);
+    }
+    if (s_keywordNames.isEmpty())
+        s_keywordNames.push_back(QStringLiteral("keyword"));
+}
 QString Config::tokenHeaderPrefix()
 {
     load();
@@ -1459,8 +1498,8 @@ bool Config::shouldSkipDfaToken(const QString& tokenName)
 {
     if (!useDfaSkip())
         return false;
-    
-    auto skipNames = dfaSkipTokenNames();
+
+    auto    skipNames = dfaSkipTokenNames();
     QString nameLower = tokenName.trimmed().toLower();
     for (const auto& skipName : skipNames)
     {

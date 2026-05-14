@@ -595,7 +595,10 @@ void MainWindow::onRunLexerClicked(bool)
                 }
             }
         }
-        auto output = engine->runMultiple(mdfas, codes, src, idCodes, blacklistCodes);
+        
+        auto keywordLexemeMap = Engine::buildKeywordLexemeMap(*parsedPtr, codes);
+        
+        auto output = engine->runMultiple(mdfas, codes, src, idCodes, blacklistCodes, keywordLexemeMap);
         txtLexResult->setPlainText(output.isEmpty() ? QStringLiteral("100 100") : output);
         QString dir = Config::generatedOutputDir() + "/syntax";
         QDir    d(dir);
@@ -730,7 +733,10 @@ void MainWindow::onRunLexerClicked(bool)
             }
         }
     }
-    auto output = engine->runMultiple(mdfas, codes, src, idCodes, blacklistCodes);
+    
+    auto keywordLexemeMap = Engine::buildKeywordLexemeMap(*parsedPtr, codes);
+    
+    auto output = engine->runMultiple(mdfas, codes, src, idCodes, blacklistCodes, keywordLexemeMap);
     txtLexResult->setPlainText(output);
     // 自动保存到内部
     QString dir = Config::generatedOutputDir() + "/syntax";

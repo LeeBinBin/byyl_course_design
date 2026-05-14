@@ -75,9 +75,9 @@ NFA Engine::buildMergedNFA(const ParsedFile& pf)
     {
         if (Config::shouldSkipDfaToken(pt.rule.name))
             continue;
-        
+
         auto nfa         = buildNFA(pt.ast, pf.alpha);
-        int mappedStart = -1;
+        int  mappedStart = -1;
         appendNFAWithOffset(merged, nfa, nextId, mappedStart);
         NFAEdge e;
         e.to      = mappedStart;
@@ -433,7 +433,7 @@ QVector<MinDFA> Engine::buildAllMinDFA(const ParsedFile& pf, QVector<int>& codes
     {
         if (Config::shouldSkipDfaToken(pt.rule.name))
             continue;
-        
+
         if (pt.rule.isGroup)
         {
             QVector<ASTNode*> alts;
@@ -495,10 +495,12 @@ QString Engine::runMultiple(const QVector<MinDFA>& mdfas,
                             const QVector<int>&    codes,
                             const QString&         source,
                             const QSet<int>&       identifierCodes,
-                            const QSet<int>&       blacklistCodes)
+                            const QSet<int>&       blacklistCodes,
+                            const QMap<QString, int>& keywordLexemeMap)
 {
     QString out;
     int     pos = 0;
+
     while (pos < source.size())
     {
         QChar ch = source[pos];
@@ -642,8 +644,21 @@ QString Engine::runMultiple(const QVector<MinDFA>& mdfas,
                 pos += bestLen;
                 continue;
             }
-            out += QString::number(code) + " ";
-            if (Config::emitIdentifierLexeme() && identifierCodes.contains(code))
+
+            // 检查是否需要将identifier转换为keyword
+            int outputCode = code;
+            if (identifierCodes.contains(code) && !keywordLexemeMap.isEmpty())
+            {
+                QString lexeme = source.mid(pos, bestLen).toLower();
+                if (keywordLexemeMap.contains(lexeme))
+                {
+                    outputCode = keywordLexemeMap.value(lexeme);
+                }
+            }
+
+            out += QString::number(outputCode) + " ";
+            // 只有当输出代码仍然是标识符代码时才打印词素（不打印转换后的关键词词素）
+            if (Config::emitIdentifierLexeme() && identifierCodes.contains(outputCode))
             {
                 out += source.mid(pos, bestLen) + " ";
             }
@@ -656,6 +671,229 @@ QString Engine::runMultiple(const QVector<MinDFA>& mdfas,
         }
     }
     return out.trimmed();
+}
+
+QMap<QString, QVector<QString>> Engine::extractKeywords(const ParsedFile& pf)
+{
+    QMap<QString, QVector<QString>> result;
+    auto                            kwNames = Config::keywordTokenNames();
+
+    for (const auto& pt : pf.tokens)
+    {
+        QString ruleName  = pt.rule.name.toLower();
+        bool    isKeyword = false;
+        for (const auto& kw : kwNames)
+        {
+            if (ruleName.contains(kw.toLower()))
+            {
+                isKeyword = true;
+                break;
+            }
+        }
+
+        if (!isKeyword)
+            continue;
+
+        const QString&   expr = pt.rule.expr;
+        QVector<QString> keywords;
+
+        // 按顶层（depth=0）的 | 分割表达式
+        QStringList topAlternatives;
+        QString     current;
+        int         depth = 0;
+        for (int i = 0; i < expr.size(); ++i)
+        {
+            QChar ch = expr[i];
+            if (ch == '(')
+                depth++;
+            else if (ch == ')')
+                depth--;
+            
+            if (ch == '|' && depth == 0)
+            {
+                if (!current.trimmed().isEmpty())
+                    topAlternatives.append(current.trimmed());
+                current.clear();
+            }
+            else
+            {
+                current.append(ch);
+            }
+        }
+        if (!current.trimmed().isEmpty())
+            topAlternatives.append(current.trimmed());
+
+        // 对每个顶层分支，提取字母字符组成关键词
+        for (const auto& alt : topAlternatives)
+        {
+            QString word;
+            bool    inBracket = false;
+            for (int i = 0; i < alt.size(); ++i)
+            {
+                QChar ch = alt[i];
+                if (ch == '(')
+                {
+                    // 如果是字符选择 (a|A|b|B)，取第一个选项
+                    if (i + 1 < alt.size() && alt[i + 1].isLetter())
+                    {
+                        word.append(alt[i + 1].toLower());
+                        // 跳过到对应的 )
+                        int d = 1;
+                        i += 2;
+                        while (i < alt.size() && d > 0)
+                        {
+                            if (alt[i] == '(') d++;
+                            else if (alt[i] == ')') d--;
+                            i++;
+                        }
+                        i--; // 补偿循环的++
+                        continue;
+                    }
+                    inBracket = true;
+                }
+                else if (ch == ')')
+                {
+                    inBracket = false;
+                }
+                else if (ch.isLetter() && !inBracket)
+                {
+                    word.append(ch.toLower());
+                }
+            }
+
+            if (!word.isEmpty())
+            {
+                keywords.push_back(word);
+            }
+        }
+
+        if (!keywords.isEmpty())
+        {
+            result.insert(pt.rule.name, keywords);
+        }
+    }
+
+    return result;
+}
+
+QMap<QString, int> Engine::buildKeywordLexemeMap(const ParsedFile& pf, const QVector<int>& codes)
+{
+    QMap<QString, int> lexemeMap;
+    auto kwNames = Config::keywordTokenNames();
+
+    for (const auto& pt : pf.tokens)
+    {
+        QString ruleName = pt.rule.name.toLower();
+
+        bool isKeyword = false;
+        for (const auto& kw : kwNames)
+        {
+            if (ruleName.contains(kw.toLower()))
+            {
+                isKeyword = true;
+                break;
+            }
+        }
+
+        if (!isKeyword)
+            continue;
+
+        // 从规则名中解析真实的 code（如 "keyword200B" -> 200）
+        int baseCode = pt.rule.code;
+
+        // 提取这个规则的关键词列表
+        auto keywords = extractKeywordsForRule(pt.rule.expr);
+
+        if (pt.rule.isGroup)
+        {
+            // group规则：每个关键词有不同的code (base, base+1, base+2, ...)
+            for (int k = 0; k < keywords.size(); ++k)
+            {
+                lexemeMap.insert(keywords[k].toLower(), baseCode + k);
+            }
+        }
+        else
+        {
+            // 非group规则：所有关键词共用一个code
+            for (const auto& kw : keywords)
+            {
+                lexemeMap.insert(kw.toLower(), baseCode);
+            }
+        }
+    }
+
+    return lexemeMap;
+}
+
+QVector<QString> Engine::extractKeywordsForRule(const QString& expr)
+{
+    QVector<QString> keywords;
+
+    // 按顶层（depth=0）的 | 分割表达式
+    QStringList topAlternatives;
+    QString     current;
+    int         depth = 0;
+    for (int i = 0; i < expr.size(); ++i)
+    {
+        QChar ch = expr[i];
+        if (ch == '(')
+            depth++;
+        else if (ch == ')')
+            depth--;
+
+        if (ch == '|' && depth == 0)
+        {
+            if (!current.trimmed().isEmpty())
+                topAlternatives.append(current.trimmed());
+            current.clear();
+        }
+        else
+        {
+            current.append(ch);
+        }
+    }
+    if (!current.trimmed().isEmpty())
+        topAlternatives.append(current.trimmed());
+
+    // 对每个顶层分支，提取字母字符组成关键词
+    for (const auto& alt : topAlternatives)
+    {
+        QString word;
+        for (int i = 0; i < alt.size(); ++i)
+        {
+            QChar ch = alt[i];
+            if (ch == '(')
+            {
+                // 如果是字符选择 (a|A|b|B)，取第一个选项
+                if (i + 1 < alt.size() && alt[i + 1].isLetter())
+                {
+                    word.append(alt[i + 1].toLower());
+                    // 跳过到对应的 )
+                    int d = 1;
+                    i += 2;
+                    while (i < alt.size() && d > 0)
+                    {
+                        if (alt[i] == '(') d++;
+                        else if (alt[i] == ')') d--;
+                        i++;
+                    }
+                    i--;
+                    continue;
+                }
+            }
+            else if (ch.isLetter())
+            {
+                word.append(ch.toLower());
+            }
+        }
+
+        if (!word.isEmpty())
+        {
+            keywords.push_back(word);
+        }
+    }
+
+    return keywords;
 }
 
 Grammar Engine::parseGrammarText(const QString& text, QString& error)

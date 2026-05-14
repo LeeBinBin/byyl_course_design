@@ -50,6 +50,7 @@ class SettingsDialog : public QDialog
     QCheckBox*     chkSkipTemplate;
     QCheckBox*     chkEmitIdLexeme;
     QLineEdit*     edtIdentifierNames;
+    QLineEdit*     edtKeywordNames;
     QCheckBox*     chkUseBlacklist;
     QLineEdit*     edtBlacklist;
     QCheckBox*     chkUseDfaSkip;

@@ -162,6 +162,11 @@ void SettingsDialog::buildUi()
         edtIdentifierNames = new QLineEdit;
         lId->addWidget(edtIdentifierNames);
         v->addLayout(lId);
+        auto lKw = new QHBoxLayout;
+        lKw->addWidget(new QLabel("关键词规则名（逗号分隔）"));
+        edtKeywordNames = new QLineEdit;
+        lKw->addWidget(edtKeywordNames);
+        v->addLayout(lKw);
         chkUseBlacklist = new QCheckBox("启用Token输出黑名单");
         v->addWidget(chkUseBlacklist);
         auto lBlacklist = new QHBoxLayout;
@@ -333,7 +338,8 @@ void SettingsDialog::buildUi()
                 chkSkipDouble->setChecked(false);
                 chkSkipTemplate->setChecked(false);
                 chkEmitIdLexeme->setChecked(true);
-                edtIdentifierNames->setText("identifier,number");
+                edtIdentifierNames->setText("identifier,identifiers");
+                edtKeywordNames->setText("keyword,keywords");
                 chkUseBlacklist->setChecked(true);
                 edtBlacklist->setText("comment,comments");
                 chkUseDfaSkip->setChecked(true);
@@ -509,6 +515,17 @@ void SettingsDialog::loadCurrent()
         }
         edtIdentifierNames->setText(s);
     }
+    {
+        auto    names = Config::keywordTokenNames();
+        QString s;
+        for (int i = 0; i < names.size(); ++i)
+        {
+            s += names[i];
+            if (i + 1 < names.size())
+                s += ",";
+        }
+        edtKeywordNames->setText(s);
+    }
     chkUseBlacklist->setChecked(Config::useBlacklistForTokenOutput());
     {
         auto    names = Config::tokenOutputBlacklist();
@@ -648,6 +665,12 @@ bool SettingsDialog::collectAndApply()
         for (auto x : edtIdentifierNames->text().split(',', Qt::SkipEmptyParts))
             names.push_back(x.trimmed());
         Config::setIdentifierTokenNames(names);
+    }
+    {
+        QVector<QString> names;
+        for (auto x : edtKeywordNames->text().split(',', Qt::SkipEmptyParts))
+            names.push_back(x.trimmed());
+        Config::setKeywordTokenNames(names);
     }
     Config::setUseBlacklistForTokenOutput(chkUseBlacklist->isChecked());
     {
