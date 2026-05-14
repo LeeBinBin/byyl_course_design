@@ -73,19 +73,31 @@ void GeneratorController::convert()
     cmbNfa->blockSignals(true);
     cmbNfa->clear();
     cmbNfa->addItem("全部");
-    for (const auto& t : parsed.tokens) cmbNfa->addItem(t.rule.name);
+    for (const auto& t : parsed.tokens)
+    {
+        if (!Config::shouldSkipDfaToken(t.rule.name))
+            cmbNfa->addItem(t.rule.name);
+    }
     cmbNfa->blockSignals(false);
     cmbNfa->setCurrentIndex(0);
     cmbDfa->blockSignals(true);
     cmbDfa->clear();
     cmbDfa->addItem("全部");
-    for (const auto& t : parsed.tokens) cmbDfa->addItem(t.rule.name);
+    for (const auto& t : parsed.tokens)
+    {
+        if (!Config::shouldSkipDfaToken(t.rule.name))
+            cmbDfa->addItem(t.rule.name);
+    }
     cmbDfa->blockSignals(false);
     cmbDfa->setCurrentIndex(0);
     cmbMin->blockSignals(true);
     cmbMin->clear();
     cmbMin->addItem("全部");
-    for (const auto& t : parsed.tokens) cmbMin->addItem(t.rule.name);
+    for (const auto& t : parsed.tokens)
+    {
+        if (!Config::shouldSkipDfaToken(t.rule.name))
+            cmbMin->addItem(t.rule.name);
+    }
     cmbMin->blockSignals(false);
     cmbMin->setCurrentIndex(0);
     if (mw_->statusBar())
@@ -113,6 +125,9 @@ void GeneratorController::generateCode()
         for (auto s : blacklist) blacklistLowers.push_back(s.trimmed().toLower());
         for (const auto& pt : mw_->getParsed()->tokens)
         {
+            if (Config::shouldSkipDfaToken(pt.rule.name))
+                continue;
+            
             QString n = pt.rule.name.trimmed().toLower();
             for (const auto& k : lowers)
             {

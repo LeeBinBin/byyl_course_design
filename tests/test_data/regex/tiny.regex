@@ -5,4 +5,4 @@ identifier100=letter(letter|digit)*
 number101=digit+
 comment102={(digit|letter|ws|\+|-|\*|/|%|\^|<|<>|<=|>=|>|=|\$|;|:=)*}
 special103B=\(|\)|\+|-|\*|/|%|\^|<|<>|<=|>=|>|=|:=|;|\~
-Keyword200B=(i|I)(f|F)|(t|T)(h|H)(e|E)(n|N)|(e|E)(l|L)(s|S)(e|E)|(E|e)(n|N)(D|d)|(r|R)(e|E)(p|P)(e|E)(a|A)(t|T)|(u|U)(n|N)(t|T)(I|i)(l|L)|(r|R)(e|E)(a|A)(D|d)|(w|W)(r|R)(i|I)(t|T)(E|e)
+keyword200B=(i|I)(f|F)|(t|T)(h|H)(e|E)(n|N)|(e|E)(l|L)(s|S)(e|E)|(E|e)(n|N)(D|d)|(r|R)(e|E)(p|P)(e|E)(a|A)(t|T)|(u|U)(n|N)(t|T)(I|i)(l|L)|(r|R)(e|E)(a|A)(D|d)|(w|W)(r|R)(i|I)(t|T)(E|e)

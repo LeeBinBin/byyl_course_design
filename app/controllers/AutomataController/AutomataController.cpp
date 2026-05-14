@@ -190,10 +190,20 @@ void AutomataController::onTokenChanged(int idx)
         fillAllNFA();
         return;
     }
-    if (idx - 1 < 0 || idx - 1 >= parsed->tokens.size())
+    // 通过token名称查找，而不是直接用索引
+    QString      tokenName = cmbTok_->itemText(idx);
+    ParsedToken* pt        = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
         return;
-    auto pt   = parsed->tokens[idx - 1];
-    auto nfa  = eng->buildNFA(pt.ast, parsed->alpha);
+    auto nfa  = eng->buildNFA(pt->ast, parsed->alpha);
     auto dfa  = eng->buildDFA(nfa);
     auto mdfa = eng->buildMinDFA(dfa);
     auto tn   = eng->nfaTableWithMacros(nfa, parsed->macros);
@@ -215,10 +225,20 @@ void AutomataController::onTokenChangedDFA(int idx)
         fillAllDFA();
         return;
     }
-    if (idx - 1 < 0 || idx - 1 >= parsed->tokens.size())
+    // 通过token名称查找
+    QString      tokenName = cmbTokDfa_->itemText(idx);
+    ParsedToken* pt        = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
         return;
-    auto pt   = parsed->tokens[idx - 1];
-    auto nfa  = eng->buildNFA(pt.ast, parsed->alpha);
+    auto nfa  = eng->buildNFA(pt->ast, parsed->alpha);
     auto dfa  = eng->buildDFA(nfa);
     auto mdfa = eng->buildMinDFA(dfa);
     auto td   = eng->dfaTableWithMacros(dfa, parsed->macros);
@@ -238,10 +258,20 @@ void AutomataController::onTokenChangedMin(int idx)
         fillAllMin();
         return;
     }
-    if (idx - 1 < 0 || idx - 1 >= parsed->tokens.size())
+    // 通过token名称查找
+    QString      tokenName = cmbTokMin_->itemText(idx);
+    ParsedToken* pt        = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
         return;
-    auto pt   = parsed->tokens[idx - 1];
-    auto nfa  = eng->buildNFA(pt.ast, parsed->alpha);
+    auto nfa  = eng->buildNFA(pt->ast, parsed->alpha);
     auto dfa  = eng->buildDFA(nfa);
     auto mdfa = eng->buildMinDFA(dfa);
     auto tm   = eng->minTableWithMacros(mdfa, parsed->macros);
@@ -291,16 +321,28 @@ void AutomataController::exportNfaDot()
         return;
     }
     int idx = cmbTok_ ? cmbTok_->currentIndex() : -1;
-    if (idx <= 0 || idx - 1 >= parsed->tokens.size())
+    if (idx <= 0)
     {
         mw_->statusBar()->showMessage("请选择具体Token后导出NFA DOT文件");
         ToastManager::instance().showWarning("请选择具体Token后导出NFA DOT文件");
         return;
     }
-    auto    pt      = parsed->tokens[idx - 1];
-    auto    nfa     = mw_->getEngine()->buildNFA(pt.ast, parsed->alpha);
+    // 通过token名称查找
+    QString tokenName = cmbTok_->itemText(idx);
+    ParsedToken* pt = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
+        return;
+    auto    nfa     = mw_->getEngine()->buildNFA(pt->ast, parsed->alpha);
     QString ts      = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-    QString suggest = "nfa_" + pt.rule.name + "_" + ts + ".dot";
+    QString suggest = "nfa_" + pt->rule.name + "_" + ts + ".dot";
     QString outPath = dot_->pickDotSavePath(suggest);
     if (outPath.isEmpty())
         return;
@@ -322,19 +364,31 @@ void AutomataController::exportNfaImage()
         return;
     }
     int idx = cmbTok_ ? cmbTok_->currentIndex() : -1;
-    if (idx <= 0 || idx - 1 >= parsed->tokens.size())
+    if (idx <= 0)
     {
         mw_->statusBar()->showMessage("请选择具体Token后导出NFA图片");
         ToastManager::instance().showWarning("请选择具体Token后导出NFA图片");
         return;
     }
-    auto pt      = parsed->tokens[idx - 1];
-    auto nfa     = mw_->getEngine()->buildNFA(pt.ast, parsed->alpha);
+    // 通过token名称查找
+    QString tokenName = cmbTok_->itemText(idx);
+    ParsedToken* pt = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
+        return;
+    auto nfa     = mw_->getEngine()->buildNFA(pt->ast, parsed->alpha);
     auto dpiEdit = root_->findChild<QLineEdit*>("edtGraphDpiNfa");
     int  dpi =
         (dpiEdit && !dpiEdit->text().trimmed().isEmpty()) ? dpiEdit->text().trimmed().toInt() : 150;
     QString ts      = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-    QString suggest = "nfa_" + pt.rule.name + "_" + ts + ".png";
+    QString suggest = "nfa_" + pt->rule.name + "_" + ts + ".png";
     QString outPath = dot_->pickImageSavePath(suggest, "png");
     if (outPath.isEmpty())
         return;
@@ -373,10 +427,22 @@ void AutomataController::previewNfa()
         QFile::remove(pngPath);
         return;
     }
-    if (idx <= 0 || idx - 1 >= parsed->tokens.size())
+    if (idx <= 0)
         return;
-    auto pt      = parsed->tokens[idx - 1];
-    auto nfa     = mw_->getEngine()->buildNFA(pt.ast, parsed->alpha);
+    // 通过token名称查找
+    QString tokenName = cmbTok_->itemText(idx);
+    ParsedToken* pt = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
+        return;
+    auto nfa     = mw_->getEngine()->buildNFA(pt->ast, parsed->alpha);
     auto dpiEdit = root_->findChild<QLineEdit*>("edtGraphDpiNfa");
     int  dpi =
         (dpiEdit && !dpiEdit->text().trimmed().isEmpty()) ? dpiEdit->text().trimmed().toInt() : 150;
@@ -400,17 +466,29 @@ void AutomataController::exportDfaDot()
         return;
     }
     int idx = cmbTokDfa_ ? cmbTokDfa_->currentIndex() : -1;
-    if (idx <= 0 || idx - 1 >= parsed->tokens.size())
+    if (idx <= 0)
     {
         mw_->statusBar()->showMessage("请选择具体Token后导出DFA DOT文件");
         ToastManager::instance().showWarning("请选择具体Token后导出DFA DOT文件");
         return;
     }
-    auto    pt      = parsed->tokens[idx - 1];
-    auto    nfa     = mw_->getEngine()->buildNFA(pt.ast, parsed->alpha);
+    // 通过token名称查找
+    QString tokenName = cmbTokDfa_->itemText(idx);
+    ParsedToken* pt = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
+        return;
+    auto    nfa     = mw_->getEngine()->buildNFA(pt->ast, parsed->alpha);
     auto    dfa     = mw_->getEngine()->buildDFA(nfa);
     QString ts      = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-    QString suggest = "dfa_" + pt.rule.name + "_" + ts + ".dot";
+    QString suggest = "dfa_" + pt->rule.name + "_" + ts + ".dot";
     QString outPath = dot_->pickDotSavePath(suggest);
     if (outPath.isEmpty())
         return;
@@ -432,20 +510,32 @@ void AutomataController::exportDfaImage()
         return;
     }
     int idx = cmbTokDfa_ ? cmbTokDfa_->currentIndex() : -1;
-    if (idx <= 0 || idx - 1 >= parsed->tokens.size())
+    if (idx <= 0)
     {
         mw_->statusBar()->showMessage("请选择具体Token后导出DFA图片");
         ToastManager::instance().showWarning("请选择具体Token后导出DFA图片");
         return;
     }
-    auto pt      = parsed->tokens[idx - 1];
-    auto nfa     = mw_->getEngine()->buildNFA(pt.ast, parsed->alpha);
+    // 通过token名称查找
+    QString tokenName = cmbTokDfa_->itemText(idx);
+    ParsedToken* pt = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
+        return;
+    auto nfa     = mw_->getEngine()->buildNFA(pt->ast, parsed->alpha);
     auto dfa     = mw_->getEngine()->buildDFA(nfa);
     auto dpiEdit = root_->findChild<QLineEdit*>("edtGraphDpiDfa");
     int  dpi =
         (dpiEdit && !dpiEdit->text().trimmed().isEmpty()) ? dpiEdit->text().trimmed().toInt() : 150;
     QString ts      = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-    QString suggest = "dfa_" + pt.rule.name + "_" + ts + ".png";
+    QString suggest = "dfa_" + pt->rule.name + "_" + ts + ".png";
     QString outPath = dot_->pickImageSavePath(suggest, "png");
     if (outPath.isEmpty())
         return;
@@ -484,10 +574,22 @@ void AutomataController::previewDfa()
         QFile::remove(pngPath);
         return;
     }
-    if (idx <= 0 || idx - 1 >= parsed->tokens.size())
+    if (idx <= 0)
         return;
-    auto pt      = parsed->tokens[idx - 1];
-    auto nfa     = mw_->getEngine()->buildNFA(pt.ast, parsed->alpha);
+    // 通过token名称查找
+    QString tokenName = cmbTokDfa_->itemText(idx);
+    ParsedToken* pt = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
+        return;
+    auto nfa     = mw_->getEngine()->buildNFA(pt->ast, parsed->alpha);
     auto dfa     = mw_->getEngine()->buildDFA(nfa);
     auto dpiEdit = root_->findChild<QLineEdit*>("edtGraphDpiDfa");
     int  dpi =
@@ -512,18 +614,30 @@ void AutomataController::exportMinDot()
         return;
     }
     int idx = cmbTokMin_ ? cmbTokMin_->currentIndex() : -1;
-    if (idx <= 0 || idx - 1 >= parsed->tokens.size())
+    if (idx <= 0)
     {
         mw_->statusBar()->showMessage("请选择具体Token后导出MinDFA DOT文件");
         ToastManager::instance().showWarning("请选择具体Token后导出MinDFA DOT文件");
         return;
     }
-    auto    pt      = parsed->tokens[idx - 1];
-    auto    nfa     = mw_->getEngine()->buildNFA(pt.ast, parsed->alpha);
+    // 通过token名称查找
+    QString tokenName = cmbTokMin_->itemText(idx);
+    ParsedToken* pt = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
+        return;
+    auto    nfa     = mw_->getEngine()->buildNFA(pt->ast, parsed->alpha);
     auto    dfa     = mw_->getEngine()->buildDFA(nfa);
     auto    mdfa    = mw_->getEngine()->buildMinDFA(dfa);
     QString ts      = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-    QString suggest = "mindfa_" + pt.rule.name + "_" + ts + ".dot";
+    QString suggest = "mindfa_" + pt->rule.name + "_" + ts + ".dot";
     QString outPath = dot_->pickDotSavePath(suggest);
     if (outPath.isEmpty())
         return;
@@ -545,21 +659,33 @@ void AutomataController::exportMinImage()
         return;
     }
     int idx = cmbTokMin_ ? cmbTokMin_->currentIndex() : -1;
-    if (idx <= 0 || idx - 1 >= parsed->tokens.size())
+    if (idx <= 0)
     {
         mw_->statusBar()->showMessage("请选择具体Token后导出MinDFA图片");
         ToastManager::instance().showWarning("请选择具体Token后导出MinDFA图片");
         return;
     }
-    auto pt      = parsed->tokens[idx - 1];
-    auto nfa     = mw_->getEngine()->buildNFA(pt.ast, parsed->alpha);
+    // 通过token名称查找
+    QString tokenName = cmbTokMin_->itemText(idx);
+    ParsedToken* pt = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
+        return;
+    auto nfa     = mw_->getEngine()->buildNFA(pt->ast, parsed->alpha);
     auto dfa     = mw_->getEngine()->buildDFA(nfa);
     auto mdfa    = mw_->getEngine()->buildMinDFA(dfa);
     auto dpiEdit = root_->findChild<QLineEdit*>("edtGraphDpiMin");
     int  dpi =
         (dpiEdit && !dpiEdit->text().trimmed().isEmpty()) ? dpiEdit->text().trimmed().toInt() : 150;
     QString ts      = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-    QString suggest = "mindfa_" + pt.rule.name + "_" + ts + ".png";
+    QString suggest = "mindfa_" + pt->rule.name + "_" + ts + ".png";
     QString outPath = dot_->pickImageSavePath(suggest, "png");
     if (outPath.isEmpty())
         return;
@@ -598,10 +724,22 @@ void AutomataController::previewMin()
         QFile::remove(pngPath);
         return;
     }
-    if (idx <= 0 || idx - 1 >= parsed->tokens.size())
+    if (idx <= 0)
         return;
-    auto pt      = parsed->tokens[idx - 1];
-    auto nfa     = mw_->getEngine()->buildNFA(pt.ast, parsed->alpha);
+    // 通过token名称查找
+    QString tokenName = cmbTokMin_->itemText(idx);
+    ParsedToken* pt = nullptr;
+    for (auto& t : parsed->tokens)
+    {
+        if (t.rule.name == tokenName)
+        {
+            pt = &t;
+            break;
+        }
+    }
+    if (!pt)
+        return;
+    auto nfa     = mw_->getEngine()->buildNFA(pt->ast, parsed->alpha);
     auto dfa     = mw_->getEngine()->buildDFA(nfa);
     auto mdfa    = mw_->getEngine()->buildMinDFA(dfa);
     auto dpiEdit = root_->findChild<QLineEdit*>("edtGraphDpiMin");

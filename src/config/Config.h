@@ -69,6 +69,11 @@ class Config
     static void             setUseBlacklistForTokenOutput(bool v);
     static QVector<QString> tokenOutputBlacklist();
     static void             setTokenOutputBlacklist(const QVector<QString>& names);
+    static bool useDfaSkip();
+    static void setUseDfaSkip(bool v);
+    static QVector<QString> dfaSkipTokenNames();
+    static void setDfaSkipTokenNames(const QVector<QString>& names);
+    static bool shouldSkipDfaToken(const QString& tokenName);
     static bool shouldEmitLexemeForTokenName(const QString& tokenName);
     static QString          tokenHeaderPrefix();
     static QString          tokenHeaderNameFirstRanges();
@@ -177,6 +182,8 @@ class Config
     static QVector<QString>    s_identifierNames;
     static bool                s_useBlacklistForTokenOutput;
     static QVector<QString>    s_tokenOutputBlacklist;
+    static bool                s_useDfaSkip;
+    static QVector<QString>    s_dfaSkipTokenNames;
     static QString             s_tokPrefix;
     static QString             s_tokNameFirst;
     static QString             s_tokNameRest;

@@ -52,6 +52,8 @@ class SettingsDialog : public QDialog
     QLineEdit*     edtIdentifierNames;
     QCheckBox*     chkUseBlacklist;
     QLineEdit*     edtBlacklist;
+    QCheckBox*     chkUseDfaSkip;
+    QLineEdit*     edtDfaSkipTokens;
     QPushButton*   btnAddRow;
     QPushButton*   btnDelRow;
     QPushButton*   btnDefaults;

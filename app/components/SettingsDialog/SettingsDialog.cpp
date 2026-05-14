@@ -169,6 +169,13 @@ void SettingsDialog::buildUi()
         edtBlacklist = new QLineEdit;
         lBlacklist->addWidget(edtBlacklist);
         v->addLayout(lBlacklist);
+        chkUseDfaSkip = new QCheckBox("启用DFA转换跳过");
+        v->addWidget(chkUseDfaSkip);
+        auto lDfaSkip = new QHBoxLayout;
+        lDfaSkip->addWidget(new QLabel("不参与DFA转换的Token名（逗号分隔）"));
+        edtDfaSkipTokens = new QLineEdit;
+        lDfaSkip->addWidget(edtDfaSkipTokens);
+        v->addLayout(lDfaSkip);
         v->addStretch(1);
     }
     stacked->addWidget(pageLexerId);
@@ -329,6 +336,8 @@ void SettingsDialog::buildUi()
                 edtIdentifierNames->setText("identifier,number");
                 chkUseBlacklist->setChecked(true);
                 edtBlacklist->setText("comment,comments");
+                chkUseDfaSkip->setChecked(true);
+                edtDfaSkipTokens->setText("keyword,keywords");
             });
     connect(btnSave,
             &QPushButton::clicked,
@@ -512,6 +521,18 @@ void SettingsDialog::loadCurrent()
         }
         edtBlacklist->setText(s);
     }
+    chkUseDfaSkip->setChecked(Config::useDfaSkip());
+    {
+        auto    names = Config::dfaSkipTokenNames();
+        QString s;
+        for (int i = 0; i < names.size(); ++i)
+        {
+            s += names[i];
+            if (i + 1 < names.size())
+                s += ",";
+        }
+        edtDfaSkipTokens->setText(s);
+    }
 }
 
 static bool parseInt(const QString& s, int& out)
@@ -634,6 +655,13 @@ bool SettingsDialog::collectAndApply()
         for (auto x : edtBlacklist->text().split(',', Qt::SkipEmptyParts))
             names.push_back(x.trimmed());
         Config::setTokenOutputBlacklist(names);
+    }
+    Config::setUseDfaSkip(chkUseDfaSkip->isChecked());
+    {
+        QVector<QString> names;
+        for (auto x : edtDfaSkipTokens->text().split(',', Qt::SkipEmptyParts))
+            names.push_back(x.trimmed());
+        Config::setDfaSkipTokenNames(names);
     }
     return true;
 }

@@ -408,7 +408,8 @@ void MainWindow::onConvertClicked(bool)
     cmbTokens->addItem("全部");
     for (const auto& t : parsed.tokens)
     {
-        cmbTokens->addItem(t.rule.name);
+        if (!Config::shouldSkipDfaToken(t.rule.name))
+            cmbTokens->addItem(t.rule.name);
     }
     cmbTokens->blockSignals(false);
     cmbTokens->setCurrentIndex(0);
@@ -417,7 +418,8 @@ void MainWindow::onConvertClicked(bool)
     cmbTokensDFA->addItem("全部");
     for (const auto& t : parsed.tokens)
     {
-        cmbTokensDFA->addItem(t.rule.name);
+        if (!Config::shouldSkipDfaToken(t.rule.name))
+            cmbTokensDFA->addItem(t.rule.name);
     }
     cmbTokensDFA->blockSignals(false);
     cmbTokensDFA->setCurrentIndex(0);
@@ -426,7 +428,8 @@ void MainWindow::onConvertClicked(bool)
     cmbTokensMin->addItem("全部");
     for (const auto& t : parsed.tokens)
     {
-        cmbTokensMin->addItem(t.rule.name);
+        if (!Config::shouldSkipDfaToken(t.rule.name))
+            cmbTokensMin->addItem(t.rule.name);
     }
     cmbTokensMin->blockSignals(false);
     cmbTokensMin->setCurrentIndex(0);
@@ -691,10 +694,10 @@ void MainWindow::onRunLexerClicked(bool)
     }
     QVector<int> codes;
     auto         mdfas = engine->buildAllMinDFA(*parsedPtr, codes);
-    QSet<int> idCodes;
-    QSet<int> blacklistCodes;
+    QSet<int>    idCodes;
+    QSet<int>    blacklistCodes;
     {
-        auto             names = Config::identifierTokenNames();
+        auto             names     = Config::identifierTokenNames();
         auto             blacklist = Config::tokenOutputBlacklist();
         QVector<QString> lowers;
         QVector<QString> blacklistLowers;

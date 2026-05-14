@@ -36,7 +36,7 @@ class LongestMatchTest : public QObject
         QVector<int> codes;
         auto         mdfs = eng.buildAllMinDFA(pf, codes);
         auto         src  = QStringLiteral("if abc");
-        auto         out  = eng.runMultiple(mdfs, codes, src, QSet<int>());
+        auto         out  = eng.runMultiple(mdfs, codes, src, QSet<int>(), QSet<int>());
         qInfo() << "源文本:" << src;
         qInfo() << "输出编码序列:" << out;
         auto toks = out.split(' ', Qt::SkipEmptyParts);

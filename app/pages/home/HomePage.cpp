@@ -71,7 +71,7 @@ HomePage::HomePage(QWidget* parent) : QWidget(parent)
     auto authTitle = new QLabel("作者");
     auto stuTitle  = new QLabel("学号");
     lblAuthor      = new QLabel("李彬彬");
-    lblStuId       = new QLabel("20262121047");
+    lblStuId       = new QLabel("20232121047");
 
     QFont fti = authTitle->font();
     fti.setBold(true);

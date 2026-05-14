@@ -12,6 +12,7 @@
 #include "Engine.h"
 #include "config/Config.h"
 #include "syntax/GrammarParser.h"
+
 static int matchLen(const MinDFA& mdfa, const QString& src, int pos);
 RegexFile  Engine::lexFile(const QString& text)
 {
@@ -72,8 +73,11 @@ NFA Engine::buildMergedNFA(const ParsedFile& pf)
     int nextId   = 1;
     for (const auto& pt : pf.tokens)
     {
+        if (Config::shouldSkipDfaToken(pt.rule.name))
+            continue;
+        
         auto nfa         = buildNFA(pt.ast, pf.alpha);
-        int  mappedStart = -1;
+        int mappedStart = -1;
         appendNFAWithOffset(merged, nfa, nextId, mappedStart);
         NFAEdge e;
         e.to      = mappedStart;
@@ -427,6 +431,9 @@ QVector<MinDFA> Engine::buildAllMinDFA(const ParsedFile& pf, QVector<int>& codes
     codes.clear();
     for (const auto& pt : pf.tokens)
     {
+        if (Config::shouldSkipDfaToken(pt.rule.name))
+            continue;
+        
         if (pt.rule.isGroup)
         {
             QVector<ASTNode*> alts;

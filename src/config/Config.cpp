@@ -47,6 +47,8 @@ bool                        Config::s_emitIdentifierLexeme = true;
 QVector<QString>            Config::s_identifierNames;
 bool                        Config::s_useBlacklistForTokenOutput = true;
 QVector<QString>            Config::s_tokenOutputBlacklist;
+bool                        Config::s_useDfaSkip = true;
+QVector<QString>            Config::s_dfaSkipTokenNames;
 QString                     Config::s_tokPrefix;
 QString                     Config::s_tokNameFirst;
 QString                     Config::s_tokNameRest;
@@ -121,11 +123,12 @@ void Config::load()
     s_useBlacklistForTokenOutput = true;
     s_tokenOutputBlacklist =
         QVector<QString>({QStringLiteral("comment"), QStringLiteral("comments")});
-    s_tokPrefix              = QStringLiteral("");
-    s_tokNameFirst           = QStringLiteral("A-Za-z");
-    s_tokNameRest            = QStringLiteral("A-Za-z0-9_");
-    s_tokDigitRanges         = QStringLiteral("0-9");
-    s_tokGroupSuffix         = QStringLiteral("B");
+    s_dfaSkipTokenNames = QVector<QString>({QStringLiteral("keyword"), QStringLiteral("keywords")});
+    s_tokPrefix         = QStringLiteral("");
+    s_tokNameFirst      = QStringLiteral("A-Za-z");
+    s_tokNameRest       = QStringLiteral("A-Za-z0-9_");
+    s_tokDigitRanges    = QStringLiteral("0-9");
+    s_tokGroupSuffix    = QStringLiteral("B");
     s_tokGroupSuffixOptional = true;
     s_hasOutDirOverride      = false;
     s_hasTiersOverride       = false;
@@ -284,6 +287,21 @@ void Config::load()
                     if (s_tokenOutputBlacklist.isEmpty())
                         s_tokenOutputBlacklist.push_back(QStringLiteral("comment"));
                 }
+                if (obj.contains("use_dfa_skip"))
+            s_useDfaSkip = obj.value("use_dfa_skip").toBool(true);
+        if (obj.contains("dfa_skip_token_names") &&
+            obj.value("dfa_skip_token_names").isArray())
+        {
+            s_dfaSkipTokenNames.clear();
+            for (auto v : obj.value("dfa_skip_token_names").toArray())
+            {
+                auto s = v.toString().trimmed();
+                if (!s.isEmpty())
+                    s_dfaSkipTokenNames.push_back(s);
+            }
+            if (s_dfaSkipTokenNames.isEmpty())
+                s_dfaSkipTokenNames.push_back(QStringLiteral("keyword"));
+        }
                 if (obj.contains("token_header") && obj.value("token_header").isObject())
                 {
                     auto th          = obj.value("token_header").toObject();
@@ -1016,6 +1034,12 @@ bool Config::saveJson(const QString& path)
         for (const auto& s : s_tokenOutputBlacklist) arr.append(s);
         obj.insert("token_output_blacklist", arr);
     }
+    obj.insert("use_dfa_skip", s_useDfaSkip);
+    {
+        QJsonArray arr;
+        for (const auto& s : s_dfaSkipTokenNames) arr.append(s);
+        obj.insert("dfa_skip_token_names", arr);
+    }
     {
         QJsonObject th;
         th.insert("prefix", s_tokPrefix);
@@ -1397,4 +1421,51 @@ void Config::setIdentifierTokenNames(const QVector<QString>& names)
     }
     if (s_identifierNames.isEmpty())
         s_identifierNames.push_back(QStringLiteral("identifier"));
+}
+
+bool Config::useDfaSkip()
+{
+    load();
+    return s_useDfaSkip;
+}
+
+void Config::setUseDfaSkip(bool v)
+{
+    load();
+    s_useDfaSkip = v;
+}
+
+QVector<QString> Config::dfaSkipTokenNames()
+{
+    load();
+    return s_dfaSkipTokenNames;
+}
+
+void Config::setDfaSkipTokenNames(const QVector<QString>& names)
+{
+    load();
+    s_dfaSkipTokenNames.clear();
+    for (auto s : names)
+    {
+        auto t = s.trimmed();
+        if (!t.isEmpty())
+            s_dfaSkipTokenNames.push_back(t);
+    }
+    if (s_dfaSkipTokenNames.isEmpty())
+        s_dfaSkipTokenNames.push_back(QStringLiteral("keyword"));
+}
+
+bool Config::shouldSkipDfaToken(const QString& tokenName)
+{
+    if (!useDfaSkip())
+        return false;
+    
+    auto skipNames = dfaSkipTokenNames();
+    QString nameLower = tokenName.trimmed().toLower();
+    for (const auto& skipName : skipNames)
+    {
+        if (!skipName.trimmed().isEmpty() && nameLower.contains(skipName.trimmed().toLower()))
+            return true;
+    }
+    return false;
 }
