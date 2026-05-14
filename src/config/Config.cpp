@@ -81,12 +81,7 @@ QVector<QString>            Config::s_lr1PreferShift;
 
 static QVector<Config::WeightTier> defaultTiers()
 {
-    QVector<Config::WeightTier> v;
-    v.push_back({220, 3});
-    v.push_back({200, 4});
-    v.push_back({100, 1});
-    v.push_back({0, 0});
-    return v;
+    return QVector<Config::WeightTier>();
 }
 
 void Config::load()

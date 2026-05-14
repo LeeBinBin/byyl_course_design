@@ -95,6 +95,22 @@ void SettingsDialog::buildUi()
         lTierBtns->addWidget(btnAddRow);
         lTierBtns->addWidget(btnDelRow);
         v->addLayout(lTierBtns);
+        v->addWidget(new QLabel("Token 输出过滤"));
+        chkUseBlacklist = new QCheckBox("启用 Token 输出过滤");
+        v->addWidget(chkUseBlacklist);
+        auto lBlacklist = new QHBoxLayout;
+        lBlacklist->addWidget(new QLabel("过滤规则名（逗号分隔，匹配的Token将不输出）"));
+        edtBlacklist = new QLineEdit;
+        lBlacklist->addWidget(edtBlacklist);
+        v->addLayout(lBlacklist);
+        v->addWidget(new QLabel("DFA 转换跳过"));
+        chkUseDfaSkip = new QCheckBox("启用 DFA 转换跳过");
+        v->addWidget(chkUseDfaSkip);
+        auto lDfaSkip = new QHBoxLayout;
+        lDfaSkip->addWidget(new QLabel("不参与DFA转换的Token名（逗号分隔）"));
+        edtDfaSkipTokens = new QLineEdit;
+        lDfaSkip->addWidget(edtDfaSkipTokens);
+        v->addLayout(lDfaSkip);
         v->addWidget(new QLabel("跳过注释与字符串"));
         chkSkipBrace    = new QCheckBox("跳过花括号注释");
         chkSkipLine     = new QCheckBox("跳过行注释");
@@ -167,20 +183,6 @@ void SettingsDialog::buildUi()
         edtKeywordNames = new QLineEdit;
         lKw->addWidget(edtKeywordNames);
         v->addLayout(lKw);
-        chkUseBlacklist = new QCheckBox("启用Token输出黑名单");
-        v->addWidget(chkUseBlacklist);
-        auto lBlacklist = new QHBoxLayout;
-        lBlacklist->addWidget(new QLabel("黑名单规则名（逗号分隔）"));
-        edtBlacklist = new QLineEdit;
-        lBlacklist->addWidget(edtBlacklist);
-        v->addLayout(lBlacklist);
-        chkUseDfaSkip = new QCheckBox("启用DFA转换跳过");
-        v->addWidget(chkUseDfaSkip);
-        auto lDfaSkip = new QHBoxLayout;
-        lDfaSkip->addWidget(new QLabel("不参与DFA转换的Token名（逗号分隔）"));
-        edtDfaSkipTokens = new QLineEdit;
-        lDfaSkip->addWidget(edtDfaSkipTokens);
-        v->addLayout(lDfaSkip);
         v->addStretch(1);
     }
     stacked->addWidget(pageLexerId);
@@ -318,10 +320,6 @@ void SettingsDialog::buildUi()
             [this]()
             {
                 auto v = QVector<Config::WeightTier>();
-                v.push_back({220, 3});
-                v.push_back({200, 4});
-                v.push_back({100, 1});
-                v.push_back({0, 0});
                 edtOutDir->setText(QCoreApplication::applicationDirPath() + "/../../generated/lex");
                 tblTiers->setRowCount(0);
                 for (int i = 0; i < v.size(); ++i)
@@ -584,8 +582,7 @@ bool SettingsDialog::collectAndApply()
             return false;
         tiers.push_back({m, w});
     }
-    if (tiers.isEmpty())
-        return false;
+    // 允许权重为空（新策略下通常不需要）
     std::sort(tiers.begin(),
               tiers.end(),
               [](const Config::WeightTier& a, const Config::WeightTier& b)

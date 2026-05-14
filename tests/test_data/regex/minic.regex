@@ -1,8 +1,8 @@
 letter=[A-Za-z]
 digit=[0-9]
-ws=[ \t]
+ws=[ \t\n\r]
 identifier100= (_|letter)(_|letter|digit)*
 number101=digit+(\.digit+)?
 comment102=//(digit|letter|ws|_|\+|-|\*|\^|%|\.|<|<=|>|>=|==|!=|=|;|,|\+\+|--|\(|\)|\{|\}|\[|\]|\$)*
 special103B=\+|-|\*|/|\^|%|\.|<|<=|>|>=|==|!=|=|;|,|\+\+|--|\(|\)|\{|\}|\[|\]|_
-Keyword200B=else|if|int|float|real|return|void|while|for
+keyword200B=else|if|int|float|real|return|void|do|while|for
