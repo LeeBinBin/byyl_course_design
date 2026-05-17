@@ -22,9 +22,13 @@ simple-exp -> simple-exp addop term | term
 2 1 2 | 1
 addop -> + | -
 1 | 1
-term -> term mulop factor | factor
+term -> term mulop power | power
 2 1 2 | 1
-mulop -> * | / | % | ^
-1 | 1 | 1 | 1
+mulop -> * | / | %
+1 | 1 | 1
+power -> factor powop power | factor
+1 1 2 | 1
+powop -> ^
+1
 factor -> ( exp ) | number | identifier
 0 1 0 | 1 | 1

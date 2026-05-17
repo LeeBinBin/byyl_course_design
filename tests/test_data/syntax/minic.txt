@@ -10,10 +10,10 @@ parameter -> type-indicator identifier | type-indicator identifier [ ]
 compound-stmt -> { local-definitions statement-list }
 local-definitions -> local-definitions variable-definition | #
 statement-list -> statement-list statement | #
-statement -> expression-stmt | compound-stmt | condition-stmt | while-stmt | for-stmt | return-stmt
+statement -> expression-stmt | compound-stmt | condition-stmt | dowhile-stmt | for-stmt | return-stmt
 expression-stmt -> expression ; | ;
 condition-stmt -> if ( expression ) statement | if ( expression ) statement else statement
-while-stmt -> while ( expression ) statement
+dowhile-stmt -> do statement while ( expression )
 for-stmt -> for ( for-init ; expression ; for-update ) statement
 for-init -> expression | variable-definition | #
 for-update -> expression-list | #

@@ -10,6 +10,8 @@ exp->simple-exp comparison-op simple-exp |simple-exp
 comparison-op-> < |> | = |<= | <> |>= 
 simple-exp->simple-exp addop term |term 
 addop-> + |-
-term->term mulop factor | factor 
-mulop-> * | / |% |^
+term->term mulop power | power
+mulop-> * | / |%
+power->factor powop power | factor
+powop-> ^
 factor->(exp) | number | identifier
