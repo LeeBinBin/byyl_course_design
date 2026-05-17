@@ -26,7 +26,7 @@ LR1ProcessTab::LR1ProcessTab(QWidget* parent) : QWidget(parent)
     cmbPickSource->addItem(QStringLiteral("导入Token序列"));
     // 语义动作通过独立按钮导入，不再放在下拉中
     cmbPickSource->setObjectName("cmbPickSourceLR1");
-    btnRunLR1 = new QPushButton("运行LR(1)分析（每句）");
+    btnRunLR1 = new QPushButton("运行LALR(1)分析");
     btnRunLR1->setObjectName("btnRunLR1Process");
 
     // 设置按钮最小宽度并使其可扩展

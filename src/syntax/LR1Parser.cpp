@@ -796,6 +796,9 @@ ParseResult LR1Parser::parseWithSemantics(const QVector<QString>&               
         }
         if (act.isEmpty())
         {
+            QString msg = QString("错误：状态=%1, 前瞻=%2, 无可用动作，中止").arg(st).arg(a);
+            pushStep(res.steps, step++, stack, input, QStringLiteral("error"), msg);
+            pushStep(res.semanticSteps, step, stack, input, QStringLiteral("error"), msg);
             res.errorPos = res.steps.size();
             break;
         }

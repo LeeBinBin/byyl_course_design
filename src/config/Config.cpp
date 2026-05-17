@@ -101,7 +101,8 @@ void Config::load()
     s_epsilon               = QString("@");
     s_eof                   = QString("$");
     s_augSuffix             = QString("'");
-    s_lr1Policy             = QString("prefer_reduce");
+    s_lr1Policy             = QString("prefer_shift");
+    s_lr1PreferShift         = QVector<QString>() << "else";
     // prefer-shift tokens storage defined in Config.h
     s_nontermPat.clear();
     s_multiOps.clear();
@@ -242,7 +243,7 @@ void Config::load()
                 if (obj.contains("aug_suffix"))
                     s_augSuffix = obj.value("aug_suffix").toString("'");
                 if (obj.contains("lr1_conflict_policy"))
-                    s_lr1Policy = obj.value("lr1_conflict_policy").toString("prefer_reduce");
+                    s_lr1Policy = obj.value("lr1_conflict_policy").toString("prefer_shift");
                 if (obj.contains("lr1_prefer_shift_tokens") &&
                     obj.value("lr1_prefer_shift_tokens").isArray())
                 {

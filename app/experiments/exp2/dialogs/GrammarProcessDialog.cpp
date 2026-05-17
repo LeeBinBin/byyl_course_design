@@ -39,7 +39,7 @@ GrammarProcessDialog::GrammarProcessDialog(const ParseResult&    r,
                                            QWidget*              parent) :
     QDialog(parent)
 {
-    setWindowTitle(QStringLiteral("LR(1) 语法分析过程"));
+    setWindowTitle(QStringLiteral("LALR(1) 语法分析过程"));
     auto v = new QVBoxLayout(this);
     tbl_   = new QTableWidget;
     tbl_->setColumnCount(4);

@@ -22,12 +22,16 @@ local-definitions -> local-definitions variable-definition | #
 1 1 | 1
 statement-list -> statement-list statement | #
 1 1 | 1
-statement -> expression-stmt | compound-stmt | condition-stmt | dowhile-stmt | for-stmt | return-stmt
-1 | 1 | 1 | 1 | 1 | 1
+statement -> matched-stmt | open-stmt
+1 | 1
+matched-stmt -> expression-stmt | compound-stmt | dowhile-stmt | for-stmt | return-stmt | if ( expression ) matched-stmt else matched-stmt
+1 | 1 | 1 | 1 | 1 | 1 0 2 0 2 0 2
+open-stmt -> if ( expression ) statement | if ( expression ) matched-stmt else open-stmt
+1 0 2 0 2 | 1 0 2 0 2 0 2
+condition-stmt -> matched-stmt | open-stmt
+1 | 1
 expression-stmt -> expression ; | ;
 1 0 | 0
-condition-stmt -> if ( expression ) statement | if ( expression ) statement else statement
-1 0 2 0 2 | 1 0 2 0 2 0 2
 dowhile-stmt -> do statement while ( expression )
 1 2 0 0 2 0
 for-stmt -> for ( for-init ; expression ; for-update ) statement

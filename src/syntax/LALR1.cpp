@@ -45,9 +45,48 @@ LALR1Graph LALR1Builder::build(const Grammar& g)
         QString ck = serializeCoreSet(lr1gr.states[i]);
         coreGroups[ck].push_back(i);
     }
+    QString initialCoreKey = serializeCoreSet(lr1gr.states[0]);
     QMap<int, int> lr1ToLalr;
     LALR1Graph     lalrGr;
     int            nextId = 0;
+    if (coreGroups.contains(initialCoreKey))
+    {
+        const QVector<int>& group     = coreGroups.value(initialCoreKey);
+        int                 lid       = nextId++;
+        QVector<LALR1Item>  merged;
+        QMap<QString, int>  itemIndex;
+        for (int idx : group)
+        {
+            for (const auto& it : lr1gr.states[idx])
+            {
+                QString ck = coreKey(it);
+                if (!itemIndex.contains(ck))
+                {
+                    itemIndex[ck] = merged.size();
+                    merged.push_back(LALR1Item{it.left, it.right, it.dot, it.lookahead});
+                }
+                else
+                {
+                    int pos = itemIndex[ck];
+                    if (merged[pos].lookahead != it.lookahead && !it.lookahead.isEmpty())
+                    {
+                        QStringList parts = merged[pos].lookahead.split("|");
+                        QSet<QString> las;
+                        for (const auto& p : parts)
+                            las.insert(p);
+                        las.insert(it.lookahead);
+                        QStringList ll = QStringList(las.begin(), las.end());
+                        std::sort(ll.begin(), ll.end());
+                        merged[pos].lookahead = ll.join("|");
+                    }
+                }
+            }
+        }
+        lalrGr.states.push_back(merged);
+        for (int idx : group)
+            lr1ToLalr[idx] = lid;
+        coreGroups.remove(initialCoreKey);
+    }
     for (auto git = coreGroups.begin(); git != coreGroups.end(); ++git)
     {
         const QVector<int>& group = git.value();

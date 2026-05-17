@@ -24,6 +24,7 @@
 #include <QTreeWidget>
 #include "../../../src/syntax/TokenMapBuilder.h"
 #include "../../../src/syntax/LR1Parser.h"
+#include "../../../src/syntax/LALR1.h"
 #include "../../experiments/exp2/dialogs/GrammarProcessDialog.h"
 
 LR1Controller::LR1Controller(MainWindow* mw, Engine* engine, NotificationService* notify) :
@@ -337,8 +338,12 @@ void LR1Controller::runLR1Process()
     }
     // 由文法推导结构性列表节点，供导出时跳过标签使用
     computeSkipTags(g);
-    auto    gr        = LR1Builder::build(g);
-    auto    tbl       = LR1Builder::computeActionTable(g, gr);
+    auto           gr      = LALR1Builder::build(g);
+    auto           lalrTbl = LALR1Builder::computeActionTable(g, gr);
+    LR1ActionTable tbl;
+    tbl.action        = lalrTbl.action;
+    tbl.gotoTable     = lalrTbl.gotoTable;
+    tbl.reductions    = lalrTbl.reductions;
     auto    tokView   = page_->findChild<QPlainTextEdit*>("txtTokensViewLR1");
     QString tokensStr = tokView ? tokView->toPlainText().trimmed() : QString();
     if (tokensStr.isEmpty())
@@ -466,7 +471,7 @@ void LR1Controller::runLR1Process()
             QDir d(dir);
             if (!d.exists())
                 d.mkpath(".");
-            QFile lf(dir + "/lr1_last_error.log");
+            QFile lf(dir + "/lalr1_last_error.log");
             if (lf.open(QIODevice::WriteOnly | QIODevice::Text))
             {
                 QTextStream out(&lf);
@@ -478,7 +483,7 @@ void LR1Controller::runLR1Process()
                 for (const auto& lx : lexemeStream) out << lx << ' ';
                 lf.close();
             }
-            notify_->error(QStringLiteral("词素对齐错误，已写入 lr1_last_error.log"));
+            notify_->error(QStringLiteral("词素对齐错误，已写入 lalr1_last_error.log"));
             return;
         }
     }
@@ -519,7 +524,7 @@ void LR1Controller::runLR1Process()
         QDir d(dir);
         if (!d.exists())
             d.mkpath(".");
-        QFile lf(dir + "/lr1_last_error.log");
+        QFile lf(dir + "/lalr1_last_error.log");
         if (lf.open(QIODevice::WriteOnly | QIODevice::Text))
         {
             QTextStream out(&lf);
@@ -581,9 +586,9 @@ void LR1Controller::runLR1Process()
     lastResult_      = r;
     lastActionTable_ = tbl;
     if (r.errorPos >= 0)
-        notify_->warning(QString("LR(1)分析失败，已执行 %1 步").arg(r.steps.size()));
+        notify_->warning(QString("LALR(1)分析失败，已执行 %1 步").arg(r.steps.size()));
     else
-        notify_->info(QString("LR(1)分析完成，共 %1 步").arg(r.steps.size()));
+        notify_->info(QString("LALR(1)分析完成，共 %1 步").arg(r.steps.size()));
 }
 
 void LR1Controller::openGrammarProcessDialog()
@@ -622,7 +627,7 @@ void LR1Controller::exportSemanticTree()
 {
     if (lastResult_.astRoot == nullptr)
     {
-        notify_->warning(QStringLiteral("请先运行LR(1)分析以生成语法树"));
+        notify_->warning(QStringLiteral("请先运行LALR(1)分析以生成语法树"));
         return;
     }
     auto path =
@@ -682,7 +687,7 @@ void LR1Controller::exportSemanticProcess()
 {
     if (lastResult_.semanticSteps.isEmpty())
     {
-        notify_->warning(QStringLiteral("语义分析过程为空，请先运行LR(1)分析"));
+        notify_->warning(QStringLiteral("语义分析过程为空，请先运行LALR(1)分析"));
         return;
     }
     auto path = QFileDialog::getSaveFileName(mw_,
@@ -707,7 +712,7 @@ void LR1Controller::exportGrammarProcess()
 {
     if (lastResult_.steps.isEmpty())
     {
-        notify_->warning(QStringLiteral("语法分析过程为空，请先运行LR(1)分析"));
+        notify_->warning(QStringLiteral("语法分析过程为空，请先运行LALR(1)分析"));
         return;
     }
     auto path = QFileDialog::getSaveFileName(mw_,

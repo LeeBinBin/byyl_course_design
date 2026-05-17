@@ -18,7 +18,7 @@ LR1ActionTableDialog::LR1ActionTableDialog(const Grammar&        g,
                                            QWidget*              parent) :
     QDialog(parent)
 {
-    setWindowTitle(QStringLiteral("LR(1) 分析表"));
+    setWindowTitle(QStringLiteral("LALR(1) 分析表"));
     auto h     = new QHBoxLayout(this);
     auto left  = new QVBoxLayout;
     auto right = new QVBoxLayout;

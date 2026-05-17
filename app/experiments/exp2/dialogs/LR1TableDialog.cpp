@@ -16,7 +16,7 @@
 
 LR1TableDialog::LR1TableDialog(const LR1Graph& gr, QWidget* parent) : QDialog(parent)
 {
-    setWindowTitle(QStringLiteral("LR(1) DFA 表"));
+    setWindowTitle(QStringLiteral("LALR(1) DFA 表"));
     auto h     = new QHBoxLayout(this);
     auto left  = new QVBoxLayout;
     auto right = new QVBoxLayout;
