@@ -37,6 +37,9 @@
 #include "../../experiments/exp2/dialogs/LR1ActionTableDialog.h"
 #include "../../services/DotService/DotService.h"
 #include "../../components/ExportGraphButton/ExportGraphButton.h"
+#include "../../../src/syntax/LALR1.h"
+#include "../../experiments/exp2/dialogs/LALR1TableDialog.h"
+#include "../../experiments/exp2/dialogs/LALR1ActionTableDialog.h"
 
 SyntaxController::SyntaxController(MainWindow* mw, Engine* engine, NotificationService* notify) :
     mw_(mw), engine_(engine), notify_(notify)
@@ -112,6 +115,32 @@ void SyntaxController::bind(QWidget* exp2Page)
                     auto                 gr  = LR1Builder::build(grammar_);
                     auto                 tbl = LR1Builder::computeActionTable(grammar_, gr);
                     LR1ActionTableDialog dlg(grammar_, tbl, mw_);
+                    dlg.exec();
+                });
+
+    // LALR(1) 按钮
+    auto exportBtnLALR1     = exp2Page->findChild<QPushButton*>("exportBtnLALR1");
+    auto btnViewLALR1Table  = exp2Page->findChild<QPushButton*>("btnViewLALR1Table");
+    auto btnViewLALR1Action = exp2Page->findChild<QPushButton*>("btnViewLALR1Action");
+
+    if (exportBtnLALR1)
+        connect(exportBtnLALR1, &QPushButton::clicked, this, &SyntaxController::exportLALR1Dot);
+    if (btnViewLALR1Table)
+        connect(btnViewLALR1Table, &QPushButton::clicked, this, &SyntaxController::openLALR1Table);
+    if (btnViewLALR1Action)
+        connect(btnViewLALR1Action,
+                &QPushButton::clicked,
+                this,
+                [this]()
+                {
+                    if (!hasGrammar_)
+                    {
+                        notify_->warning("请先解析文法");
+                        return;
+                    }
+                    auto                   gr  = LALR1Builder::build(grammar_);
+                    auto                   tbl = LALR1Builder::computeActionTable(grammar_, gr);
+                    LALR1ActionTableDialog dlg(grammar_, tbl, mw_);
                     dlg.exec();
                 });
 
@@ -369,5 +398,38 @@ void SyntaxController::openLR1Table()
     }
     auto           gr = LR1Builder::build(grammar_);
     LR1TableDialog dlg(gr, mw_);
+    dlg.exec();
+}
+
+void SyntaxController::exportLALR1Dot()
+{
+    if (!hasGrammar_)
+        return;
+    auto    gr   = LALR1Builder::build(grammar_);
+    QString dot  = LALR1Builder::toDot(gr);
+    QString ts   = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+    QString def  = "lalr1_" + ts + ".dot";
+    QString path = dotSvc_ ? dotSvc_->pickDotSavePath(def) : QString();
+    if (path.isEmpty())
+        return;
+    QFile f(path);
+    if (f.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QTextStream o(&f);
+        o << dot;
+        f.close();
+        notify_->info("DOT 已导出");
+    }
+}
+
+void SyntaxController::openLALR1Table()
+{
+    if (!hasGrammar_)
+    {
+        notify_->warning("请先解析文法");
+        return;
+    }
+    auto             gr = LALR1Builder::build(grammar_);
+    LALR1TableDialog dlg(gr, mw_);
     dlg.exec();
 }

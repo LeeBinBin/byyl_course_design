@@ -12,15 +12,15 @@
 #pragma once
 #include <QWidget>
 class QPushButton;
-class QLineEdit;
 class LRTab : public QWidget
 {
     Q_OBJECT
    public:
     explicit LRTab(QWidget* parent = nullptr);
     QPushButton* btnExportLR1;
-    QPushButton* btnPreviewLR1;
-    QLineEdit*   edtGraphDpiLR1;
     QPushButton* btnViewLR1Table;
     QPushButton* btnViewLR1Action;
+    QPushButton* btnExportLALR1;
+    QPushButton* btnViewLALR1Table;
+    QPushButton* btnViewLALR1Action;
 };

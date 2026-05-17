@@ -31,4 +31,17 @@ LRTab::LRTab(QWidget* parent) : QWidget(parent)
     lr1Box->addWidget(btnViewLR1Table);
     lr1Box->addWidget(btnViewLR1Action);
     v->addLayout(lr1Box);
+
+    auto lalr1Box = new QHBoxLayout;
+    btnExportLALR1 = new QPushButton("导出 LALR(1)DOT");
+    btnExportLALR1->setObjectName("exportBtnLALR1");
+    btnExportLALR1->setFixedWidth(140);
+    btnViewLALR1Table = new QPushButton("查看 LALR(1) 表格");
+    btnViewLALR1Table->setObjectName("btnViewLALR1Table");
+    btnViewLALR1Action = new QPushButton("查看 LALR(1) 分析表");
+    btnViewLALR1Action->setObjectName("btnViewLALR1Action");
+    lalr1Box->addWidget(btnExportLALR1);
+    lalr1Box->addWidget(btnViewLALR1Table);
+    lalr1Box->addWidget(btnViewLALR1Action);
+    v->addLayout(lalr1Box);
 }

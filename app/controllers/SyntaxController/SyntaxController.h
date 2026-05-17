@@ -43,6 +43,9 @@ class SyntaxController : public QObject
     void exportLR1Dot();
     void previewLR1();
     void openLR1Table();
+    void exportLALR1Dot();
+    void openLALR1Table();
+    void openLALR1Action();
 
    private:
     MainWindow*          mw_;

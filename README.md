@@ -39,10 +39,9 @@
 - 实验二（语法）：
   - BNF 文法解析（ε/EOF/增广后缀可配置）；
   - First / Follow 计算与表格展示；
-  - LR(0) 项集 DFA 构造、预览与导出；
   - LR(1) 项集 DFA 构造与预览，Action/GOTO 表生成；
-  - LR(1) 解析流程可视化（步骤、描述），冲突策略可配置（prefer_shift / prefer_reduce / error），支持“优先移进终结符列表”（如 `else`、`;`）
-  - SLR(1) 检查与冲突明细；
+  - LALR(1) 项集 DFA 构造（基于状态合并优化）与预览，Action/GOTO 表生成；
+  - LR(1) 解析流程可视化（步骤、描述），冲突策略可配置（prefer_shift / prefer_reduce / error），支持"优先移进终结符列表"（如 `else`、`;`）
   - 语义动作导入（偶数行文件：产生式行 + 动作行）；
   - 语义语法树 AST 预览/导出（DOT），支持文本树视图（Qt Tree）；
   - 语法分析器代码生成。
@@ -51,7 +50,7 @@
 - 核心逻辑（`src/`）：
   - `regex/`：正则词法规则解析（`RegexLexer`、`RegexParser`、`TokenHeaderParser`）。
   - `automata/`：NFA 构造（Thompson）、DFA 子集构造、MinDFA 最小化（Hopcroft）。
-  - `syntax/`：文法与解析（`Grammar`、`LL1`、`LR0`、`LR1`、`SLR`、`SyntaxParser`、`LR1Parser`）；语义树与 DOT 导出。
+  - `syntax/`：文法与解析（`Grammar`、`LL1`、`LR1`、`LALR1`、`SyntaxParser`、`LR1Parser`）；语义树与 DOT 导出。
   - `generator/`：词法与语法代码生成（`CodeGenerator`、`SyntaxCodeGenerator`）。
   - `visual/`：图导出（`DotExporter`），依赖 Graphviz `dot`。
   - `config/`：运行时配置加载与环境变量覆盖（`Config`）。
@@ -75,7 +74,7 @@
 - 步骤：
   - 在“文法编辑”页签，加载/解析示例文法（如 `tests/test_data/syntax/tiny.txt` 或 `minic.txt`）。
   - 在“First&Follow”页签，查看 First/Follow 计算与表格。
-  - 在“LR”页签，查看 LR(0)/LR(1) 项集 DFA 与 Action/GOTO 表，必要时在“设置”中调整 LR(1) 冲突策略（`prefer_shift`/`prefer_reduce`/`error`）与“优先移进终结符列表”。
+  - 在“LR”页签，查看 LR(1)/LALR(1) 项集 DFA 与 Action/GOTO 表，必要时在“设置”中调整 LR(1) 冲突策略（`prefer_shift`/`prefer_reduce`/`error`）与“优先移进终结符列表”。
   - 在“LR(1)分析过程”页签：
     - 提供“正则表达式 + Token 序列 + 当前语义动作”，运行语法分析流程（步骤与描述可视化）。
     - 读取 Token 序列时，若 `identifier`、`number` 等后面紧随词素，将自动消费该词素（用于语义，不进入终结符流）。
@@ -141,9 +140,8 @@ byyl/
 │  ├─ syntax/
 │  │  ├─ grammar_parser_test.cpp      # 文法解析（BNF、ε/EOF/增广后缀配置）
 │  │  ├─ ll1_test.cpp                 # LL(1) 构造与表验证
-│  │  ├─ lr0_test.cpp                 # LR(0) 项集与 DFA 构造
 │  │  ├─ lr1_test.cpp                 # LR(1) 项集、冲突策略（prefer_shift/reduce/error）
-│  │  ├─ slr_test.cpp                 # SLR(1) 检查与冲突明细
+│  │  ├─ lalr1_test.cpp              # LALR(1) 项集 DFA 与分析表（状态合并优化）
 │  │  ├─ syntax_parser_test.cpp       # 语法解析主流程
 │  │  ├─ lr1_semantic_ast_build_test.cpp   # 语义树 AST 构建
 │  │  ├─ lr1_semantic_tree_example_test.cpp# 语义树示例结构
@@ -177,7 +175,7 @@ byyl/
 - `src/Engine.*`：封装正则→自动机→词法解析与语法流程，提供统一入口。
 - `src/regex/*`：解析正则表达式与 Token 头文件，驱动 NFA/DFA/MinDFA 构造的前置步骤。
 - `src/automata/*`：自动机构造与最小化（Thompson/SubsetConstruction/Hopcroft）。
-- `src/syntax/*`：文法解析、First/Follow、LR(0)/LR(1)/SLR 构造与解析、语义树生成、DOT 导出。
+- `src/syntax/*`：文法解析、First/Follow、LR(1)/LALR(1) 构造与解析、语义树生成、DOT 导出。
 - `src/generator/CodeGenerator.cpp`：组合词法分析器代码生成，支持注释/字符串跳过、标识符词素输出与权重；环境变量：
   - `LEXER_SKIP_*`（`BRACE`/`LINE`/`HASH`/`BLOCK`/`SQ_STRING`/`DQ_STRING`/`TPL_STRING`）控制跳过策略。
   - `LEXER_WEIGHTS` 控制等长匹配的优先级权重（如 `220:3,200:4,100:1,0:0`）。
@@ -198,7 +196,7 @@ byyl/
 - 详细配置项与示例说明见 `docs/Settings.md`。
 
 ## 测试目标
-- 测试覆盖 UI 流程、词法流水线、自动机核心（NFA/DFA/MinDFA）、语法（LL(1)/LR(0)/LR(1)/SLR）与代码生成等主流程；支持按名称筛选与关闭集成测试的快速运行模式。
+- 测试覆盖 UI 流程、词法流水线、自动机核心（NFA/DFA/MinDFA）、语法（LL(1)/LR(1)/LALR(1)）与代码生成等主流程；支持按名称筛选与关闭集成测试的快速运行模式。
 - 详细说明（目录结构、运行方式、覆盖点与常见问题）见 `docs/Tests.md`。
 
 ## 常见问题

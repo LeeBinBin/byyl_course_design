@@ -38,6 +38,8 @@ set(CORE_SOURCES
     src/syntax/LL1.cpp
     src/syntax/LR1.h
     src/syntax/LR1.cpp
+    src/syntax/LALR1.h
+    src/syntax/LALR1.cpp
     src/syntax/LR1Parser.h
     src/syntax/LR1Parser.cpp
     src/syntax/TokenMapBuilder.h
@@ -100,8 +102,12 @@ set(APP_SOURCES
     app/experiments/exp2/tabs/lr/LRTab.cpp
     app/experiments/exp2/dialogs/LR1TableDialog.h
     app/experiments/exp2/dialogs/LR1TableDialog.cpp
+    app/experiments/exp2/dialogs/LALR1TableDialog.h
+    app/experiments/exp2/dialogs/LALR1TableDialog.cpp
     app/experiments/exp2/dialogs/LR1ActionTableDialog.h
     app/experiments/exp2/dialogs/LR1ActionTableDialog.cpp
+    app/experiments/exp2/dialogs/LALR1ActionTableDialog.h
+    app/experiments/exp2/dialogs/LALR1ActionTableDialog.cpp
     app/experiments/exp2/dialogs/GrammarProcessDialog.h
     app/experiments/exp2/dialogs/GrammarProcessDialog.cpp
     app/experiments/exp2/tabs/grammar/GrammarEditorTab.h
@@ -245,6 +251,8 @@ target_sources(GuiTest PRIVATE
     app/experiments/exp2/tabs/lr/LRTab.cpp
     app/experiments/exp2/dialogs/LR1TableDialog.cpp
     app/experiments/exp2/dialogs/LR1ActionTableDialog.cpp
+    app/experiments/exp2/dialogs/LALR1TableDialog.cpp
+    app/experiments/exp2/dialogs/LALR1ActionTableDialog.cpp
     app/experiments/exp2/dialogs/GrammarProcessDialog.cpp
     app/experiments/exp1/helpers/AutomataTableHelper.cpp
     app/experiments/exp2/helpers/SyntaxTableHelper.cpp
