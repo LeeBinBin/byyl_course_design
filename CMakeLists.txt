@@ -36,10 +36,6 @@ set(CORE_SOURCES
     src/syntax/GrammarParser.cpp
     src/syntax/LL1.h
     src/syntax/LL1.cpp
-    src/syntax/LR0.h
-    src/syntax/LR0.cpp
-    src/syntax/SLR.h
-    src/syntax/SLR.cpp
     src/syntax/LR1.h
     src/syntax/LR1.cpp
     src/syntax/LR1Parser.h
@@ -102,14 +98,10 @@ set(APP_SOURCES
     app/experiments/exp2/helpers/SyntaxTableHelper.cpp
     app/experiments/exp2/tabs/lr/LRTab.h
     app/experiments/exp2/tabs/lr/LRTab.cpp
-    app/experiments/exp2/dialogs/SLRCheckDialog.h
-    app/experiments/exp2/dialogs/SLRCheckDialog.cpp
     app/experiments/exp2/dialogs/LR1TableDialog.h
     app/experiments/exp2/dialogs/LR1TableDialog.cpp
     app/experiments/exp2/dialogs/LR1ActionTableDialog.h
     app/experiments/exp2/dialogs/LR1ActionTableDialog.cpp
-    app/experiments/exp2/dialogs/LR0TableDialog.h
-    app/experiments/exp2/dialogs/LR0TableDialog.cpp
     app/experiments/exp2/dialogs/GrammarProcessDialog.h
     app/experiments/exp2/dialogs/GrammarProcessDialog.cpp
     app/experiments/exp2/tabs/grammar/GrammarEditorTab.h
@@ -218,8 +210,6 @@ add_byyl_test(LL1Test "LL1算法测试" tests/syntax/ll1_test.cpp)
 add_byyl_test(LR1Test "LR1算法测试" tests/syntax/lr1_test.cpp)
 add_byyl_test(LR1SemanticTreeExampleTest "语义树示例测试" tests/syntax/lr1_semantic_tree_example_test.cpp)
 add_byyl_test(LR1SemanticTreeFullTest "语义树完整结构测试" tests/syntax/lr1_semantic_tree_full_test.cpp)
-add_byyl_test(LR0Test "LR0算法测试" tests/syntax/lr0_test.cpp)
-add_byyl_test(SLRTest "SLR算法测试" tests/syntax/slr_test.cpp)
 
 if(BYYL_BUILD_INTEGRATION_TESTS)
     add_byyl_test(CliRegexTest "命令行正则测试" tests/cli/cli_regex_test.cpp tests/cli/cli_regex_test.h)
@@ -253,9 +243,7 @@ target_sources(GuiTest PRIVATE
     app/pages/exp1/Exp1Page.cpp
     app/pages/exp2/Exp2Page.cpp
     app/experiments/exp2/tabs/lr/LRTab.cpp
-    app/experiments/exp2/dialogs/SLRCheckDialog.cpp
     app/experiments/exp2/dialogs/LR1TableDialog.cpp
-    app/experiments/exp2/dialogs/LR0TableDialog.cpp
     app/experiments/exp2/dialogs/LR1ActionTableDialog.cpp
     app/experiments/exp2/dialogs/GrammarProcessDialog.cpp
     app/experiments/exp1/helpers/AutomataTableHelper.cpp

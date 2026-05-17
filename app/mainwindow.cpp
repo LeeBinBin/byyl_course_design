@@ -184,7 +184,7 @@ void MainWindow::runSyntaxAnalysis()
 void MainWindow::exportSyntaxDot()
 {
     if (syntaxController)
-        syntaxController->exportLR0Dot();
+        syntaxController->exportDot();
 }
 void MainWindow::previewSyntaxTree()
 {

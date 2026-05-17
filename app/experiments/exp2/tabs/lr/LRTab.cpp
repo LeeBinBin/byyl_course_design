@@ -18,23 +18,8 @@
 
 LRTab::LRTab(QWidget* parent) : QWidget(parent)
 {
-    auto v       = new QVBoxLayout(this);
-    auto lr0Box  = new QHBoxLayout;
-    btnExportLR0 = new QPushButton("导出LR(0)DOT");
-    btnExportLR0->setObjectName("exportBtnLR0");
-    btnExportLR0->setFixedWidth(120);
-    lr0Box->addWidget(btnExportLR0);
-    btnViewLR0Table = new QPushButton("查看LR(0)表格");
-    btnViewLR0Table->setObjectName("btnViewLR0Table");
-    lr0Box->addWidget(btnViewLR0Table);
-    v->addLayout(lr0Box);
-
-    auto slrBox  = new QHBoxLayout;
-    btnCheckSLR1 = new QPushButton("判断SLR(1)文法");
-    btnCheckSLR1->setObjectName("btnCheckSLR1");
-    slrBox->addWidget(btnCheckSLR1);
-    v->addLayout(slrBox);
-    auto lr1Box  = new QHBoxLayout;
+    auto v      = new QVBoxLayout(this);
+    auto lr1Box = new QHBoxLayout;
     btnExportLR1 = new QPushButton("导出LR(1)DOT");
     btnExportLR1->setObjectName("exportBtnLR1");
     btnExportLR1->setFixedWidth(120);

@@ -39,14 +39,10 @@ class SyntaxController : public QObject
     void runSyntaxAnalysis();
     void exportDot();
     void previewTree();
-    void previewLR0();
-    void exportLR0Dot();
     void exportAstDot();
-    void checkSLR1();
     void exportLR1Dot();
     void previewLR1();
     void openLR1Table();
-    void openLR0Table();
 
    private:
     MainWindow*          mw_;

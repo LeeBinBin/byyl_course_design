@@ -26,20 +26,15 @@
 #include "../../../src/syntax/DotGenerator.h"
 #include "../../../src/visual/DotExporter.h"
 #include "../../../src/generator/SyntaxCodeGenerator.h"
-#include "../../../src/syntax/LR0.h"
+#include "../../../src/syntax/LR1.h"
 #include <QMenu>
 #include <QAction>
 #include "../../services/NotificationService/NotificationService.h"
 #include "../../mainwindow.h"
 #include <QProcess>
 #include "../../experiments/exp2/helpers/SyntaxTableHelper.h"
-#include "../../experiments/exp2/dialogs/SLRCheckDialog.h"
 #include "../../experiments/exp2/dialogs/LR1TableDialog.h"
 #include "../../experiments/exp2/dialogs/LR1ActionTableDialog.h"
-#include "../../experiments/exp2/dialogs/LR0TableDialog.h"
-#include "../../../src/syntax/LR1.h"
-#include "../../../src/syntax/LR0.h"
-#include "../../../src/syntax/SLR.h"
 #include "../../services/DotService/DotService.h"
 #include "../../components/ExportGraphButton/ExportGraphButton.h"
 
@@ -81,11 +76,6 @@ void SyntaxController::bind(QWidget* exp2Page)
     auto btnExport        = exp2Page->findChild<QPushButton*>("btnExportSyntaxDot");
     auto btnPrev          = exp2Page->findChild<QPushButton*>("btnPreviewSyntaxTree");
     auto btnRun           = exp2Page->findChild<QPushButton*>("btnRunSyntaxAnalysis");
-    auto btnPrevLR0       = exp2Page->findChild<QPushButton*>("btnPreviewLR0");
-    auto exportBtnLR0     = exp2Page->findChild<QPushButton*>("exportBtnLR0");
-    auto edtDpiLR0        = exp2Page->findChild<QLineEdit*>("edtGraphDpiLR0");
-    auto btnViewLR0Table  = exp2Page->findChild<QPushButton*>("btnViewLR0Table");
-    auto btnCheckSLR1     = exp2Page->findChild<QPushButton*>("btnCheckSLR1");
     auto exportBtnLR1     = exp2Page->findChild<QPushButton*>("exportBtnLR1");
     auto btnPreviewLR1    = exp2Page->findChild<QPushButton*>("btnPreviewLR1");
     auto edtDpiLR1        = exp2Page->findChild<QLineEdit*>("edtGraphDpiLR1");
@@ -102,14 +92,6 @@ void SyntaxController::bind(QWidget* exp2Page)
         connect(btnPrev, &QPushButton::clicked, this, &SyntaxController::previewTree);
     if (btnRun)
         connect(btnRun, &QPushButton::clicked, this, &SyntaxController::runSyntaxAnalysis);
-    if (btnPrevLR0)
-        connect(btnPrevLR0, &QPushButton::clicked, this, &SyntaxController::previewLR0);
-    if (exportBtnLR0)
-        connect(exportBtnLR0, &QPushButton::clicked, this, &SyntaxController::exportLR0Dot);
-    if (btnViewLR0Table)
-        connect(btnViewLR0Table, &QPushButton::clicked, this, &SyntaxController::openLR0Table);
-    if (btnCheckSLR1)
-        connect(btnCheckSLR1, &QPushButton::clicked, this, &SyntaxController::checkSLR1);
     if (exportBtnLR1)
         connect(exportBtnLR1, &QPushButton::clicked, this, &SyntaxController::exportLR1Dot);
     if (btnPreviewLR1)
@@ -301,43 +283,28 @@ void SyntaxController::previewTree()
     notify_->info("预览已生成");
 }
 
-void SyntaxController::previewLR0()
-{
-    if (!hasGrammar_)
-    {
-        notify_->warning("请先解析文法");
-        return;
-    }
-    auto    gr  = LR0Builder::build(grammar_);
-    QString dot = LR0Builder::toDot(gr);
-    int     dpi = Config::graphvizDefaultDpi();
-    if (auto e = page_->findChild<QLineEdit*>("edtGraphDpiLR0");
-        e && !e->text().trimmed().isEmpty())
-        dpi = e->text().trimmed().toInt();
-    if (!dotSvc_)
-        return;
-    QString png;
-    if (!dotSvc_->renderToTempPng(dot, png, dpi))
-    {
-        notify_->error("渲染失败");
-        return;
-    }
-    dotSvc_->previewPng(png, "LR(0) 项集 DFA 预览");
-    QFile::remove(png);
-}
-
-void SyntaxController::exportLR0Dot()
+void SyntaxController::exportAstDot()
 {
     if (!hasGrammar_)
         return;
-    auto    gr   = LR0Builder::build(grammar_);
-    QString dot  = LR0Builder::toDot(gr);
-    QString ts   = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-    QString def  = "lr0_" + ts + ".dot";
-    QString path = dotSvc_ ? dotSvc_->pickDotSavePath(def) : QString();
-    if (path.isEmpty())
+    auto             lexOut    = mw_->findChild<QPlainTextEdit*>("txtLexResult");
+    QString          tokensStr = lexOut ? lexOut->toPlainText().trimmed() : QString();
+    QVector<QString> tokens;
+    for (auto s : tokensStr.split(' ', Qt::SkipEmptyParts)) tokens.push_back(s);
+    auto res = parseTokens(tokens, grammar_, ll1_);
+    if (res.errorPos >= 0)
+    {
+        notify_->error("语法错误");
         return;
-    QFile f(path);
+    }
+    QString dot  = syntaxAstToDot(res.root);
+    QString base = Config::generatedOutputDir() + "/syntax/graphs";
+    QDir    d(base);
+    if (!d.exists())
+        d.mkpath(".");
+    QString ts  = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+    QString out = base + "/ast_" + ts + ".dot";
+    QFile   f(out);
     if (f.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream o(&f);
@@ -345,29 +312,6 @@ void SyntaxController::exportLR0Dot()
         f.close();
         notify_->info("DOT 已导出");
     }
-}
-
-void SyntaxController::checkSLR1()
-{
-    if (!hasGrammar_)
-    {
-        notify_->warning("请先解析文法");
-        return;
-    }
-    auto    r       = SLR::check(grammar_, ll1_);
-    QString summary = r.isSLR1 ? QStringLiteral("该文法为 SLR(1) 文法")
-                               : QStringLiteral("该文法不是 SLR(1) 文法");
-    QString detail;
-    for (const auto& c : r.conflicts)
-    {
-        detail += QString("[state %1][%2] %3: %4\n")
-                      .arg(c.state)
-                      .arg(c.terminal)
-                      .arg(c.type)
-                      .arg(c.detail);
-    }
-    SLRCheckDialog dlg(r, mw_);
-    dlg.exec();
 }
 
 void SyntaxController::exportLR1Dot()
@@ -426,47 +370,4 @@ void SyntaxController::openLR1Table()
     auto           gr = LR1Builder::build(grammar_);
     LR1TableDialog dlg(gr, mw_);
     dlg.exec();
-}
-
-void SyntaxController::openLR0Table()
-{
-    if (!hasGrammar_)
-    {
-        notify_->warning("请先解析文法");
-        return;
-    }
-    auto           gr = LR0Builder::build(grammar_);
-    LR0TableDialog dlg(gr, mw_);
-    dlg.exec();
-}
-
-void SyntaxController::exportAstDot()
-{
-    if (!hasGrammar_)
-        return;
-    auto             lexOut    = mw_->findChild<QPlainTextEdit*>("txtLexResult");
-    QString          tokensStr = lexOut ? lexOut->toPlainText().trimmed() : QString();
-    QVector<QString> tokens;
-    for (auto s : tokensStr.split(' ', Qt::SkipEmptyParts)) tokens.push_back(s);
-    auto res = parseTokens(tokens, grammar_, ll1_);
-    if (res.errorPos >= 0)
-    {
-        notify_->error("语法错误");
-        return;
-    }
-    QString dot  = syntaxAstToDot(res.root);
-    QString base = Config::generatedOutputDir() + "/syntax/graphs";
-    QDir    d(base);
-    if (!d.exists())
-        d.mkpath(".");
-    QString ts  = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-    QString out = base + "/ast_" + ts + ".dot";
-    QFile   f(out);
-    if (f.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        QTextStream o(&f);
-        o << dot;
-        f.close();
-        notify_->info("DOT 已导出");
-    }
 }
