@@ -33,34 +33,16 @@ static QVector<QString> splitRhs(const QString& rhs)
     auto isWordChar    = [](QChar c) { return c.isLetterOrNumber() || c == '_' || c == '-'; };
     auto isSingleOp    = [](QChar c)
     {
-        static QSet<QChar> ops;
-        if (ops.isEmpty())
+        for (const auto& op : Config::grammarSingleOps())
         {
-            const QChar arr[] = {'(',
-                                 ')',
-                                 '{',
-                                 '}',
-                                 '[',
-                                 ']',
-                                 ';',
-                                 ',',
-                                 '<',
-                                 '>',
-                                 '=',
-                                 '+',
-                                 '-',
-                                 '*',
-                                 '/',
-                                 '%',
-                                 '^'};
-            for (QChar ch : arr) ops.insert(ch);
+            if (op.size() == 1 && op[0] == c)
+                return true;
         }
-        return ops.contains(c);
+        return false;
     };
     auto matchMultiOp = [&](const QString& s, int i) -> QString
     {
-        static const QVector<QString> mops = {"<=", ">=", "==", "!=", ":=", "++", "--"};
-        for (const auto& op : mops)
+        for (const auto& op : Config::grammarMultiOps())
         {
             int L = op.size();
             if (L > 0 && i + L <= s.size() && s.mid(i, L) == op)
@@ -139,12 +121,13 @@ static bool parseLine(const QString& line, int lineNo, Grammar& g, QString& err)
         return true;
     if (t.trimmed().startsWith("//"))
         return true;
-    if (t.indexOf("->") < 0)
+    QString arrow = Config::productionArrow();
+    if (t.indexOf(arrow) < 0)
     {
         err = QString::number(lineNo);
         return false;
     }
-    auto parts = t.split("->");
+    auto parts = t.split(arrow);
     if (parts.size() != 2)
     {
         err = QString::number(lineNo);

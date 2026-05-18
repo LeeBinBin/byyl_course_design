@@ -80,6 +80,7 @@ class SettingsDialog : public QDialog
     QLineEdit* edtNontermPat;
     QLineEdit* edtMultiOps;
     QLineEdit* edtSingleOps;
+    QLineEdit* edtProductionArrow;
     QLineEdit* edtTblMark;
     QLineEdit* edtTblStateId;
     QLineEdit* edtTblStateSet;

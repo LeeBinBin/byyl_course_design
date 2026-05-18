@@ -74,7 +74,8 @@ static bool parseReduction(const LR1ActionTable& t,
 
 static int reductionIdFor(const LR1ActionTable& t, const QString& L, const QVector<QString>& rhs)
 {
-    QString key = L + " -> " + (rhs.isEmpty() ? QString("#") : rhs.join(" "));
+    QString key = L + " " + Config::productionArrow() + " " +
+                  (rhs.isEmpty() ? Config::epsilonSymbol() : rhs.join(" "));
     for (const auto& pr : t.reductions)
     {
         if (pr.second == key)
@@ -105,7 +106,7 @@ ParseResult LR1Parser::parse(const QVector<QString>& tokens,
 {
     ParseResult      res;
     QVector<QString> input = tokens;
-    input.push_back("$");
+    input.push_back(Config::eofSymbol());
     QVector<QPair<int, QString>> stack;
     QVector<ParseTreeNode*>      nodeStk;
     stack.push_back({0, QString()});
@@ -282,7 +283,7 @@ ParseResult LR1Parser::parse(const QVector<QString>& tokens,
                      input,
                      QString("reduce %1 -> %2, children=[%3]")
                          .arg(L)
-                         .arg(rhs.isEmpty() ? QString("#") : rhs.join(" "))
+                         .arg(rhs.isEmpty() ? Config::epsilonSymbol() : rhs.join(" "))
                          .arg(kidsStr),
                      QString());
             pushStep(res.steps,
@@ -290,7 +291,10 @@ ParseResult LR1Parser::parse(const QVector<QString>& tokens,
                      stack,
                      input,
                      act,
-                     QString("%1 -> %2").arg(L).arg(rhs.isEmpty() ? QString("#") : rhs.join(" ")));
+                     QString("%1 %2 %3")
+                         .arg(L)
+                         .arg(Config::productionArrow())
+                         .arg(rhs.isEmpty() ? Config::epsilonSymbol() : rhs.join(" ")));
             continue;
         }
         pushStep(res.steps,
@@ -449,7 +453,7 @@ ParseResult LR1Parser::parseWithSemantics(const QVector<QString>&               
 {
     ParseResult      res;
     QVector<QString> input = tokens;
-    input.push_back("$");
+    input.push_back(Config::eofSymbol());
     QVector<QPair<int, QString>> stack;
     QVector<ParseTreeNode*>      nodeStk;
     QVector<SemanticASTNode*>    semStk;
@@ -690,7 +694,7 @@ ParseResult LR1Parser::parseWithSemantics(const QVector<QString>&               
                      input,
                      QString("准备归约：产生式 %1 → %2，执行语义动作构建非终结符节点 [%3]%4")
                          .arg(rid >= 0 ? QString::number(rid) : QStringLiteral("?"))
-                         .arg(rhs.isEmpty() ? QString("#") : rhs.join(" "))
+                         .arg(rhs.isEmpty() ? Config::epsilonSymbol() : rhs.join(" "))
                          .arg(sem ? sem->tag : L)
                          .arg(rid >= 0 ? QString("（编码:%1）").arg(rid) : QString()),
                      QString());
@@ -699,7 +703,10 @@ ParseResult LR1Parser::parseWithSemantics(const QVector<QString>&               
                      stack,
                      input,
                      act,
-                     QString("%1 -> %2").arg(L).arg(rhs.isEmpty() ? QString("#") : rhs.join(" ")));
+                     QString("%1 %2 %3")
+                         .arg(L)
+                         .arg(Config::productionArrow())
+                         .arg(rhs.isEmpty() ? Config::epsilonSymbol() : rhs.join(" ")));
             continue;
         }
         pushStep(res.steps,
@@ -731,7 +738,7 @@ ParseResult LR1Parser::parseWithSemantics(const QVector<QString>&               
 {
     ParseResult      res;
     QVector<QString> input = tokens;
-    input.push_back("$");
+    input.push_back(Config::eofSymbol());
     QVector<QPair<int, QString>> stack;
     QVector<ParseTreeNode*>      nodeStk;
     QVector<SemanticASTNode*>    semStk;
@@ -951,7 +958,7 @@ ParseResult LR1Parser::parseWithSemantics(const QVector<QString>&               
                 QString(
                     "准备归约：产生式 %1 → %2，执行语义动作构建非终结符节点 [%3]%4，子节点=[%5]")
                     .arg(rid2 >= 0 ? QString::number(rid2) : QStringLiteral("?"))
-                    .arg(rhs.isEmpty() ? QString("#") : rhs.join(" "))
+                    .arg(rhs.isEmpty() ? Config::epsilonSymbol() : rhs.join(" "))
                     .arg(sem ? sem->tag : L)
                     .arg(rid2 >= 0 ? QString("（编码:%1）").arg(rid2) : QString())
                     .arg(kidsStr),
@@ -961,7 +968,10 @@ ParseResult LR1Parser::parseWithSemantics(const QVector<QString>&               
                      stack,
                      input,
                      act,
-                     QString("%1 -> %2").arg(L).arg(rhs.isEmpty() ? QString("#") : rhs.join(" ")));
+                     QString("%1 %2 %3")
+                         .arg(L)
+                         .arg(Config::productionArrow())
+                         .arg(rhs.isEmpty() ? Config::epsilonSymbol() : rhs.join(" ")));
             continue;
         }
         res.errorPos = res.steps.size();

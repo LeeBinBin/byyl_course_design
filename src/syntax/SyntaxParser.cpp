@@ -34,7 +34,7 @@ SyntaxResult parseTokens(const QVector<QString>& tokens, const Grammar& g, const
     st.push_back(g.startSymbol);
     QVector<SyntaxASTNode*> nodes;
     auto                    root = makeNode(g.startSymbol);
-    nodes.push_back(makeNode("$"));
+    nodes.push_back(makeNode(Config::eofSymbol()));
     nodes.push_back(root);
     int ip = 0;
     while (!st.isEmpty())
@@ -44,7 +44,7 @@ SyntaxResult parseTokens(const QVector<QString>& tokens, const Grammar& g, const
         st.pop_back();
         nodes.pop_back();
         QString a = ip < input.size() ? input[ip] : Config::eofSymbol();
-        if (isTerminal(g.terminals, X) || X == "$")
+        if (isTerminal(g.terminals, X) || X == Config::eofSymbol())
         {
             if (X == a)
                 ip++;
@@ -63,7 +63,7 @@ SyntaxResult parseTokens(const QVector<QString>& tokens, const Grammar& g, const
                 break;
             }
             QVector<QString> rhs = g.productions[X][idx].right;
-            if (rhs.size() == 1 && rhs[0] == "#")
+            if (rhs.size() == 1 && rhs[0] == Config::epsilonSymbol())
             {
             }
             else

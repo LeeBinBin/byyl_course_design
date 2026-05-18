@@ -78,6 +78,7 @@ QMap<int, QString>          Config::s_semRoleMeaning;
 QString                     Config::s_semRootPolicy;
 QString                     Config::s_semChildOrder;
 QVector<QString>            Config::s_lr1PreferShift;
+QString                     Config::s_productionArrow;
 
 static QVector<Config::WeightTier> defaultTiers()
 {
@@ -102,7 +103,8 @@ void Config::load()
     s_eof                   = QString("$");
     s_augSuffix             = QString("'");
     s_lr1Policy             = QString("prefer_shift");
-    s_lr1PreferShift         = QVector<QString>() << "else";
+    s_lr1PreferShift        = QVector<QString>() << "else";
+    s_productionArrow       = QStringLiteral("->");
     // prefer-shift tokens storage defined in Config.h
     s_nontermPat.clear();
     s_multiOps.clear();
@@ -110,7 +112,7 @@ void Config::load()
     s_tblMark       = QStringLiteral("标记");
     s_tblStateId    = QStringLiteral("状态 ID");
     s_tblStateSet   = QStringLiteral("状态集合");
-    s_tblEpsilonCol = QStringLiteral("#");
+    s_tblEpsilonCol = QStringLiteral("@");
     s_dotRankdir    = QStringLiteral("LR");
     s_dotNodeShape  = QStringLiteral("circle");
     s_dotEpsLabel   = QStringLiteral("ε");
@@ -237,7 +239,7 @@ void Config::load()
                         s_graphvizTimeout = to;
                 }
                 if (obj.contains("epsilon_symbol"))
-                    s_epsilon = obj.value("epsilon_symbol").toString("#");
+                    s_epsilon = obj.value("epsilon_symbol").toString("@");
                 if (obj.contains("eof_symbol"))
                     s_eof = obj.value("eof_symbol").toString("$");
                 if (obj.contains("aug_suffix"))
@@ -398,7 +400,7 @@ void Config::load()
         s_multiOps = QVector<QString>({"<=", ">=", "<>", ":=", "==", "!="});
     if (s_singleOps.isEmpty())
         s_singleOps = QVector<QString>(
-            {"(", ")", ";", ",", "<", ">", "=", "+", "-", "*", "/", "%", "^", "{", "}", "[", "]"});
+            {"(", ")", ";", ",", "<", ">", "=", "+", "-", "*", "/", "%", "{", "}", "[", "]"});
     if (s_semRoleMeaning.isEmpty())
     {
         s_semRoleMeaning[0] = "discard";
@@ -618,6 +620,18 @@ QVector<QString> Config::grammarSingleOps()
     return s_singleOps;
 }
 
+QString Config::productionArrow()
+{
+    load();
+    return s_productionArrow;
+}
+
+void Config::setProductionArrow(const QString& arrow)
+{
+    load();
+    s_productionArrow = arrow;
+}
+
 QString Config::tableMarkLabel()
 {
     load();
@@ -666,28 +680,21 @@ QVector<QString> Config::configSearchPaths()
     return s_cfgSearchPaths;
 }
 
-bool Config::skipBraceComment()
+static QString findConfigPath()
 {
-    load();
-    if (s_hasSkipBrace)
-        return s_skipBrace;
-    QByteArray env = qgetenv("LEXER_SKIP_BRACE_COMMENT");
-    if (!env.isEmpty())
-    {
-        auto v = QString::fromUtf8(env).trimmed().toLower();
-        if (v == "1" || v == "true" || v == "yes")
-            return true;
-        if (v == "0" || v == "false" || v == "no")
-            return false;
-    }
     QString appDir   = QCoreApplication::applicationDirPath();
     QString cfgPath1 = appDir + "/../../config/lexer.json";
     QString cfgPath2 = appDir + "/config/lexer.json";
-    QString usePath;
     if (QFile::exists(cfgPath1))
-        usePath = cfgPath1;
-    else if (QFile::exists(cfgPath2))
-        usePath = cfgPath2;
+        return cfgPath1;
+    if (QFile::exists(cfgPath2))
+        return cfgPath2;
+    return QString();
+}
+
+static bool readBoolFromJson(const QString& jsonKey, bool defaultValue)
+{
+    QString usePath = findConfigPath();
     if (!usePath.isEmpty())
     {
         QFile f(usePath);
@@ -699,12 +706,20 @@ bool Config::skipBraceComment()
             if (doc.isObject())
             {
                 auto obj = doc.object();
-                if (obj.contains("skip_brace_comment"))
-                    return obj.value("skip_brace_comment").toBool(false);
+                if (obj.contains(jsonKey))
+                    return obj.value(jsonKey).toBool(defaultValue);
             }
         }
     }
-    return false;
+    return defaultValue;
+}
+
+bool Config::skipBraceComment()
+{
+    load();
+    if (s_hasSkipBrace)
+        return s_skipBrace;
+    return readBoolFromJson("skip_brace_comment", false);
 }
 
 static bool envFlag(const char* name, bool defv)
@@ -725,32 +740,7 @@ bool Config::skipLineComment()
     load();
     if (s_hasSkipLine)
         return s_skipLine;
-    if (envFlag("LEXER_SKIP_LINE_COMMENT", false))
-        return true;
-    QString appDir   = QCoreApplication::applicationDirPath();
-    QString cfgPath1 = appDir + "/../../config/lexer.json";
-    QString cfgPath2 = appDir + "/config/lexer.json";
-    QString usePath;
-    if (QFile::exists(cfgPath1))
-        usePath = cfgPath1;
-    else if (QFile::exists(cfgPath2))
-        usePath = cfgPath2;
-    if (!usePath.isEmpty())
-    {
-        QFile f(usePath);
-        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            auto data = f.readAll();
-            f.close();
-            auto doc = QJsonDocument::fromJson(data);
-            if (doc.isObject())
-            {
-                auto obj = doc.object();
-                return obj.value("skip_line_comment").toBool(false);
-            }
-        }
-    }
-    return false;
+    return readBoolFromJson("skip_line_comment", false);
 }
 
 bool Config::skipBlockComment()
@@ -758,32 +748,7 @@ bool Config::skipBlockComment()
     load();
     if (s_hasSkipBlock)
         return s_skipBlock;
-    if (envFlag("LEXER_SKIP_BLOCK_COMMENT", false))
-        return true;
-    QString appDir   = QCoreApplication::applicationDirPath();
-    QString cfgPath1 = appDir + "/../../config/lexer.json";
-    QString cfgPath2 = appDir + "/config/lexer.json";
-    QString usePath;
-    if (QFile::exists(cfgPath1))
-        usePath = cfgPath1;
-    else if (QFile::exists(cfgPath2))
-        usePath = cfgPath2;
-    if (!usePath.isEmpty())
-    {
-        QFile f(usePath);
-        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            auto data = f.readAll();
-            f.close();
-            auto doc = QJsonDocument::fromJson(data);
-            if (doc.isObject())
-            {
-                auto obj = doc.object();
-                return obj.value("skip_block_comment").toBool(false);
-            }
-        }
-    }
-    return false;
+    return readBoolFromJson("skip_block_comment", false);
 }
 
 bool Config::skipSingleQuoteString()
@@ -791,32 +756,7 @@ bool Config::skipSingleQuoteString()
     load();
     if (s_hasSkipSingle)
         return s_skipSingle;
-    if (envFlag("LEXER_SKIP_SQ_STRING", false))
-        return true;
-    QString appDir   = QCoreApplication::applicationDirPath();
-    QString cfgPath1 = appDir + "/../../config/lexer.json";
-    QString cfgPath2 = appDir + "/config/lexer.json";
-    QString usePath;
-    if (QFile::exists(cfgPath1))
-        usePath = cfgPath1;
-    else if (QFile::exists(cfgPath2))
-        usePath = cfgPath2;
-    if (!usePath.isEmpty())
-    {
-        QFile f(usePath);
-        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            auto data = f.readAll();
-            f.close();
-            auto doc = QJsonDocument::fromJson(data);
-            if (doc.isObject())
-            {
-                auto obj = doc.object();
-                return obj.value("skip_single_quote_string").toBool(false);
-            }
-        }
-    }
-    return false;
+    return readBoolFromJson("skip_single_quote_string", false);
 }
 
 bool Config::skipDoubleQuoteString()
@@ -824,32 +764,7 @@ bool Config::skipDoubleQuoteString()
     load();
     if (s_hasSkipDouble)
         return s_skipDouble;
-    if (envFlag("LEXER_SKIP_DQ_STRING", false))
-        return true;
-    QString appDir   = QCoreApplication::applicationDirPath();
-    QString cfgPath1 = appDir + "/../../config/lexer.json";
-    QString cfgPath2 = appDir + "/config/lexer.json";
-    QString usePath;
-    if (QFile::exists(cfgPath1))
-        usePath = cfgPath1;
-    else if (QFile::exists(cfgPath2))
-        usePath = cfgPath2;
-    if (!usePath.isEmpty())
-    {
-        QFile f(usePath);
-        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            auto data = f.readAll();
-            f.close();
-            auto doc = QJsonDocument::fromJson(data);
-            if (doc.isObject())
-            {
-                auto obj = doc.object();
-                return obj.value("skip_double_quote_string").toBool(false);
-            }
-        }
-    }
-    return false;
+    return readBoolFromJson("skip_double_quote_string", false);
 }
 
 bool Config::skipTemplateString()
@@ -857,32 +772,7 @@ bool Config::skipTemplateString()
     load();
     if (s_hasSkipTemplate)
         return s_skipTemplate;
-    if (envFlag("LEXER_SKIP_TPL_STRING", false))
-        return true;
-    QString appDir   = QCoreApplication::applicationDirPath();
-    QString cfgPath1 = appDir + "/../../config/lexer.json";
-    QString cfgPath2 = appDir + "/config/lexer.json";
-    QString usePath;
-    if (QFile::exists(cfgPath1))
-        usePath = cfgPath1;
-    else if (QFile::exists(cfgPath2))
-        usePath = cfgPath2;
-    if (!usePath.isEmpty())
-    {
-        QFile f(usePath);
-        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            auto data = f.readAll();
-            f.close();
-            auto doc = QJsonDocument::fromJson(data);
-            if (doc.isObject())
-            {
-                auto obj = doc.object();
-                return obj.value("skip_template_string").toBool(false);
-            }
-        }
-    }
-    return false;
+    return readBoolFromJson("skip_template_string", false);
 }
 
 bool Config::skipHashComment()
@@ -890,32 +780,7 @@ bool Config::skipHashComment()
     load();
     if (s_hasSkipHash)
         return s_skipHash;
-    if (envFlag("LEXER_SKIP_HASH_COMMENT", false))
-        return true;
-    QString appDir   = QCoreApplication::applicationDirPath();
-    QString cfgPath1 = appDir + "/../../config/lexer.json";
-    QString cfgPath2 = appDir + "/config/lexer.json";
-    QString usePath;
-    if (QFile::exists(cfgPath1))
-        usePath = cfgPath1;
-    else if (QFile::exists(cfgPath2))
-        usePath = cfgPath2;
-    if (!usePath.isEmpty())
-    {
-        QFile f(usePath);
-        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            auto data = f.readAll();
-            f.close();
-            auto doc = QJsonDocument::fromJson(data);
-            if (doc.isObject())
-            {
-                auto obj = doc.object();
-                return obj.value("skip_hash_comment").toBool(false);
-            }
-        }
-    }
-    return false;
+    return readBoolFromJson("skip_hash_comment", false);
 }
 
 void Config::setGeneratedOutputDir(const QString& dir)

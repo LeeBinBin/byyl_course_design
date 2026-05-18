@@ -61,6 +61,8 @@ class Config
     static QString          nonterminalPattern();
     static QVector<QString> grammarMultiOps();
     static QVector<QString> grammarSingleOps();
+    static QString          productionArrow();
+    static void             setProductionArrow(const QString& arrow);
     static bool             emitIdentifierLexeme();
     static QVector<QString> identifierTokenNames();
     static void setEmitIdentifierLexeme(bool v);
@@ -172,6 +174,7 @@ class Config
     static QString             s_nontermPat;
     static QVector<QString>    s_multiOps;
     static QVector<QString>    s_singleOps;
+    static QString             s_productionArrow;
     static QString             s_tblMark;
     static QString             s_tblStateId;
     static QString             s_tblStateSet;

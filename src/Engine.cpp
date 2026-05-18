@@ -959,7 +959,7 @@ QMap<QString, QMap<QString, QString>> Engine::parsingTableAsRows(const Grammar& 
                 row[a] = rhs;
             }
         }
-        row["$"] = info.table.value(A).contains("$") ? row.value("$") : QString();
+        row[Config::eofSymbol()] = info.table.value(A).contains(Config::eofSymbol()) ? row.value(Config::eofSymbol()) : QString();
         r[A]     = row;
     }
     return r;
@@ -1098,7 +1098,7 @@ static void aggregateTableByMacros(Tables&                           t,
     int colCount = t.columns.size();
     if (colCount < 3)
         return;
-    bool             hasEps   = (colCount > 0 && t.columns.last() == QStringLiteral("#"));
+    bool             hasEps   = (colCount > 0 && t.columns.last() == Config::epsilonSymbol());
     int              symStart = 2;
     int              symEnd   = hasEps ? (colCount - 1) : colCount;
     QMap<QChar, int> charIdx;
@@ -1144,7 +1144,7 @@ static void aggregateTableByMacros(Tables&                           t,
         }
     }
     if (hasEps)
-        newCols.push_back(QStringLiteral("#"));
+        newCols.push_back(Config::epsilonSymbol());
     auto mergeTargets = [&](const QStringList& parts)
     {
         QSet<QString> uniq;

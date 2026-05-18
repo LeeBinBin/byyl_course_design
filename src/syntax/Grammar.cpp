@@ -10,8 +10,9 @@
  * 1.0.0 2026年5月11日 李彬彬 初始版本
  */
 #include "Grammar.h"
+#include "../config/Config.h"
 
 bool Grammar::hasEpsilon(const QVector<QString>& rhs) const
 {
-    return rhs.size() == 1 && rhs[0] == "#";
+    return rhs.size() == 1 && rhs[0] == Config::epsilonSymbol();
 }

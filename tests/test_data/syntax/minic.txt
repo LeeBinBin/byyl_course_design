@@ -8,8 +8,8 @@ parameters -> parameter-list | void
 parameter-list -> parameter-list, parameter | parameter
 parameter -> type-indicator identifier | type-indicator identifier [ ]
 compound-stmt -> { local-definitions statement-list }
-local-definitions -> local-definitions variable-definition | #
-statement-list -> statement-list statement | #
+local-definitions -> local-definitions variable-definition | @
+statement-list -> statement-list statement | @
 statement -> matched-stmt | open-stmt
 matched-stmt -> expression-stmt | compound-stmt | dowhile-stmt | while-stmt | for-stmt | return-stmt | if ( expression ) matched-stmt else matched-stmt
 open-stmt -> if ( expression ) statement | if ( expression ) matched-stmt else open-stmt
@@ -18,8 +18,8 @@ expression-stmt -> expression ; | ;
 dowhile-stmt -> do statement while ( expression )
 while-stmt -> while ( expression ) statement
 for-stmt -> for ( for-init ; expression ; for-update ) statement
-for-init -> expression | variable-definition | #
-for-update -> expression-list | #
+for-init -> expression | variable-definition | @
+for-update -> expression-list | @
 expression-list -> expression-list, expression | expression
 return-stmt -> return ; | return expression ;
 expression -> variable = expression | simple-expression
@@ -29,8 +29,8 @@ relop -> <= | < | > | >= | == | !=
 additive-expression -> additive-expression addop term | term
 addop -> + | -
 term -> term mulop factor | factor
-mulop -> * | / | % | ^
+mulop -> * | / | %
 factor -> ( expression ) | variable | call | number | ++variable | --variable
 call -> identifier ( arguments )
-arguments -> argument-list | #
+arguments -> argument-list | @
 argument-list -> argument-list, expression | expression

@@ -213,6 +213,11 @@ void SettingsDialog::buildUi()
         lOps->addWidget(edtMultiOps);
         lOps->addWidget(edtSingleOps);
         v->addLayout(lOps);
+        auto lArrow = new QHBoxLayout;
+        lArrow->addWidget(new QLabel("产生式箭头符号"));
+        edtProductionArrow = new QLineEdit;
+        lArrow->addWidget(edtProductionArrow);
+        v->addLayout(lArrow);
         auto lLr = new QHBoxLayout;
         lLr->addWidget(new QLabel("LR(1) 冲突策略"));
         edtLr1Policy = new QLineEdit;
@@ -446,6 +451,7 @@ void SettingsDialog::loadCurrent()
         edtMultiOps->setText(s1);
         edtSingleOps->setText(s2);
     }
+    edtProductionArrow->setText(Config::productionArrow());
     edtTblMark->setText(Config::tableMarkLabel());
     edtTblStateId->setText(Config::tableStateIdLabel());
     edtTblStateSet->setText(Config::tableStateSetLabel());
@@ -630,6 +636,7 @@ bool SettingsDialog::collectAndApply()
         if (!so.isEmpty())
             Config::setGrammarSingleOps(so);
     }
+    Config::setProductionArrow(edtProductionArrow->text().trimmed());
     Config::setTableMarkLabel(edtTblMark->text().trimmed());
     Config::setTableStateIdLabel(edtTblStateId->text().trimmed());
     Config::setTableStateSetLabel(edtTblStateSet->text().trimmed());

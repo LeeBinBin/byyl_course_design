@@ -86,9 +86,9 @@ LL1Info LL1::compute(const Grammar& g)
                     auto fbeta = firstSeq(g, beta, info.first);
                     int  prev  = info.follow[B].size();
                     for (const auto& x : fbeta)
-                        if (x != "#")
+                        if (x != Config::epsilonSymbol())
                             info.follow[B].insert(x);
-                    if (beta.isEmpty() || fbeta.contains("#"))
+                    if (beta.isEmpty() || fbeta.contains(Config::epsilonSymbol()))
                     {
                         for (const auto& x : info.follow[A]) info.follow[B].insert(x);
                     }

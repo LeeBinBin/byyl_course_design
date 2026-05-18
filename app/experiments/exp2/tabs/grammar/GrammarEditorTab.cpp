@@ -19,7 +19,7 @@
 GrammarEditorTab::GrammarEditorTab(QWidget* parent) : QWidget(parent)
 {
     auto l          = new QVBoxLayout(this);
-    lblGrammarTitle = new QLabel("文法分析（LL(1)）");
+    lblGrammarTitle = new QLabel("文法分析");
     l->addWidget(lblGrammarTitle);
     txtInputGrammar = new QTextEdit;
     txtInputGrammar->setObjectName("txtInputGrammar");

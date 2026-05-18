@@ -39,9 +39,9 @@ Exp2Page::Exp2Page(QWidget* parent) : QWidget(parent)
     tabSyntax->addTab(wLR, "LR分析");
     // 移除旧的“语法树”页签，使用 LR(1) 语法树页签
     auto wLR1Proc = new LR1ProcessTab;
-    tabSyntax->addTab(wLR1Proc, "LR(1)分析过程");
+    tabSyntax->addTab(wLR1Proc, "LALR(1)分析过程");
     auto wLR1Tree = new LR1TreeTab;
-    tabSyntax->addTab(wLR1Tree, "LR(1)语法树");
+    tabSyntax->addTab(wLR1Tree, "LALR(1)语法树");
     // 按实验要求移除“代码查看”页签
     v->addWidget(tabSyntax);
     setLayout(v);

@@ -205,9 +205,9 @@ static QMap<QString, int> computeReductionIndex(const Grammar&                g,
         const auto& alts = g.productions.value(A);
         for (const auto& p : alts)
         {
-            QString key = A + "->" + p.right.join(" ");
+            QString key = A + Config::productionArrow() + p.right.join(" ");
             idx[key]    = k;
-            outList.push_back({k, A + " -> " + p.right.join(" ")});
+            outList.push_back({k, A + " " + Config::productionArrow() + " " + p.right.join(" ")});
             ++k;
         }
     }
@@ -246,7 +246,7 @@ LALR1ActionTable LALR1Builder::computeActionTable(const Grammar& g, const LALR1G
                 QStringList lookaheads = it.lookahead.split("|");
                 for (const auto& a : lookaheads)
                 {
-                    if (!a.isEmpty() && a != "#")
+                    if (!a.isEmpty() && a != Config::epsilonSymbol())
                     {
                         QString key = it.left + "->" + it.right.join(" ");
                         int     rk  = redIndex.value(key, -1);
@@ -265,7 +265,7 @@ LALR1ActionTable LALR1Builder::computeActionTable(const Grammar& g, const LALR1G
             {
                 QString X  = eit.key();
                 int     to = eit.value();
-                if (!isTerminal(g.terminals, X) && X != "#")
+                if (!isTerminal(g.terminals, X) && X != Config::epsilonSymbol())
                     t.gotoTable[i][X] = to;
             }
         }
