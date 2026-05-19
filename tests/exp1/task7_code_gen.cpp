@@ -25,6 +25,12 @@ private:
     {
         auto rf   = engine.lexFile(ruleText);
         auto pf   = engine.parseFile(rf);
+
+        if (pf.tokens.isEmpty() || pf.tokens.front().ast == nullptr) {
+            qWarning() << "buildMinDFAFromRegex: Failed to parse rule or generate AST, returning empty MinDFA";
+            return MinDFA();  // Return empty but valid MinDFA
+        }
+
         auto* ast = pf.tokens.front().ast;
         auto nfa  = engine.buildNFA(ast, pf.alpha);
         auto dfa  = engine.buildDFA(nfa);
@@ -44,6 +50,9 @@ private slots:
     {
         QString rule = "ID=letter(letter|digit)*\n";
         MinDFA  mdfa = buildMinDFAFromRegex(rule);
+
+        QVERIFY2(mdfa.states.size() > 0,
+                 "Generated MinDFA should not be empty for ID rule (check if regex parsing succeeded)");
 
         QMap<QString, int> tokenCodes;
         tokenCodes["ID"] = 100;

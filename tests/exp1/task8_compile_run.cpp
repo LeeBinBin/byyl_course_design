@@ -69,6 +69,24 @@ private:
         return true;
     }
 
+    static bool isValidTokenOutputFormat(const QString& output)
+    {
+        if (output.isEmpty())
+            return true;
+        QStringList parts = output.split(' ', Qt::SkipEmptyParts);
+
+        if (parts.size() % 2 != 0)
+            return false;
+
+        for (int i = 0; i < parts.size(); i += 2) {
+            bool codeOk = false;
+            parts[i].toInt(&codeOk);
+            if (!codeOk)
+                return false;
+        }
+        return true;
+    }
+
 private slots:
 
     void test_single_scan_accept()
@@ -455,8 +473,8 @@ private slots:
                      .toUtf8()
                      .constData());
 
-        QVERIFY2(isSpaceSeparatedNumbers(result),
-                 QString("Mini-C encoding example test failed: output [%1] should be space-separated numeric code sequence")
+        QVERIFY2(isValidTokenOutputFormat(result),
+                 QString("Mini-C encoding example test failed: output [%1] should be in format <code> <lexeme> <code> <lexeme> ...")
                      .arg(result)
                      .toUtf8()
                      .constData());

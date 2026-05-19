@@ -320,6 +320,12 @@ private slots:
 
         auto rf   = engine.lexFile(rule);
         auto pf   = engine.parseFile(rf);
+
+        QVERIFY2(!pf.tokens.isEmpty(),
+                 "ParsedFile should contain at least one token for identifier rule");
+        QVERIFY2(pf.tokens.front().ast != nullptr,
+                 "AST should be generated for the first token (identifier rule)");
+
         auto* ast = pf.tokens.front().ast;
         NFA  nfa  = engine.buildNFA(ast, pf.alpha);
         DFA  dfa  = SubsetConstruction::build(nfa);
