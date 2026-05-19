@@ -143,12 +143,12 @@ void TestExp2Task6_SyntaxProcess::test_reduce_actions_present()
         if (step.action.startsWith("r")) {
             reduceCount++;
             QVERIFY2(!step.production.isEmpty(),
-                     qPrintable(QString("reduce动作应有产生式信息，action=%1").arg(step.action)));
+                     qPrintable(QString("reduce action should have production info, action=%1").arg(step.action)));
         }
     }
 
     QVERIFY2(reduceCount > 0,
-             qPrintable(QString("应包含reduce动作及产生式信息，实际reduce次数: %1").arg(reduceCount)));
+             qPrintable(QString("should contain reduce actions with production info, actual reduce count: %1").arg(reduceCount)));
 }
 
 void TestExp2Task6_SyntaxProcess::test_stack_evolution()
@@ -159,7 +159,7 @@ void TestExp2Task6_SyntaxProcess::test_stack_evolution()
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     QVERIFY2(res.steps.size() >= 2,
-             qPrintable(QString("需要至少2步来验证栈变化，实际: %1").arg(res.steps.size())));
+             qPrintable(QString("need at least 2 steps to verify stack evolution, actual: %1").arg(res.steps.size())));
 
     if (res.steps.size() >= 2) {
         const auto& stack0 = res.steps[0].stack;
@@ -171,7 +171,7 @@ void TestExp2Task6_SyntaxProcess::test_stack_evolution()
         }
 
         QVERIFY2(changed,
-                 "解析过程中栈内容应在步骤间发生变化");
+                 "stack content should change between steps during parsing");
     }
 
     int maxStackSize = 0;
@@ -181,7 +181,7 @@ void TestExp2Task6_SyntaxProcess::test_stack_evolution()
     }
 
     QVERIFY2(maxStackSize > 1,
-             qPrintable(QString("栈深度应在某步超过初始状态，最大深度: %1").arg(maxStackSize)));
+             qPrintable(QString("stack depth should exceed initial state at some step, max depth: %1").arg(maxStackSize)));
 }
 
 void TestExp2Task6_SyntaxProcess::test_error_detection_missing_semicolon()
@@ -192,7 +192,7 @@ void TestExp2Task6_SyntaxProcess::test_error_detection_missing_semicolon()
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     QVERIFY2(res.errorPos >= 0,
-             qPrintable(QString("缺少分号应被检测为错误，errorPos=%1").arg(res.errorPos)));
+             qPrintable(QString("missing semicolon should be detected as error, errorPos=%1").arg(res.errorPos)));
 }
 
 void TestExp2Task6_SyntaxProcess::test_parse_tree_root_symbol()
@@ -203,13 +203,13 @@ void TestExp2Task6_SyntaxProcess::test_parse_tree_root_symbol()
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     QCOMPARE(res.errorPos, -1);
-    QVERIFY2(res.root != nullptr, "成功解析后root不应为nullptr");
+    QVERIFY2(res.root != nullptr, "root should not be nullptr after successful parsing");
     QCOMPARE(res.root->symbol, QString("program"));
 }
 
 void TestExp2Task6_SyntaxProcess::test_empty_token_list()
 {
-    QVERIFY2(m_ready, "初始化未完成");
+    QVERIFY2(m_ready, "initialization not complete");
 
     QVector<QString> tokens;
     ParseResult res = LR1Parser::parse(tokens, m_grammar, m_table);
@@ -218,7 +218,7 @@ void TestExp2Task6_SyntaxProcess::test_empty_token_list()
                              (!res.steps.isEmpty() &&
                               res.steps.last().action == "acc");
     QVERIFY2(isErrorOrAccepted,
-             qPrintable(QString("空token列表应触发错误或按文法接受，errorPos=%1, steps=%2")
+             qPrintable(QString("empty token list should trigger error or be accepted by grammar, errorPos=%1, steps=%2")
                             .arg(res.errorPos)
                             .arg(res.steps.size())));
 }
