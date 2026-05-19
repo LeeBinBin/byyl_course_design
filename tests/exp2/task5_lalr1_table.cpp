@@ -7,9 +7,9 @@
 #include <QFile>
 #include <QTextStream>
 
-#include "../../../src/syntax/Grammar.h"
-#include "../../../src/syntax/GrammarParser.h"
-#include "../../../src/syntax/LALR1.h"
+#include "src/syntax/Grammar.h"
+#include "src/syntax/GrammarParser.h"
+#include "src/syntax/LALR1.h"
 
 class TestExp2Task5_LALR1Table : public QObject
 {
@@ -22,7 +22,10 @@ private:
     {
         QString err;
         Grammar g = GrammarParser::parseString(text, err);
-        QVERIFY2(err.isEmpty(), QString("文法解析失败: %1").arg(err).toUtf8().constData());
+        if (!err.isEmpty()) {
+            qFatal("文法解析失败: %s", err.toUtf8().constData());
+            return Grammar();
+        }
         return g;
     }
 

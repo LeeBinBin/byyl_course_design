@@ -7,6 +7,7 @@
 #include <QProcess>
 #include <QTemporaryFile>
 #include <QDir>
+#include <QRegularExpression>
 #include "src/Engine.h"
 #include "tests/common/TestIO.h"
 
@@ -32,13 +33,19 @@ private:
         TinyPipelineResult result;
 
         QString regexContent = testio_readTestData("regex/tiny.txt");
-        QVERIFY2(!regexContent.isEmpty(), "无法加载 regex/tiny.txt 测试数据");
+        if (regexContent.isEmpty()) {
+            qFatal("无法加载 regex/tiny.txt 测试数据");
+            return result;
+        }
 
         result.regexFile   = engine.lexFile(regexContent);
         result.parsedFile  = engine.parseFile(result.regexFile);
         result.mdfas       = engine.buildAllMinDFA(result.parsedFile, result.codes);
         result.sampleSource = testio_readTestData("sample/tiny.txt");
-        QVERIFY2(!result.sampleSource.isEmpty(), "无法加载 sample/tiny.txt 测试数据");
+        if (result.sampleSource.isEmpty()) {
+            qFatal("无法加载 sample/tiny.txt 测试数据");
+            return result;
+        }
 
         QSet<int> identifierCodes = {100};
         QSet<int> blacklistCodes;
@@ -62,14 +69,14 @@ private slots:
         auto parsedFile = engine.parseFile(regexFile);
 
         QVERIFY2(parsedFile.tokens.size() >= 4,
-                 QString("步骤A: 解析后Token数量不足, 实际=%1").arg(parsedFile.tokens.size()));
+                 qPrintable(QString("步骤A: 解析后Token数量不足, 实际=%1").arg(parsedFile.tokens.size())));
 
         QVector<int> codes;
         auto mdfas = engine.buildAllMinDFA(parsedFile, codes);
 
         QVERIFY2(!mdfas.isEmpty(), "步骤A: buildAllMinDFA未生成任何MinDFA");
         QVERIFY2(mdfas.size() == codes.size(),
-                 QString("步骤A: MinDFA数量(%1)与codes数量(%2)不一致").arg(mdfas.size()).arg(codes.size()));
+                 qPrintable(QString("步骤A: MinDFA数量(%1)与codes数量(%2)不一致").arg(mdfas.size()).arg(codes.size())));
 
         QMap<QString, int> tokenCodes;
         for (int i = 0; i < parsedFile.tokens.size(); ++i) {
@@ -82,7 +89,7 @@ private slots:
             if (!codeStr.isEmpty() && codeStr.contains("#include")) {
                 generatedForAny = true;
                 QVERIFY2(mdfas[i].states.size() > 0,
-                         QString("步骤A: 第%1个MinDFA状态数为0").arg(i));
+                         qPrintable(QString("步骤A: 第%1个MinDFA状态数为0").arg(i)));
             }
         }
         QVERIFY2(generatedForAny, "步骤A: generateCode未生成有效C++代码");
@@ -120,7 +127,7 @@ private slots:
         srcFile.close();
 
         QProcess compiler;
-        compiler.setProcessEnvironment(QProcess::systemEnvironment());
+        compiler.setProcessEnvironment(QProcessEnvironment::systemEnvironment());
 
         QString compilerExe = detectCompiler();
         if (compilerExe.isEmpty()) {
@@ -138,7 +145,7 @@ private slots:
         }
 
         QVERIFY2(compiler.exitCode() == 0,
-                 QString("步骤B: 编译退出码=%1").arg(compiler.exitCode()));
+                 qPrintable(QString("步骤B: 编译退出码=%1").arg(compiler.exitCode())));
     }
 
     void test_stepC_run_sample_tny()
@@ -148,9 +155,9 @@ private slots:
         QVERIFY2(!result.runOutput.isEmpty(),
                  "步骤C: runMultiple返回空输出");
 
-        QStringList tokens = result.runOutput.split(Qt::WhitespaceSkipEmptyParts);
+        QStringList tokens = result.runOutput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
         QVERIFY2(tokens.size() >= 5,
-                 QString("步骤C: Token数量过少, 实际=%1, 期望>=5").arg(tokens.size()));
+                 qPrintable(QString("步骤C: Token数量过少, 实际=%1, 期望>=5").arg(tokens.size())));
 
         bool hasKeyword = false;
         bool hasIdentifier = false;
@@ -189,7 +196,7 @@ private slots:
 
         int tokenCount = regexFile.tokens.size();
         QVERIFY2(tokenCount >= 5,
-                 QString("T9-001: Token规则数量异常, 实际=%1, 期望=5").arg(tokenCount));
+                 qPrintable(QString("T9-001: Token规则数量异常, 实际=%1, 期望=5").arg(tokenCount)));
 
         QStringList expectedTokens = {"identifier100", "number101", "comment102", "special103B", "keyword200B"};
         for (const QString& name : expectedTokens) {
@@ -197,7 +204,7 @@ private slots:
             for (const auto& tok : regexFile.tokens) {
                 if (tok.name == name) { found = true; break; }
             }
-            QVERIFY2(found, QString("T9-001: 未找到Token规则: %1").arg(name));
+            QVERIFY2(found, qPrintable(QString("T9-001: 未找到Token规则: %1").arg(name)));
         }
 
         auto parsedFile = engine.parseFile(regexFile);
@@ -205,7 +212,7 @@ private slots:
 
         for (const auto& pt : parsedFile.tokens) {
             QVERIFY2(pt.ast != nullptr,
-                     QString("T9-001: Token[%1]的AST为空").arg(pt.rule.name));
+                     qPrintable(QString("T9-001: Token[%1]的AST为空").arg(pt.rule.name)));
         }
     }
 
@@ -222,18 +229,18 @@ private slots:
                  "T9-002: buildAllMinDFA返回空集合");
 
         QVERIFY2(mdfas.size() >= 5,
-                 QString("T9-002: MinDFA数量=%1, 期望>=5").arg(mdfas.size()));
+                 qPrintable(QString("T9-002: MinDFA数量=%1, 期望>=5").arg(mdfas.size())));
 
         QVERIFY2(mdfas.size() <= 20,
-                 QString("T9-002: MinDFA数量=%1, 异常偏多(>20)").arg(mdfas.size()));
+                 qPrintable(QString("T9-002: MinDFA数量=%1, 异常偏多(>20)").arg(mdfas.size())));
 
         QCOMPARE(mdfas.size(), codes.size());
 
         for (int i = 0; i < mdfas.size(); ++i) {
             QVERIFY2(mdfas[i].states.size() > 0,
-                     QString("T9-002: 第%1个MinDFA(code=%2)状态数为0").arg(i).arg(codes[i]));
+                     qPrintable(QString("T9-002: 第%1个MinDFA(code=%2)状态数为0").arg(i).arg(codes[i])));
             QVERIFY2(mdfas[i].states.contains(mdfas[i].start),
-                     QString("T9-002: 第%1个MinDFA缺少起始状态").arg(i));
+                     qPrintable(QString("T9-002: 第%1个MinDFA缺少起始状态").arg(i)));
         }
 
         int acceptCount = 0;
@@ -243,8 +250,8 @@ private slots:
             }
         }
         QVERIFY2(acceptCount == mdfas.size(),
-                 QString("T9-002: 有接受状态的MinDFA数(%1)不等于总数(%2)")
-                     .arg(acceptCount).arg(mdfas.size()));
+                 qPrintable(QString("T9-002: 有接受状态的MinDFA数(%1)不等于总数(%2)")
+                     .arg(acceptCount).arg(mdfas.size())));
     }
 
     void test_sample_tny_not_empty_output()
@@ -254,16 +261,16 @@ private slots:
         QVERIFY2(!result.runOutput.trimmed().isEmpty(),
                  "T9-003: sample.tny扫描输出为空");
 
-        QStringList tokens = result.runOutput.trimmed().split(Qt::WhitespaceSkipEmptyParts);
+        QStringList tokens = result.runOutput.trimmed().split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
         QVERIFY2(tokens.size() >= 10,
-                 QString("T9-003: 输出Token数=%1, 期望>=10").arg(tokens.size()));
+                 qPrintable(QString("T9-003: 输出Token数=%1, 期望>=10").arg(tokens.size())));
     }
 
     void test_sample_tny_err_count_acceptable()
     {
         auto result = buildFullPipeline();
 
-        QStringList tokens = result.runOutput.split(Qt::WhitespaceSkipEmptyParts);
+        QStringList tokens = result.runOutput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
         int errCount = 0;
         for (const QString& tok : tokens) {
@@ -271,14 +278,14 @@ private slots:
         }
 
         QVERIFY2(errCount <= 2,
-                 QString("T9-004: ERR数量=%1, 超过阈值(<=2)").arg(errCount));
+                 qPrintable(QString("T9-004: ERR数量=%1, 超过阈值(<=2)").arg(errCount)));
     }
 
     void test_specific_tokens_correct()
     {
         auto result = buildFullPipeline();
 
-        QStringList tokens = result.runOutput.split(Qt::WhitespaceSkipEmptyParts);
+        QStringList tokens = result.runOutput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
         bool foundRead = false;
         bool foundIf = false;
@@ -357,7 +364,7 @@ private slots:
 
         for (auto it = regexFile.rules.begin(); it != regexFile.rules.end(); ++it) {
             QVERIFY2(reRead.rules.contains(it->name),
-                     QString("T9-006: 重读后丢失宏规则: %1").arg(it->name));
+                     qPrintable(QString("T9-006: 重读后丢失宏规则: %1").arg(it->name)));
             QCOMPARE(reRead.rules[it->name].expr, it->expr);
         }
 

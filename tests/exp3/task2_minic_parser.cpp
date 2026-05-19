@@ -5,11 +5,11 @@
 #include <QMap>
 #include <QVector>
 #include <QStringList>
-#include "../../../src/syntax/Grammar.h"
-#include "../../../src/syntax/GrammarParser.h"
-#include "../../../src/syntax/LL1.h"
-#include "../../../src/syntax/LALR1.h"
-#include "../../../src/syntax/LR1Parser.h"
+#include "src/syntax/Grammar.h"
+#include "src/syntax/GrammarParser.h"
+#include "src/syntax/LL1.h"
+#include "src/syntax/LALR1.h"
+#include "src/syntax/LR1Parser.h"
 #include "../common/TestIO.h"
 
 class TestExp3Task2_MiniCParser : public QObject
@@ -20,11 +20,17 @@ private:
     Grammar loadMiniCGrammar()
     {
         QString content = testio_readTestData("syntax/minic.txt");
-        QVERIFY2(!content.isEmpty(), "无法加载syntax/minic.txt测试数据");
+        if (content.isEmpty()) {
+            qFatal("无法加载syntax/minic.txt测试数据");
+            return Grammar();
+        }
 
         QString err;
         Grammar g = GrammarParser::parseString(content, err);
-        QVERIFY2(err.isEmpty(), QString("Mini-C文法解析失败: %1").arg(err).toUtf8().constData());
+        if (!err.isEmpty()) {
+            qFatal("Mini-C文法解析失败: %s", qPrintable(QString("Mini-C文法解析失败: %1").arg(err)));
+            return Grammar();
+        }
         return g;
     }
 

@@ -4,15 +4,15 @@
 #include <QSet>
 #include <QMap>
 #include <QVector>
-#include "../../src/model/Automata.h"
-#include "../../src/model/Alphabet.h"
-#include "../../src/regex/RegexLexer.h"
-#include "../../src/regex/RegexParser.h"
-#include "../../src/automata/Thompson.h"
-#include "../../src/automata/SubsetConstruction.h"
-#include "../../src/automata/Hopcroft.h"
-#include "../../src/generator/CodeGenerator.h"
-#include "../../src/Engine.h"
+#include "src/model/Automata.h"
+#include "src/model/Alphabet.h"
+#include "src/regex/RegexLexer.h"
+#include "src/regex/RegexParser.h"
+#include "src/automata/Thompson.h"
+#include "src/automata/SubsetConstruction.h"
+#include "src/automata/Hopcroft.h"
+#include "src/generator/CodeGenerator.h"
+#include "src/Engine.h"
 
 class TestExp1Task7_CodeGen : public QObject
 {

@@ -5,12 +5,12 @@
 #include <QMap>
 #include <QVector>
 #include <QStringList>
-#include "../../../src/syntax/Grammar.h"
-#include "../../../src/syntax/GrammarParser.h"
-#include "../../../src/syntax/LL1.h"
-#include "../../../src/syntax/LR1.h"
-#include "../../../src/syntax/LALR1.h"
-#include "../../../src/syntax/LR1Parser.h"
+#include "src/syntax/Grammar.h"
+#include "src/syntax/GrammarParser.h"
+#include "src/syntax/LL1.h"
+#include "src/syntax/LR1.h"
+#include "src/syntax/LALR1.h"
+#include "src/syntax/LR1Parser.h"
 #include "../common/TestIO.h"
 
 class TestExp2Task8_TinyFull : public QObject
@@ -21,11 +21,17 @@ private:
     Grammar loadTinyGrammar()
     {
         QString content = testio_readTestData("syntax/tiny.txt");
-        QVERIFY2(!content.isEmpty(), "无法加载syntax/tiny.txt测试数据");
+        if (content.isEmpty()) {
+            qFatal("无法加载syntax/tiny.txt测试数据");
+            return Grammar();
+        }
 
         QString err;
         Grammar g = GrammarParser::parseString(content, err);
-        QVERIFY2(err.isEmpty(), QString("TINY文法解析失败: %1").arg(err).toUtf8().constData());
+        if (!err.isEmpty()) {
+            qFatal("TINY文法解析失败: %s", qPrintable(QString("TINY文法解析失败: %1").arg(err)));
+            return Grammar();
+        }
         return g;
     }
 
@@ -340,7 +346,7 @@ private slots:
         qInfo() << "  GOTO表条目:     " << countGotoEntries(table.gotoTable);
         qInfo() << "  Token序列长度:  " << tokens.size();
         qInfo() << "  解析错误位置:   " << result.errorPos;
-        qInfo() << "  语法树根符号:   " << (result.root ? result.root->string : "null");
+        qInfo() << "  语法树根符号:   " << (result.root ? result.root->symbol : "null");
         qInfo() << "  语法树总节点:   " << countNodes(result.root);
         qInfo() << "  分析步骤数:     " << result.steps.size();
         qInfo() << "========================================";

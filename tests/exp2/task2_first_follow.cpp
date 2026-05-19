@@ -19,7 +19,10 @@ private:
     {
         QString error;
         Grammar g = GrammarParser::parseString(text, error);
-        QVERIFY2(error.isEmpty(), qPrintable(QString("文法解析失败: %1").arg(error)));
+        if (!error.isEmpty()) {
+            qFatal("文法解析失败: %s", qPrintable(error));
+            return LL1Info();
+        }
         return LL1::compute(g);
     }
 
@@ -27,7 +30,10 @@ private:
     {
         QString error;
         Grammar g = GrammarParser::parseString(text, error);
-        QVERIFY2(error.isEmpty(), qPrintable(QString("文法解析失败: %1").arg(error)));
+        if (!error.isEmpty()) {
+            qFatal("文法解析失败: %s", qPrintable(error));
+            return Grammar();
+        }
         return g;
     }
 

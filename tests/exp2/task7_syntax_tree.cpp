@@ -38,7 +38,10 @@ private:
     {
         QString error;
         Grammar g = GrammarParser::parseString(text, error);
-        QVERIFY2(error.isEmpty(), error.toUtf8().constData());
+        if (!error.isEmpty()) {
+            qFatal("文法解析失败: %s", error.toUtf8().constData());
+            return Grammar();
+        }
         return g;
     }
 

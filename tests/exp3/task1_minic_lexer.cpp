@@ -6,7 +6,9 @@
 #include <QSet>
 #include <QStringList>
 #include <QTextStream>
+#include <QRegularExpression>
 #include "src/Engine.h"
+#include "src/config/Config.h"
 #include "tests/common/TestIO.h"
 
 class TestExp3Task1_MiniCLexer : public QObject
@@ -68,11 +70,11 @@ private slots:
 
         int ruleCount = regexFile.rules.size();
         QVERIFY2(ruleCount >= 3 && ruleCount <= 10,
-                 QString("T3-1-001: 宏规则数量异常, 实际=%1, 期望范围[3, 10]").arg(ruleCount));
+                 qPrintable(QString("T3-1-001: 宏规则数量异常, 实际=%1, 期望范围[3, 10]").arg(ruleCount)));
 
         int tokenCount = regexFile.tokens.size();
         QVERIFY2(tokenCount >= 8 && tokenCount <= 15,
-                 QString("T3-1-001: Token规则数量异常, 实际=%1, 期望范围[8, 15]").arg(tokenCount));
+                 qPrintable(QString("T3-1-001: Token规则数量异常, 实际=%1, 期望范围[8, 15]").arg(tokenCount)));
 
         QStringList expectedTokenNames = {"identifier100", "number101", "comment102", "special103B", "keyword200B"};
         for (const QString& name : expectedTokenNames) {
@@ -80,7 +82,7 @@ private slots:
             for (const auto& tok : regexFile.tokens) {
                 if (tok.name == name) { found = true; break; }
             }
-            QVERIFY2(found, QString("T3-1-001: 未找到预期Token规则: %1").arg(name));
+            QVERIFY2(found, qPrintable(QString("T3-1-001: 未找到预期Token规则: %1").arg(name)));
         }
 
         auto parsedFile = engine.parseFile(regexFile);
@@ -88,7 +90,7 @@ private slots:
 
         for (const auto& pt : parsedFile.tokens) {
             QVERIFY2(pt.ast != nullptr,
-                     QString("T3-1-001: Token[%1]的AST为空, 正则表达式解析失败").arg(pt.rule.name));
+                     qPrintable(QString("T3-1-001: Token[%1]的AST为空, 正则表达式解析失败").arg(pt.rule.name)));
         }
     }
 
@@ -107,21 +109,21 @@ private slots:
                  "T3-1-002: buildAllMinDFA返回空集合, 未生成任何MinDFA");
 
         QVERIFY2(mdfas.size() >= 8,
-                 QString("T3-1-002: MinDFA数量=%1, 期望>=8(至少覆盖identifier/number/comment/special/keyword等)")
-                     .arg(mdfas.size()));
+                 qPrintable(QString("T3-1-002: MinDFA数量=%1, 期望>=8(至少覆盖identifier/number/comment/special/keyword等)")
+                     .arg(mdfas.size())));
 
         QVERIFY2(mdfas.size() <= 25,
-                 QString("T3-1-002: MinDFA数量=%1, 异常偏多(>25), 可能存在规则展开问题")
-                     .arg(mdfas.size()));
+                 qPrintable(QString("T3-1-002: MinDFA数量=%1, 异常偏多(>25), 可能存在规则展开问题")
+                     .arg(mdfas.size())));
 
         QCOMPARE(mdfas.size(), codes.size());
 
         for (int i = 0; i < mdfas.size(); ++i) {
             QVERIFY2(mdfas[i].states.size() > 0,
-                     QString("T3-1-002: 第%1个MinDFA(code=%2)状态数为0")
-                         .arg(i).arg(codes[i]));
+                     qPrintable(QString("T3-1-002: 第%1个MinDFA(code=%2)状态数为0")
+                         .arg(i).arg(codes[i])));
             QVERIFY2(mdfas[i].states.contains(mdfas[i].start),
-                     QString("T3-1-002: 第%1个MinDFA缺少起始状态").arg(i));
+                     qPrintable(QString("T3-1-002: 第%1个MinDFA缺少起始状态").arg(i)));
         }
 
         bool hasIdentifierDFA = false;
@@ -167,7 +169,7 @@ private slots:
                 anyGenerated = true;
                 validCount++;
                 QVERIFY2(mdfas[i].states.size() > 0,
-                         QString("T3-1-003: 第%1个MinDFA状态数为0但仍生成了代码").arg(i));
+                         qPrintable(QString("T3-1-003: 第%1个MinDFA状态数为0但仍生成了代码").arg(i)));
             }
         }
 
@@ -175,8 +177,8 @@ private slots:
                  "T3-1-003: generateCode未对任何MinDFA生成有效C++代码(含#include)");
 
         QVERIFY2(validCount >= 3,
-                 QString("T3-1-003: 成功生成有效C++扫描器代码的MinDFA数量=%1, 期望>=3")
-                     .arg(validCount));
+                 qPrintable(QString("T3-1-003: 成功生成有效C++扫描器代码的MinDFA数量=%1, 期望>=3")
+                     .arg(validCount)));
 
         QString combinedCode;
         for (size_t i = 0; i < mdfas.size(); ++i) {
@@ -197,11 +199,11 @@ private slots:
         QVERIFY2(!result.runOutput.isEmpty(),
                  "T3-1-004: runMultiple返回空输出, Mini-C样例词法分析无结果");
 
-        QStringList tokens = result.runOutput.split(Qt::WhitespaceSkipEmptyParts);
+        QStringList tokens = result.runOutput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
         QVERIFY2(tokens.size() >= 20,
-                 QString("T3-1-004: 输出Token数量过少, 实际=%1, 期望>=20(Mini-C样例应产生大量Token)")
-                     .arg(tokens.size()));
+                 qPrintable(QString("T3-1-004: 输出Token数量过少, 实际=%1, 期望>=20(Mini-C样例应产生大量Token)")
+                     .arg(tokens.size())));
 
         int numericTokenCount = 0;
         for (const QString& tok : tokens) {
@@ -211,15 +213,15 @@ private slots:
         }
 
         QVERIFY2(numericTokenCount >= tokens.size() * 0.8,
-                 QString("T3-1-004: 数字编码Token占比过低, 总Token=%1, 数字编码=%2")
-                     .arg(tokens.size()).arg(numericTokenCount));
+                 qPrintable(QString("T3-1-004: 数字编码Token占比过低, 总Token=%1, 数字编码=%2")
+                     .arg(tokens.size()).arg(numericTokenCount)));
     }
 
     void test_minic_output_no_critical_errors()
     {
         auto result = buildFullPipeline();
 
-        QStringList tokens = result.runOutput.split(Qt::WhitespaceSkipEmptyParts);
+        QStringList tokens = result.runOutput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
         int errCount = 0;
         for (const QString& tok : tokens) {
@@ -227,20 +229,20 @@ private slots:
         }
 
         QVERIFY2(errCount <= 3,
-                 QString("T3-1-005: ERR错误数量=%1, 超过可接受阈值(<=3), Mini-C样例分析存在过多词法错误")
-                     .arg(errCount));
+                 qPrintable(QString("T3-1-005: ERR错误数量=%1, 超过可接受阈值(<=3), Mini-C样例分析存在过多词法错误")
+                     .arg(errCount)));
 
         double errRate = tokens.size() > 0 ? (double)errCount / tokens.size() : 1.0;
         QVERIFY2(errRate < 0.1,
-                 QString("T3-1-005: 错误率=%.2f%%, 超过10%%阈值, 词法分析质量不佳")
-                     .arg(errRate * 100.0));
+                 qPrintable(QString("T3-1-005: 错误率=%.2f%%, 超过10%%阈值, 词法分析质量不佳")
+                     .arg(errRate * 100.0)));
     }
 
     void test_minic_specific_keywords()
     {
         auto result = buildFullPipeline();
 
-        QStringList tokens = result.runOutput.split(Qt::WhitespaceSkipEmptyParts);
+        QStringList tokens = result.runOutput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
         bool foundInt    = false;
         bool foundReturn = false;
@@ -291,8 +293,8 @@ private slots:
             if (ok && code >= 200 && code <= 210) keywordCount++;
         }
         QVERIFY2(keywordCount >= 5,
-                 QString("T3-1-006: 检测到的关键词Token数量=%1, 期望>=5(Mini-C样例含多个关键字)")
-                     .arg(keywordCount));
+                 qPrintable(QString("T3-1-006: 检测到的关键词Token数量=%1, 期望>=5(Mini-C样例含多个关键字)")
+                     .arg(keywordCount)));
     }
 
     void test_minic_comments_skipped()
@@ -327,7 +329,7 @@ private slots:
         QVERIFY2(!output.contains("another comment"),
                  "T3-1-007: 输出中包含第二条注释文本, 多行注释处理存在问题");
 
-        QStringList tokens = output.split(Qt::WhitespaceSkipEmptyParts);
+        QStringList tokens = output.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
         bool hasInt   = false;
         bool hasReturn = false;
 
@@ -382,8 +384,8 @@ private slots:
 
         QCOMPARE(reReadContent, result.runOutput);
 
-        QStringList originalTokens = result.runOutput.split(Qt::WhitespaceSkipEmptyParts);
-        QStringList reReadTokens   = reReadContent.split(Qt::WhitespaceSkipEmptyParts);
+        QStringList originalTokens = result.runOutput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+        QStringList reReadTokens   = reReadContent.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
         QCOMPARE(reReadTokens.size(), originalTokens.size());
 

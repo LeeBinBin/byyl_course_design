@@ -5,10 +5,10 @@
 #include <QMap>
 #include <QVector>
 #include <QStringList>
-#include "../../../src/syntax/Grammar.h"
-#include "../../../src/syntax/GrammarParser.h"
-#include "../../../src/syntax/LR1.h"
-#include "../../../src/syntax/LALR1.h"
+#include "src/syntax/Grammar.h"
+#include "src/syntax/GrammarParser.h"
+#include "src/syntax/LR1.h"
+#include "src/syntax/LALR1.h"
 
 class TestExp2Task4_LALR1DFA : public QObject
 {
@@ -41,6 +41,13 @@ private:
         return cores;
     }
 
+    static QString coreSetToString(const QSet<QString>& cores)
+    {
+        QStringList list = cores.values();
+        list.sort();
+        return list.join("|");
+    }
+
     static QSet<QString> collectAllLookaheads(const QVector<LR1Item>& items, const QString& targetCore)
     {
         QSet<QString> las;
@@ -70,7 +77,10 @@ private:
     {
         QString err;
         Grammar g = GrammarParser::parseString(text, err);
-        QVERIFY2(err.isEmpty(), QString("文法解析失败: %1").arg(err).toUtf8().constData());
+        if (!err.isEmpty()) {
+            qFatal("文法解析失败: %s", err.toUtf8().constData());
+            return Grammar();
+        }
         return g;
     }
 
@@ -121,11 +131,11 @@ private slots:
         QVERIFY2(!lr1.states.isEmpty(), "LR(1)状态集不应为空");
         QVERIFY2(!lalr.states.isEmpty(), "LALR(1)状态集不应为空");
 
-        QMap<QSet<QString>, QVector<int>> lr1CoreGroups;
+        QMap<QString, QVector<int>> lr1CoreGroups;
         for (int i = 0; i < lr1.states.size(); ++i)
         {
             QSet<QString> core = extractCores(lr1.states[i]);
-            lr1CoreGroups[core].push_back(i);
+            lr1CoreGroups[coreSetToString(core)].push_back(i);
         }
 
         bool foundMergeGroup = false;
@@ -135,13 +145,13 @@ private slots:
             {
                 foundMergeGroup = true;
 
-                QSet<QString> lr1Core = it.key();
+                QString lr1CoreStr = it.key();
 
                 bool matched = false;
                 for (int j = 0; j < lalr.states.size(); ++j)
                 {
-                    QSet<QString> lalrCore = extractLalrCores(lalr.states[j]);
-                    if (lalrCore == lr1Core)
+                    QString lalrCoreStr = coreSetToString(extractLalrCores(lalr.states[j]));
+                    if (lalrCoreStr == lr1CoreStr)
                     {
                         matched = true;
                         break;
@@ -175,11 +185,11 @@ private slots:
         QVERIFY2(!lr1.states.isEmpty() && !lalr.states.isEmpty(),
                  "LR(1)与LALR(1)均应产生有效状态");
 
-        QMap<QSet<QString>, QVector<int>> lr1CoreGroups;
+        QMap<QString, QVector<int>> lr1CoreGroups;
         for (int i = 0; i < lr1.states.size(); ++i)
         {
             QSet<QString> core = extractCores(lr1.states[i]);
-            lr1CoreGroups[core].push_back(i);
+            lr1CoreGroups[coreSetToString(core)].push_back(i);
         }
 
         for (auto git = lr1CoreGroups.begin(); git != lr1CoreGroups.end(); ++git)
@@ -189,7 +199,7 @@ private slots:
 
             const QVector<int>& group     = git.value();
             QSet<QString>        unionLookaheads;
-            QSet<QString>        groupCores = git.key();
+            QSet<QString>       groupCores = extractCores(lr1.states[group.first()]);
 
             for (int idx : group)
             {
@@ -204,7 +214,7 @@ private slots:
             for (int j = 0; j < lalr.states.size(); ++j)
             {
                 QSet<QString> lalrCore = extractLalrCores(lalr.states[j]);
-                if (lalrCore == groupCores)
+                if (coreSetToString(lalrCore) == git.key())
                 {
                     foundMerged = true;
                     QSet<QString> mergedLas;
@@ -229,7 +239,7 @@ private slots:
                     break;
                 }
             }
-            QVERIFY2(foundMergedGroup, "LALR(1)中应存在对应合并状态");
+            QVERIFY2(foundMerged, "LALR(1)中应存在对应合并状态");
         }
     }
 
