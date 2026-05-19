@@ -57,16 +57,16 @@ private slots:
         QString regexContent = testio_readTestData("regex/minic.txt");
 
         QVERIFY2(!regexContent.isEmpty(),
-                 "T3-1-001: 无法加载 test_data/regex/minic.txt 测试数据文件");
+                 "T3-1-001: Failed to load test_data/regex/minic.txt test data file");
 
         auto regexFile = engine.lexFile(regexContent);
 
         QVERIFY2(regexFile.rules.contains("letter"),
-                 "T3-1-001: 未解析出letter宏规则");
+                 "T3-1-001: letter macro rule not parsed");
         QVERIFY2(regexFile.rules.contains("digit"),
-                 "T3-1-001: 未解析出digit宏规则");
+                 "T3-1-001: digit macro rule not parsed");
         QVERIFY2(regexFile.rules.contains("ws"),
-                 "T3-1-001: 未解析出ws宏规则");
+                 "T3-1-001: ws macro rule not parsed");
 
         int ruleCount = regexFile.rules.size();
         QVERIFY2(ruleCount >= 3 && ruleCount <= 10,
@@ -74,7 +74,7 @@ private slots:
 
         int tokenCount = regexFile.tokens.size();
         QVERIFY2(tokenCount >= 8 && tokenCount <= 15,
-                 qPrintable(QString("T3-1-001: Token规则数量异常, 实际=%1, 期望范围[8, 15]").arg(tokenCount)));
+                 qPrintable(QString("T3-1-001: Abnormal Token rule count, actual=%1, expected range [8, 15]").arg(tokenCount)));
 
         QStringList expectedTokenNames = {"identifier100", "number101", "comment102", "special103B", "keyword200B"};
         for (const QString& name : expectedTokenNames) {
@@ -90,14 +90,14 @@ private slots:
 
         for (const auto& pt : parsedFile.tokens) {
             QVERIFY2(pt.ast != nullptr,
-                     qPrintable(QString("T3-1-001: Token[%1]的AST为空, 正则表达式解析失败").arg(pt.rule.name)));
+                     qPrintable(QString("T3-1-001: Token[%1] AST is null, regex parsing failed").arg(pt.rule.name)));
         }
     }
 
     void test_build_minic_minDFAs()
     {
         QString regexContent = testio_readTestData("regex/minic.txt");
-        QVERIFY2(!regexContent.isEmpty(), "T3-1-002: 无法加载minic.txt正则规则");
+        QVERIFY2(!regexContent.isEmpty(), "T3-1-002: Failed to load minic.txt regex rules");
 
         auto regexFile  = engine.lexFile(regexContent);
         auto parsedFile = engine.parseFile(regexFile);
@@ -123,7 +123,7 @@ private slots:
                      qPrintable(QString("T3-1-002: MinDFA #%1 (code=%2) has 0 states")
                         .arg(i).arg(codes[i])));
             QVERIFY2(mdfas[i].states.contains(mdfas[i].start),
-                     qPrintable(QString("T3-1-002: 第%1个MinDFA缺少起始状态").arg(i)));
+                 qPrintable(QString("T3-1-002: MinDFA #%1 missing start state").arg(i)));
         }
 
         bool hasIdentifierDFA = false;
@@ -177,7 +177,7 @@ private slots:
                  "T3-1-003: generateCode did not generate valid C++ code for any MinDFA (containing #include)");
 
         QVERIFY2(validCount >= 3,
-                 qPrintable(QString("T3-1-003: 成功生成有效C++扫描器代码的MinDFA数量=%1, 期望>=3")
+                 qPrintable(QString("T3-1-003: Valid C++ scanner code generated for MinDFA count=%1, expected>=3")
                      .arg(validCount)));
 
         QString combinedCode;
@@ -186,7 +186,7 @@ private slots:
         }
 
         QVERIFY2(combinedCode.contains("int") || combinedCode.contains("switch") || combinedCode.contains("case"),
-                 "T3-1-003: 生成的扫描器代码缺少核心控制结构(switch/case/int)");
+                 "T3-1-003: Generated scanner code missing core control structures (switch/case/int)");
     }
 
     void test_lex_minic_sample_program()
@@ -197,12 +197,12 @@ private slots:
                  "T3-1-004: Failed to load test_data/sample/minic.txt sample program");
 
         QVERIFY2(!result.runOutput.isEmpty(),
-                 "T3-1-004: runMultiple返回空输出, Mini-C样例词法分析无结果");
+                 "T3-1-004: runMultiple returned empty output, Mini-C sample lexical analysis has no result");
 
         QStringList tokens = result.runOutput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
         QVERIFY2(tokens.size() >= 20,
-                 qPrintable(QString("T3-1-004: 输出Token数量过少, 实际=%1, 期望>=20(Mini-C样例应产生大量Token)")
+                 qPrintable(QString("T3-1-004: Too few output Tokens, actual=%1, expected>=20 (Mini-C sample should produce many Tokens)")
                      .arg(tokens.size())));
 
         int numericTokenCount = 0;
@@ -213,7 +213,7 @@ private slots:
         }
 
         QVERIFY2(numericTokenCount >= tokens.size() * 0.8,
-                 qPrintable(QString("T3-1-004: 数字编码Token占比过低, 总Token=%1, 数字编码=%2")
+                 qPrintable(QString("T3-1-004: Numeric code Token ratio too low, total Tokens=%1, numeric codes=%2")
                      .arg(tokens.size()).arg(numericTokenCount)));
     }
 
@@ -234,7 +234,7 @@ private slots:
 
         double errRate = tokens.size() > 0 ? (double)errCount / tokens.size() : 1.0;
         QVERIFY2(errRate < 0.1,
-                 qPrintable(QString("T3-1-005: 错误率=%.2f%%, 超过10%%阈值, 词法分析质量不佳")
+                 qPrintable(QString("T3-1-005: Error rate=%.2f%%, exceeds 10%% threshold, lexical analysis quality poor")
                      .arg(errRate * 100.0)));
     }
 
@@ -275,16 +275,16 @@ private slots:
         QVERIFY2(foundInt,
                  "T3-1-006: 'int' keyword Token code (>=200) not detected in output");
         QVERIFY2(foundReturn,
-                 "T3-1-006: 未在输出中检测到'return'关键词Token编码");
+                 "T3-1-006: 'return' keyword Token code not detected in output");
         QVERIFY2(foundIf,
                  "T3-1-006: 'if' keyword Token code not detected in output");
         QVERIFY2(foundElse,
-                 "T3-1-006: 未在输出中检测到'else'关键词Token编码");
+                 "T3-1-006: 'else' keyword Token code not detected in output");
 
         bool foundAnyKeyword = foundInt || foundReturn || foundIf || foundElse ||
                                foundWhile || foundVoid || foundReal;
         QVERIFY2(foundAnyKeyword,
-                 "T3-1-006: 未检测到任何Mini-C关键词Token, 关键字识别可能完全失败");
+                 "T3-1-006: No Mini-C keyword Token detected, keyword recognition may have completely failed");
 
         int keywordCount = 0;
         for (const QString& tok : tokens) {
@@ -293,14 +293,14 @@ private slots:
             if (ok && code >= 200 && code <= 210) keywordCount++;
         }
         QVERIFY2(keywordCount >= 5,
-                 qPrintable(QString("T3-1-006: 检测到的关键词Token数量=%1, 期望>=5(Mini-C样例含多个关键字)")
+                 qPrintable(QString("T3-1-006: Detected keyword Token count=%1, expected>=5 (Mini-C sample contains multiple keywords)")
                      .arg(keywordCount)));
     }
 
     void test_minic_comments_skipped()
     {
         QString regexContent = testio_readTestData("regex/minic.txt");
-        QVERIFY2(!regexContent.isEmpty(), "T3-1-007: 无法加载minic.txt正则规则");
+        QVERIFY2(!regexContent.isEmpty(), "T3-1-007: Failed to load minic.txt regex rules");
 
         auto regexFile  = engine.lexFile(regexContent);
         auto parsedFile = engine.parseFile(regexFile);
@@ -324,7 +324,7 @@ private slots:
 
         QVERIFY2(!output.contains("comment", Qt::CaseInsensitive) &&
                  !output.contains("this is a line", Qt::CaseInsensitive),
-                 "T3-1-007: 输出中包含注释文本内容, 注释未被正确过滤");
+                 "T3-1-007: Output contains comment text content, comments not correctly filtered");
 
         QVERIFY2(!output.contains("another comment"),
                  "T3-1-007: Output contains second comment text, multi-line comment processing has issues");
@@ -344,9 +344,9 @@ private slots:
         }
 
         QVERIFY2(hasInt,
-                 "T3-1-007: 含注释源码中未检测到'int'关键词Token, 注释可能干扰了正常Token识别");
+                 "T3-1-007: 'int' keyword Token not detected in comment-containing source code, comments may interfere with normal Token recognition");
         QVERIFY2(hasReturn,
-                 "T3-1-007: 含注释源码中未检测到'return'关键词Token, 注释跳过后续解析异常");
+                 "T3-1-007: 'return' keyword Token not detected in comment-containing source code, comment skipping caused subsequent parsing exception");
 
         QString pureSample = testio_readTestData("sample/minic.txt");
         Config::setSkipLine(true);
@@ -355,7 +355,7 @@ private slots:
         Config::setSkipLine(false);
 
         QVERIFY2(!sampleOutput.contains("// this is a comment"),
-                 "T3-1-007: Mini-C样例首行注释'// this is a comment'出现在输出中, 注释跳过失效");
+                 "T3-1-007: Mini-C sample first line comment '// this is a comment' appears in output, comment skipping failed");
     }
 
     void test_save_minic_lex_output()
@@ -363,20 +363,20 @@ private slots:
         auto result = buildFullPipeline();
 
         QVERIFY2(!result.runOutput.isEmpty(),
-                 "T3-1-008: runMultiple输出为空, 无法进行保存测试");
+                 "T3-1-008: runMultiple output is empty, cannot perform save test");
 
         QString lexFilePath = "test_output/minic_output.lex";
         bool writeOk = testio_writeTestOutput(lexFilePath, result.runOutput);
 
         QVERIFY2(writeOk,
-                 "T3-1-008: 写入.lex文件失败, testio_writeTestOutput返回false");
+                 "T3-1-008: Failed to write .lex file, testio_writeTestOutput returned false");
 
         QFile readFile(QDir::currentPath() + "/test_output/" + lexFilePath);
         QVERIFY2(readFile.exists(),
                  "T3-1-008: .lex file does not exist on disk after writing");
 
         QVERIFY2(readFile.open(QIODevice::ReadOnly | QIODevice::Text),
-                 "T3-1-008: 无法以只读模式重新打开.lex文件");
+                 "T3-1-008: Failed to reopen .lex file in read-only mode");
 
         QTextStream in(&readFile);
         QString reReadContent = in.readAll();
@@ -413,7 +413,7 @@ private slots:
 
         bool fullWriteOk = testio_writeTestOutput("minic_full_output.lex", headerExport);
         QVERIFY2(fullWriteOk,
-                 "T3-1-008: 完整.lex报告文件写入失败");
+                 "T3-1-008: Failed to write complete .lex report file");
 
         QFile fullFile(QDir::currentPath() + "/test_output/minic_full_output.lex");
         QVERIFY2(fullFile.exists() && fullFile.open(QIODevice::ReadOnly | QIODevice::Text),
@@ -423,7 +423,7 @@ private slots:
         fullFile.close();
 
         QVERIFY2(fullReRead.contains("Mini-C Lexical Analysis Output"),
-                 "T3-1-008: 重读的完整.lex文件缺少文件头标识");
+                 "T3-1-008: Re-read complete .lex file missing file header identifier");
         QVERIFY2(fullReRead.contains(result.runOutput),
                  "T3-1-008: Re-read complete .lex file does not contain original Token output content");
     }

@@ -34,7 +34,7 @@ private:
 
         QString regexContent = testio_readTestData("regex/tiny.txt");
         if (regexContent.isEmpty()) {
-            qFatal("无法加载 regex/tiny.txt 测试数据");
+            qFatal("Failed to load regex/tiny.txt test data");
             return result;
         }
 
@@ -89,16 +89,16 @@ private slots:
             if (!codeStr.isEmpty() && codeStr.contains("#include")) {
                 generatedForAny = true;
                 QVERIFY2(mdfas[i].states.size() > 0,
-                         qPrintable(QString("步骤A: 第%1个MinDFA状态数为0").arg(i)));
+                         qPrintable(QString("Step A: MinDFA #%1 state count is 0").arg(i)));
             }
         }
-        QVERIFY2(generatedForAny, "步骤A: generateCode未生成有效C++代码");
+        QVERIFY2(generatedForAny, "Step A: generateCode did not generate valid C++ code");
     }
 
     void test_stepB_compile_tiny_scanner()
     {
         QString regexContent = testio_readTestData("regex/tiny.txt");
-        QVERIFY2(!regexContent.isEmpty(), "步骤B: 无法加载tiny.txt");
+        QVERIFY2(!regexContent.isEmpty(), "Step B: Failed to load tiny.txt");
 
         auto regexFile  = engine.lexFile(regexContent);
         auto parsedFile = engine.parseFile(regexFile);
@@ -118,7 +118,7 @@ private slots:
         QSKIP_IF_NO_COMPILER();
 
         QTemporaryFile srcFile(QDir::tempPath() + "/tiny_scanner_XXXXXX.cpp");
-        QVERIFY2(srcFile.open(), "步骤B: 无法创建临时源文件");
+        QVERIFY2(srcFile.open(), "Step B: Failed to create temporary source file");
 
         QTextStream out(&srcFile);
         out << "#include <iostream>\n";
@@ -140,12 +140,12 @@ private slots:
         bool finished = compiler.waitForFinished(30000);
 
         if (!finished || compiler.exitCode() != 0) {
-            qWarning() << "步骤B: 编译输出:" << compiler.readAllStandardError();
-            QSKIP("步骤B: 编译失败或超时，跳过此测试");
+            qWarning() << "Step B: Compiler output:" << compiler.readAllStandardError();
+            QSKIP("Step B: Compilation failed or timed out, skipping this test");
         }
 
         QVERIFY2(compiler.exitCode() == 0,
-                 qPrintable(QString("步骤B: 编译退出码=%1").arg(compiler.exitCode())));
+                 qPrintable(QString("Step B: Compiler exit code=%1").arg(compiler.exitCode())));
     }
 
     void test_stepC_run_sample_tny()
@@ -181,22 +181,22 @@ private slots:
     void test_tiny_regex_parsed_correctly()
     {
         QString regexContent = testio_readTestData("regex/tiny.txt");
-        QVERIFY2(!regexContent.isEmpty(), "T9-001: 无法加载regex/tiny.txt");
+        QVERIFY2(!regexContent.isEmpty(), "T9-001: Failed to load regex/tiny.txt");
 
         auto regexFile = engine.lexFile(regexContent);
 
         QVERIFY2(regexFile.rules.contains("letter"),
-                 "T9-001: 未解析出letter宏规则");
+                 "T9-001: letter macro rule not parsed");
         QVERIFY2(regexFile.rules.contains("digit"),
-                 "T9-001: 未解析出digit宏规则");
+                 "T9-001: digit macro rule not parsed");
         QVERIFY2(regexFile.rules.contains("ws"),
-                 "T9-001: 未解析出ws宏规则");
+                 "T9-001: ws macro rule not parsed");
 
         QCOMPARE(regexFile.rules.size(), 3);
 
         int tokenCount = regexFile.tokens.size();
         QVERIFY2(tokenCount >= 5,
-                 qPrintable(QString("T9-001: Token规则数量异常, 实际=%1, 期望=5").arg(tokenCount)));
+                 qPrintable(QString("T9-001: Abnormal Token rule count, actual=%1, expected=5").arg(tokenCount)));
 
         QStringList expectedTokens = {"identifier100", "number101", "comment102", "special103B", "keyword200B"};
         for (const QString& name : expectedTokens) {
@@ -204,7 +204,7 @@ private slots:
             for (const auto& tok : regexFile.tokens) {
                 if (tok.name == name) { found = true; break; }
             }
-            QVERIFY2(found, qPrintable(QString("T9-001: 未找到Token规则: %1").arg(name)));
+            QVERIFY2(found, qPrintable(QString("T9-001: Token rule not found: %1").arg(name)));
         }
 
         auto parsedFile = engine.parseFile(regexFile);
@@ -250,7 +250,7 @@ private slots:
             }
         }
         QVERIFY2(acceptCount == mdfas.size(),
-                 qPrintable(QString("T9-002: 有接受状态的MinDFA数(%1)不等于总数(%2)")
+                 qPrintable(QString("T9-002: MinDFA count with accept state(%1) does not match total(%2)")
                      .arg(acceptCount).arg(mdfas.size())));
     }
 
@@ -278,7 +278,7 @@ private slots:
         }
 
         QVERIFY2(errCount <= 2,
-                 qPrintable(QString("T9-004: ERR数量=%1, 超过阈值(<=2)").arg(errCount)));
+                 qPrintable(QString("T9-004: ERR count=%1, exceeds threshold (<=2)").arg(errCount)));
     }
 
     void test_specific_tokens_correct()
@@ -310,13 +310,13 @@ private slots:
         }
 
         QVERIFY2(foundRead,
-                 "T9-005: 未在输出中检测到READ关键词Token编码");
+                 "T9-005: READ keyword Token code not detected in output");
         QVERIFY2(foundIf,
-                 "T9-005: 未在输出中检测到IF关键词Token编码");
+                 "T9-005: IF keyword Token code not detected in output");
         QVERIFY2(foundEnd,
-                 "T9-005: 未在输出中检测到END关键词Token编码");
+                 "T9-005: END keyword Token code not detected in output");
         QVERIFY2(foundIdentifier,
-                 "T9-005: 未在输出中检测到IDENTIFIER(100)Token编码");
+                 "T9-005: IDENTIFIER (100) Token code not detected in output");
 
         bool hasSemicolon = false;
         bool hasAssign = false;
@@ -355,7 +355,7 @@ private slots:
         }
 
         QVERIFY2(!lexContent.trimmed().isEmpty(),
-                 "T9-006: 生成的.lex内容为空");
+                 "T9-006: Generated .lex content is empty");
 
         RegexFile reRead = engine.lexFile(lexContent);
 
@@ -415,7 +415,7 @@ private:
     static void QSKIP_IF_NO_COMPILER()
     {
         if (detectCompiler().isEmpty()) {
-            QSKIP("当前环境未检测到C++编译器(clang++/g++)，跳过编译相关测试");
+            QSKIP("C++ compiler (clang++/g++) not detected in current environment, skipping compile-related tests");
         }
     }
 };

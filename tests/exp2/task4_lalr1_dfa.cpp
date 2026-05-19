@@ -99,11 +99,11 @@ private slots:
         QVERIFY2(lr1.states.size() > 0, "LR(1) should produce at least one state");
         QVERIFY2(lalr.states.size() > 0, "LALR(1) should produce at least one state");
 
-        qInfo() << "[T2-4-001] LR(1)状态数:" << lr1.states.size()
-                << "LALR(1)状态数:" << lalr.states.size();
+        qInfo() << "[T2-4-001] LR(1) state count:" << lr1.states.size()
+                << "LALR(1) state count:" << lalr.states.size();
 
         QVERIFY2(lalr.states.size() <= lr1.states.size(),
-                 QString("LALR(1)状态数(%1)应<=LR(1)状态数(%2)")
+                 QString("LALR(1) state count(%1) should be <= LR(1) state count(%2)")
                      .arg(lalr.states.size())
                      .arg(lr1.states.size())
                      .toUtf8()
@@ -165,7 +165,7 @@ private slots:
             }
         }
 
-        qInfo() << "[T2-4-002] LR(1)同心项组数量:"
+        qInfo() << "[T2-4-002] LR(1) core item group count:"
                 << std::count_if(lr1CoreGroups.begin(), lr1CoreGroups.end(),
                                  [](const QVector<int>& v) { return v.size() > 1; });
         QVERIFY2(foundMergeGroup || lr1.states.size() == lalr.states.size(),

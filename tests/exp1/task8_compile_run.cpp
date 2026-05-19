@@ -91,7 +91,7 @@ private slots:
 
         bool hasErrOrEmpty = result.contains("ERR") || result.isEmpty() || !result.contains("100");
         QVERIFY2(hasErrOrEmpty,
-                 QString("单次扫描拒绝测试失败: 输入'123abc'对ID规则应被拒绝, 实际输出[%1]").arg(result).toUtf8().constData());
+                 QString("Single scan reject test failed: input '123abc' should be rejected for ID rule, actual output [%1]").arg(result).toUtf8().constData());
     }
 
     void test_multiple_keywords_priority()
@@ -124,7 +124,7 @@ private slots:
         }
 
         QVERIFY2(foundKeywordFirst,
-                 QString("关键词优先级测试失败: 'if abc'输出[%1], 'if'应匹配keyword编码(>=200), 'abc'应匹配ID编码(100)")
+                 QString("Keyword priority test failed: 'if abc' output [%1], 'if' should match keyword code (>=200), 'abc' should match ID code (100)")
                      .arg(result)
                      .toUtf8()
                      .constData());
@@ -200,19 +200,19 @@ private slots:
         }
 
         QVERIFY2(hasRead,
-                 QString("TINY示例Token测试失败: 输出[%1]应包含READ(keyword)编码")
+                 QString("TINY sample Token test failed: output [%1] should contain READ (keyword) code")
                      .arg(result)
                      .toUtf8()
                      .constData());
 
         QVERIFY2(hasId,
-                 QString("TINY示例Token测试失败: 输出[%1]应包含ID编码(100)")
+                 QString("TINY sample Token test failed: output [%1] should contain ID code (100)")
                      .arg(result)
                      .toUtf8()
                      .constData());
 
         QVERIFY2(hasSemi,
-                 QString("TINY示例Token测试失败: 输出[%1]应包含SEMICOLON(special)编码")
+                 QString("TINY sample Token test failed: output [%1] should contain SEMICOLON (special) code")
                      .arg(result)
                      .toUtf8()
                      .constData());
@@ -221,7 +221,7 @@ private slots:
     void test_comment_skipped()
     {
         QString tinyText = testio_readTestData("regex/tiny.txt");
-        QVERIFY2(!tinyText.isEmpty(), "无法加载TINY规则测试数据");
+        QVERIFY2(!tinyText.isEmpty(), "Failed to load TINY rule test data");
 
         auto setup = buildMultiDFAFromRules(tinyText);
         QSet<int> idCodes;
@@ -237,13 +237,13 @@ private slots:
         Config::setSkipBrace(false);
 
         QVERIFY2(!result.contains("{"),
-                 QString("注释跳过测试失败: 输出[%1]不应包含花括号字符")
+                 QString("Comment skip test failed: output [%1] should not contain brace characters")
                      .arg(result)
                      .toUtf8()
                      .constData());
 
         QVERIFY2(!result.contains("comment") && !result.contains("COMMENT"),
-                 QString("注释跳过测试失败: 输出[%1]不应包含comment文本")
+                 QString("Comment skip test failed: output [%1] should not contain comment text")
                      .arg(result)
                      .toUtf8()
                      .constData());
