@@ -209,73 +209,34 @@ function(add_byyl_test TARGET_NAME TEST_DISPLAY_NAME TEST_SRC)
     add_test(NAME "${TEST_DISPLAY_NAME}" COMMAND ${TARGET_NAME})
 endfunction()
 
-add_byyl_test(FACoreTest "FA核心测试" tests/automata/fa_core_test.cpp)
-add_byyl_test(LongestMatchTest "最长匹配测试" tests/lexer/longest_match_test.cpp)
-add_byyl_test(GrammarParserTest "文法解析测试" tests/syntax/grammar_parser_test.cpp)
-add_byyl_test(LL1Test "LL1算法测试" tests/syntax/ll1_test.cpp)
-add_byyl_test(LR1Test "LR1算法测试" tests/syntax/lr1_test.cpp)
-add_byyl_test(LR1SemanticTreeExampleTest "语义树示例测试" tests/syntax/lr1_semantic_tree_example_test.cpp)
-add_byyl_test(LR1SemanticTreeFullTest "语义树完整结构测试" tests/syntax/lr1_semantic_tree_full_test.cpp)
+add_byyl_test(Exp1Task1RegexInput "Exp1 Task1 Regex Input" tests/exp1/task1_regex_input.cpp)
+add_byyl_test(Exp1Task2Operators "Exp1 Task2 Regex Operators" tests/exp1/task2_regex_operators.cpp)
+add_byyl_test(Exp1Task4NFA "Exp1 Task4 NFA Construction" tests/exp1/task4_nfa.cpp)
+add_byyl_test(Exp1Task5DFA "Exp1 Task5 DFA Construction" tests/exp1/task5_dfa.cpp)
+add_byyl_test(Exp1Task6MinDFA "Exp1 Task6 MinDFA Minimization" tests/exp1/task6_mindfa.cpp)
+add_byyl_test(Exp1Task7CodeGen "Exp1 Task7 Code Generation" tests/exp1/task7_code_gen.cpp)
+add_byyl_test(Exp1Task8CompileRun "Exp1 Task8 Compile and Run" tests/exp1/task8_compile_run.cpp)
+add_byyl_test(Exp1Task9TinyTest "Exp1 Task9 TINY Pipeline Test" tests/exp1/task9_tiny_test.cpp)
 
-if(BYYL_BUILD_INTEGRATION_TESTS)
-    add_byyl_test(CliRegexTest "命令行正则测试" tests/cli/cli_regex_test.cpp tests/cli/cli_regex_test.h)
-    add_byyl_test(CodegenTest "代码生成器测试" tests/codegen/codegen_compile_run_test.cpp tests/codegen/codegen_compile_run_test.h)
-endif()
+# ============================================================
+# Experiment 2: Syntax Analyzer Unit Tests (8 task points)
+# ============================================================
+add_byyl_test(Exp2Task1BNFInput "Exp2 Task1 BNF Grammar Input" tests/exp2/task1_bnf_input.cpp)
+add_byyl_test(Exp2Task2FirstFollow "Exp2 Task2 FIRST-FOLLOW Sets" tests/exp2/task2_first_follow.cpp)
+add_byyl_test(Exp2Task3LR1DFA "Exp2 Task3 LR(1) DFA Graph" tests/exp2/task3_lr1_dfa.cpp)
+add_byyl_test(Exp2Task4LALR1DFA "Exp2 Task4 LALR(1) DFA Graph" tests/exp2/task4_lalr1_dfa.cpp)
+add_byyl_test(Exp2Task5LALR1Table "Exp2 Task5 LALR(1) Parsing Table" tests/exp2/task5_lalr1_table.cpp)
+add_byyl_test(Exp2Task6SyntaxProcess "Exp2 Task6 Syntax Analysis Process" tests/exp2/task6_syntax_process.cpp)
+add_byyl_test(Exp2Task7SyntaxTree "Exp2 Task7 Syntax Tree Generation" tests/exp2/task7_syntax_tree.cpp)
+add_byyl_test(Exp2Task8TinyFull "Exp2 Task8 TINY Full Pipeline" tests/exp2/task8_tiny_full.cpp)
 
-add_executable(GuiTest tests/ui/auto_test_ui.cpp)
-target_sources(GuiTest PRIVATE
-    app/mainwindow.cpp
-    app/mainwindow.h
-    app/mainwindow.ui
-    app/controllers/SyntaxController/SyntaxController.h
-    app/controllers/SyntaxController/SyntaxController.cpp
-    app/controllers/SyntaxController/LR1Controller.cpp
-    app/controllers/AutomataController/AutomataController.h
-    app/controllers/AutomataController/AutomataController.cpp
-    app/controllers/SettingsController/SettingsController.cpp
-    app/controllers/GeneratorController/GeneratorController.cpp
-    app/controllers/CodeViewController/CodeViewController.cpp
-    app/controllers/TestValidationController/TestValidationController.h
-    app/controllers/TestValidationController/TestValidationController.cpp
-    app/services/NotificationService/NotificationService.h
-    app/services/NotificationService/NotificationService.cpp
-    app/services/DotService/DotService.cpp
-    app/services/FileService/FileService.cpp
-    app/components/ToastWidget/ToastWidget.cpp
-    app/components/ToastManager/ToastManager.cpp
-    app/components/SettingsDialog/SettingsDialog.cpp
-    app/components/ImagePreviewDialog/ImagePreviewDialog.cpp
-    app/pages/home/HomePage.cpp
-    app/pages/exp1/Exp1Page.cpp
-    app/pages/exp2/Exp2Page.cpp
-    app/experiments/exp2/tabs/lr/LRTab.cpp
-    app/experiments/exp2/dialogs/LR1TableDialog.cpp
-    app/experiments/exp2/dialogs/LR1ActionTableDialog.cpp
-    app/experiments/exp2/dialogs/LALR1TableDialog.cpp
-    app/experiments/exp2/dialogs/LALR1ActionTableDialog.cpp
-    app/experiments/exp2/dialogs/GrammarProcessDialog.cpp
-    app/experiments/exp1/helpers/AutomataTableHelper.cpp
-    app/experiments/exp2/helpers/SyntaxTableHelper.cpp
-    app/experiments/exp2/tabs/grammar/GrammarEditorTab.cpp
-    app/experiments/exp2/tabs/grammar/FirstFollowTab.cpp
-    app/experiments/exp2/tabs/syntax/SyntaxTreeTab.cpp
-    app/experiments/exp2/tabs/syntax/SyntaxCodeViewTab.cpp
-    app/experiments/exp2/tabs/syntax/LR1ProcessTab.cpp
-    app/experiments/exp2/tabs/syntax/LR1TreeTab.cpp
-    app/experiments/exp1/tabs/regex/RegexEditorTab.cpp
-    app/experiments/exp1/tabs/automata/NFAViewTab.cpp
-    app/experiments/exp1/tabs/automata/DFAViewTab.cpp
-    app/components/ExportGraphButton/ExportGraphButton.cpp
-    app/experiments/exp1/tabs/automata/MinDFAViewTab.cpp
-    app/experiments/exp1/tabs/code/CodeViewTab.cpp
-    app/experiments/exp1/tabs/test/TestValidationTab.cpp
-    src/syntax/DotGenerator.cpp
-    src/generator/SyntaxCodeGenerator.cpp
-    src/visual/DotExporter.cpp
-    app/controllers/RegexController/RegexController.cpp
-)
-target_link_libraries(GuiTest PRIVATE Qt6::Widgets Qt6::Test byyl_core)
-if(BYYL_ENABLE_PCH)
-    target_precompile_headers(GuiTest REUSE_FROM byyl_core)
-endif()
-add_test(NAME 界面测试 COMMAND GuiTest)
+# ============================================================
+# Experiment 3: Mini-C Language Tests (2 task points)
+# ============================================================
+add_byyl_test(Exp3Task1MiniCLexer "Exp3 Task1 Mini-C Lexer Test" tests/exp3/task1_minic_lexer.cpp)
+add_byyl_test(Exp3Task2MiniCParser "Exp3 Task2 Mini-C Parser Test" tests/exp3/task2_minic_parser.cpp)
+
+# ============================================================
+# End of unit test registrations
+# Total: 18 unit test targets (Exp1: 8, Exp2: 8, Exp3: 2)
+# ============================================================
