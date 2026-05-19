@@ -21,7 +21,7 @@ private:
     {
         QString content = testio_readTestData("syntax/minic.txt");
         if (content.isEmpty()) {
-            qFatal("无法加载syntax/minic.txt测试数据");
+            qFatal("Failed to load syntax/minic.txt test data");
             return Grammar();
         }
 
@@ -85,7 +85,7 @@ private slots:
 
         int prodCount = countProductions(g);
         QVERIFY2(prodCount >= 30,
-                 QString("Mini-C产生式数(%1)应>=30").arg(prodCount).toUtf8().constData());
+                 QString("Mini-C production count (%1) should be >= 30").arg(prodCount).toUtf8().constData());
 
         QCOMPARE(g.startSymbol, QString("program"));
         QVERIFY(g.nonterminals.contains("program"));
@@ -110,7 +110,7 @@ private slots:
 
         LL1Info info = LL1::compute(g);
 
-        QVERIFY2(!info.first.isEmpty(), "FIRST集不应为空");
+        QVERIFY2(!info.first.isEmpty(), "FIRST set should not be empty");
         QVERIFY2(!info.follow.isEmpty(), "FOLLOW集不应为空");
 
         QStringList keyNonTerminals = {
@@ -123,11 +123,11 @@ private slots:
         for (const auto& nt : keyNonTerminals)
         {
             QVERIFY2(info.first.contains(nt),
-                     QString("关键非终结符'%1'缺少FIRST集").arg(nt).toUtf8().constData());
+                     QString("Key nonterminal '%1' missing FIRST set").arg(nt).toUtf8().constData());
             QVERIFY2(info.follow.contains(nt),
                      QString("关键非终结符'%1'缺少FOLLOW集").arg(nt).toUtf8().constData());
             QVERIFY2(!info.first[nt].isEmpty(),
-                     QString("关键非终结符'%1'的FIRST集为空").arg(nt).toUtf8().constData());
+                     QString("Key nonterminal '%1' FIRST set is empty").arg(nt).toUtf8().constData());
         }
 
         qInfo() << "[T3-2-002] Mini-C FIRST/FOLLOW计算完成:"
@@ -145,9 +145,9 @@ private slots:
         QVERIFY2(lalr.states.size() >= 10,
                  QString("Mini-C LALR(1)状态数(%1)应>=10").arg(lalr.states.size()).toUtf8().constData());
         QVERIFY2(lalr.states.size() <= 500,
-                 QString("Mini-C LALR(1)状态数(%1)应<=500").arg(lalr.states.size()).toUtf8().constData());
+                 QString("Mini-C LALR(1) state count (%1) should be <= 500").arg(lalr.states.size()).toUtf8().constData());
 
-        QVERIFY2(!lalr.edges.isEmpty(), "LALR(1) DFA边集不应为空");
+        QVERIFY2(!lalr.edges.isEmpty(), "LALR(1) DFA edge set should not be empty");
 
         qInfo() << "[T3-2-003] Mini-C LALR(1) DFA和表构建成功:"
                 << "状态数=" << lalr.states.size()
@@ -169,12 +169,12 @@ private slots:
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
         QVERIFY2(result.errorPos == -1,
-                 QString("Mini-C Token序列解析失败，错误位置=%1").arg(result.errorPos).toUtf8().constData());
+                 QString("Mini-C Token sequence parsing failed, error position=%1").arg(result.errorPos).toUtf8().constData());
 
-        qInfo() << "[T3-2-004] Mini-C Token序列语法分析成功:"
+        qInfo() << "[T3-2-004] Mini-C Token sequence syntax analysis successful:"
                 << "errorPos=" << result.errorPos
-                << "Token长度=" << tokens.size()
-                << "分析步骤数=" << result.steps.size();
+                << "Token length=" << tokens.size()
+                << "analysis step count=" << result.steps.size();
     }
 
     void test_minic_syntax_tree_generated()
@@ -215,10 +215,10 @@ private slots:
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
-        QVERIFY2(result.root != nullptr, "语法树根节点不应为空");
+        QVERIFY2(result.root != nullptr, "Syntax tree root node should not be empty");
         QCOMPARE(result.root->symbol, QString("program"));
 
-        qInfo() << "[T3-2-006] Mini-C语法树根符号验证通过: root->symbol=\""
+        qInfo() << "[T3-2-006] Mini-C syntax tree root symbol verification passed: root->symbol=\""
                 << result.root->symbol << "\"";
     }
 
@@ -250,7 +250,7 @@ private slots:
         QVERIFY2(hasTypeDef, "语法树应包含type-indicator节点(类型指示符)");
         QVERIFY2(hasExpression, "语法树应包含expression节点(表达式)");
         QVERIFY2(hasStatementList || hasExpressionStmt,
-                 "语法树应包含statement-list或expression-stmt节点(语句结构)");
+                 "Syntax tree should contain statement-list or expression-stmt node (statement structure)");
 
         qInfo() << "[T3-2-007] Mini-C语法树关键结构验证:"
                 << "definition-list=" << hasDefinitionList
@@ -268,7 +268,7 @@ private slots:
         QCOMPARE(g.startSymbol, QString("program"));
         int prodCount = countProductions(g);
         QVERIFY2(prodCount >= 30,
-                 QString("端到端: Mini-C产生式数(%1)不足").arg(prodCount).toUtf8().constData());
+                 QString("End-to-end: Mini-C production count (%1) insufficient").arg(prodCount).toUtf8().constData());
 
         LL1Info ll1Info = LL1::compute(g);
         QVERIFY2(!ll1Info.first.isEmpty(), "端到端: FIRST集为空");
@@ -279,7 +279,7 @@ private slots:
         QVERIFY2(!lalr.edges.isEmpty(), "端到端: LALR DFA边为空");
 
         LALR1ActionTable table = LALR1Builder::computeActionTable(g, lalr);
-        QVERIFY2(!table.action.isEmpty(), "端到端: Action表为空");
+        QVERIFY2(!table.action.isEmpty(), "End-to-end: Action table is empty");
         QVERIFY2(!table.gotoTable.isEmpty(), "端到端: GOTO表为空");
 
         QVector<QString> tokens = {"int", "identifier", "=", "number", ";", "$"};
@@ -291,30 +291,30 @@ private slots:
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
         QVERIFY2(result.errorPos == -1,
-                 QString("端到端流程解析失败，errorPos=%1").arg(result.errorPos).toUtf8().constData());
+                 QString("End-to-end pipeline parsing failed, errorPos=%1").arg(result.errorPos).toUtf8().constData());
         QVERIFY2(result.root != nullptr, "端到端流程未生成语法树");
         QCOMPARE(result.root->symbol, QString("program"));
         QVERIFY2(countNodes(result.root) >= 5,
                  "端到端语法树结构不完整");
 
         qInfo() << "========================================";
-        qInfo() << "[T3-2-008] Mini-C全流程端到端验证报告";
+        qInfo() << "[T3-2-008] Mini-C full pipeline end-to-end validation report";
         qInfo() << "----------------------------------------";
-        qInfo() << "  文法产生式数:   " << prodCount;
-        qInfo() << "  起始符号:       " << g.startSymbol;
-        qInfo() << "  非终结符数:     " << g.nonterminals.size();
-        qInfo() << "  终结符数:       " << g.terminals.size();
-        qInfo() << "  FIRST集条目数:  " << ll1Info.first.size();
-        qInfo() << "  FOLLOW集条目数: " << ll1Info.follow.size();
-        qInfo() << "  LALR(1)状态数:  " << lalr.states.size();
-        qInfo() << "  Action表条目:   " << countActionEntries(table.action);
-        qInfo() << "  GOTO表条目:     " << countGotoEntries(table.gotoTable);
-        qInfo() << "  Token序列长度:  " << tokens.size();
-        qInfo() << "  Token内容:      " << tokens.join(" ");
-        qInfo() << "  解析错误位置:   " << result.errorPos;
-        qInfo() << "  语法树根符号:   " << (result.root ? result.root->symbol : "null");
-        qInfo() << "  语法树总节点:   " << countNodes(result.root);
-        qInfo() << "  分析步骤数:     " << result.steps.size();
+        qInfo() << "  Grammar productions:   " << prodCount;
+        qInfo() << "  Start symbol:          " << g.startSymbol;
+        qInfo() << "  Nonterminal count:     " << g.nonterminals.size();
+        qInfo() << "  Terminal count:        " << g.terminals.size();
+        qInfo() << "  FIRST set entries:     " << ll1Info.first.size();
+        qInfo() << "  FOLLOW set entries:    " << ll1Info.follow.size();
+        qInfo() << "  LALR(1) state count:   " << lalr.states.size();
+        qInfo() << "  Action table entries:  " << countActionEntries(table.action);
+        qInfo() << "  GOTO table entries:    " << countGotoEntries(table.gotoTable);
+        qInfo() << "  Token sequence length: " << tokens.size();
+        qInfo() << "  Token content:         " << tokens.join(" ");
+        qInfo() << "  Parse error position:  " << result.errorPos;
+        qInfo() << "  Syntax tree root:      " << (result.root ? result.root->symbol : "null");
+        qInfo() << "  Syntax tree nodes:     " << countNodes(result.root);
+        qInfo() << "  Analysis step count:   " << result.steps.size();
         qInfo() << "========================================";
     }
 

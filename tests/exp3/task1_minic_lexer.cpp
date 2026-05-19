@@ -70,7 +70,7 @@ private slots:
 
         int ruleCount = regexFile.rules.size();
         QVERIFY2(ruleCount >= 3 && ruleCount <= 10,
-                 qPrintable(QString("T3-1-001: 宏规则数量异常, 实际=%1, 期望范围[3, 10]").arg(ruleCount)));
+                 qPrintable(QString("T3-1-001: Abnormal macro rule count, actual=%1, expected range [3, 10]").arg(ruleCount)));
 
         int tokenCount = regexFile.tokens.size();
         QVERIFY2(tokenCount >= 8 && tokenCount <= 15,
@@ -82,7 +82,7 @@ private slots:
             for (const auto& tok : regexFile.tokens) {
                 if (tok.name == name) { found = true; break; }
             }
-            QVERIFY2(found, qPrintable(QString("T3-1-001: 未找到预期Token规则: %1").arg(name)));
+            QVERIFY2(found, qPrintable(QString("T3-1-001: Expected Token rule not found: %1").arg(name)));
         }
 
         auto parsedFile = engine.parseFile(regexFile);
@@ -106,22 +106,22 @@ private slots:
         auto mdfas = engine.buildAllMinDFA(parsedFile, codes);
 
         QVERIFY2(!mdfas.isEmpty(),
-                 "T3-1-002: buildAllMinDFA返回空集合, 未生成任何MinDFA");
+                 "T3-1-002: buildAllMinDFA returned empty set, no MinDFA generated");
 
         QVERIFY2(mdfas.size() >= 8,
-                 qPrintable(QString("T3-1-002: MinDFA数量=%1, 期望>=8(至少覆盖identifier/number/comment/special/keyword等)")
-                     .arg(mdfas.size())));
+                 qPrintable(QString("T3-1-002: MinDFA count=%1, expected>=8 (at least cover identifier/number/comment/special/keyword etc.)")
+                    .arg(mdfas.size())));
 
         QVERIFY2(mdfas.size() <= 25,
-                 qPrintable(QString("T3-1-002: MinDFA数量=%1, 异常偏多(>25), 可能存在规则展开问题")
-                     .arg(mdfas.size())));
+                 qPrintable(QString("T3-1-002: MinDFA count=%1, abnormally excessive (>25), possible rule expansion issue")
+                    .arg(mdfas.size())));
 
         QCOMPARE(mdfas.size(), codes.size());
 
         for (int i = 0; i < mdfas.size(); ++i) {
             QVERIFY2(mdfas[i].states.size() > 0,
-                     qPrintable(QString("T3-1-002: 第%1个MinDFA(code=%2)状态数为0")
-                         .arg(i).arg(codes[i])));
+                     qPrintable(QString("T3-1-002: MinDFA #%1 (code=%2) has 0 states")
+                        .arg(i).arg(codes[i])));
             QVERIFY2(mdfas[i].states.contains(mdfas[i].start),
                      qPrintable(QString("T3-1-002: 第%1个MinDFA缺少起始状态").arg(i)));
         }
@@ -138,16 +138,16 @@ private slots:
             if (codes[i] == 103)      hasSpecialDFA   = true;
         }
 
-        QVERIFY2(hasIdentifierDFA, "T3-1-002: 未生成identifier(code=100)的MinDFA");
-        QVERIFY2(hasNumberDFA,     "T3-1-002: 未生成number(code=101)的MinDFA");
-        QVERIFY2(hasKeywordDFA,    "T3-1-002: 未生成keyword(code>=200)的MinDFA");
-        QVERIFY2(hasSpecialDFA,   "T3-1-002: 未生成special(code=103)的MinDFA");
+        QVERIFY2(hasIdentifierDFA, "T3-1-002: No MinDFA generated for identifier (code=100)");
+        QVERIFY2(hasNumberDFA,     "T3-1-002: No MinDFA generated for number (code=101)");
+        QVERIFY2(hasKeywordDFA,    "T3-1-002: No MinDFA generated for keyword (code>=200)");
+        QVERIFY2(hasSpecialDFA,   "T3-1-002: No MinDFA generated for special (code=103)");
     }
 
     void test_generate_minic_scanner()
     {
         QString regexContent = testio_readTestData("regex/minic.txt");
-        QVERIFY2(!regexContent.isEmpty(), "T3-1-003: 无法加载minic.txt正则规则");
+        QVERIFY2(!regexContent.isEmpty(), "T3-1-003: Failed to load minic.txt regex rules");
 
         auto regexFile  = engine.lexFile(regexContent);
         auto parsedFile = engine.parseFile(regexFile);
@@ -169,12 +169,12 @@ private slots:
                 anyGenerated = true;
                 validCount++;
                 QVERIFY2(mdfas[i].states.size() > 0,
-                         qPrintable(QString("T3-1-003: 第%1个MinDFA状态数为0但仍生成了代码").arg(i)));
+                         qPrintable(QString("T3-1-003: MinDFA #%1 has 0 states but code was still generated").arg(i)));
             }
         }
 
         QVERIFY2(anyGenerated,
-                 "T3-1-003: generateCode未对任何MinDFA生成有效C++代码(含#include)");
+                 "T3-1-003: generateCode did not generate valid C++ code for any MinDFA (containing #include)");
 
         QVERIFY2(validCount >= 3,
                  qPrintable(QString("T3-1-003: 成功生成有效C++扫描器代码的MinDFA数量=%1, 期望>=3")
@@ -194,7 +194,7 @@ private slots:
         auto result = buildFullPipeline();
 
         QVERIFY2(!result.sampleSource.isEmpty(),
-                 "T3-1-004: 无法加载 test_data/sample/minic.txt 样例程序");
+                 "T3-1-004: Failed to load test_data/sample/minic.txt sample program");
 
         QVERIFY2(!result.runOutput.isEmpty(),
                  "T3-1-004: runMultiple返回空输出, Mini-C样例词法分析无结果");
@@ -229,8 +229,8 @@ private slots:
         }
 
         QVERIFY2(errCount <= 3,
-                 qPrintable(QString("T3-1-005: ERR错误数量=%1, 超过可接受阈值(<=3), Mini-C样例分析存在过多词法错误")
-                     .arg(errCount)));
+                 qPrintable(QString("T3-1-005: ERR error count=%1, exceeds acceptable threshold (<=3), Mini-C sample analysis has too many lexical errors")
+                    .arg(errCount)));
 
         double errRate = tokens.size() > 0 ? (double)errCount / tokens.size() : 1.0;
         QVERIFY2(errRate < 0.1,
@@ -273,11 +273,11 @@ private slots:
         }
 
         QVERIFY2(foundInt,
-                 "T3-1-006: 未在输出中检测到'int'关键词Token编码(>=200)");
+                 "T3-1-006: 'int' keyword Token code (>=200) not detected in output");
         QVERIFY2(foundReturn,
                  "T3-1-006: 未在输出中检测到'return'关键词Token编码");
         QVERIFY2(foundIf,
-                 "T3-1-006: 未在输出中检测到'if'关键词Token编码");
+                 "T3-1-006: 'if' keyword Token code not detected in output");
         QVERIFY2(foundElse,
                  "T3-1-006: 未在输出中检测到'else'关键词Token编码");
 
@@ -320,14 +320,14 @@ private slots:
         Config::setSkipLine(false);
 
         QVERIFY2(!output.contains("//"),
-                 "T3-1-007: 输出中包含'//'字符, 行注释内容未被正确跳过");
+                 "T3-1-007: Output contains '//' characters, line comment content was not correctly skipped");
 
         QVERIFY2(!output.contains("comment", Qt::CaseInsensitive) &&
                  !output.contains("this is a line", Qt::CaseInsensitive),
                  "T3-1-007: 输出中包含注释文本内容, 注释未被正确过滤");
 
         QVERIFY2(!output.contains("another comment"),
-                 "T3-1-007: 输出中包含第二条注释文本, 多行注释处理存在问题");
+                 "T3-1-007: Output contains second comment text, multi-line comment processing has issues");
 
         QStringList tokens = output.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
         bool hasInt   = false;
@@ -373,7 +373,7 @@ private slots:
 
         QFile readFile(QDir::currentPath() + "/test_output/" + lexFilePath);
         QVERIFY2(readFile.exists(),
-                 "T3-1-008: .lex文件写入后不存在于磁盘上");
+                 "T3-1-008: .lex file does not exist on disk after writing");
 
         QVERIFY2(readFile.open(QIODevice::ReadOnly | QIODevice::Text),
                  "T3-1-008: 无法以只读模式重新打开.lex文件");
@@ -417,7 +417,7 @@ private slots:
 
         QFile fullFile(QDir::currentPath() + "/test_output/minic_full_output.lex");
         QVERIFY2(fullFile.exists() && fullFile.open(QIODevice::ReadOnly | QIODevice::Text),
-                 "T3-1-008: 无法读取完整.lex报告文件");
+                 "T3-1-008: Failed to read complete .lex report file");
 
         QString fullReRead = QTextStream(&fullFile).readAll();
         fullFile.close();
@@ -425,7 +425,7 @@ private slots:
         QVERIFY2(fullReRead.contains("Mini-C Lexical Analysis Output"),
                  "T3-1-008: 重读的完整.lex文件缺少文件头标识");
         QVERIFY2(fullReRead.contains(result.runOutput),
-                 "T3-1-008: 重读的完整.lex文件不包含原始Token输出内容");
+                 "T3-1-008: Re-read complete .lex file does not contain original Token output content");
     }
 };
 

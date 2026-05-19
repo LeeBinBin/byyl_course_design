@@ -217,10 +217,6 @@ add_byyl_test(Exp1Task6MinDFA "Exp1 Task6 MinDFA Minimization" tests/exp1/task6_
 add_byyl_test(Exp1Task7CodeGen "Exp1 Task7 Code Generation" tests/exp1/task7_code_gen.cpp)
 add_byyl_test(Exp1Task8CompileRun "Exp1 Task8 Compile and Run" tests/exp1/task8_compile_run.cpp)
 add_byyl_test(Exp1Task9TinyTest "Exp1 Task9 TINY Pipeline Test" tests/exp1/task9_tiny_test.cpp)
-
-# ============================================================
-# Experiment 2: Syntax Analyzer Unit Tests (8 task points)
-# ============================================================
 add_byyl_test(Exp2Task1BNFInput "Exp2 Task1 BNF Grammar Input" tests/exp2/task1_bnf_input.cpp)
 add_byyl_test(Exp2Task2FirstFollow "Exp2 Task2 FIRST-FOLLOW Sets" tests/exp2/task2_first_follow.cpp)
 add_byyl_test(Exp2Task3LR1DFA "Exp2 Task3 LR(1) DFA Graph" tests/exp2/task3_lr1_dfa.cpp)
@@ -229,14 +225,10 @@ add_byyl_test(Exp2Task5LALR1Table "Exp2 Task5 LALR(1) Parsing Table" tests/exp2/
 add_byyl_test(Exp2Task6SyntaxProcess "Exp2 Task6 Syntax Analysis Process" tests/exp2/task6_syntax_process.cpp)
 add_byyl_test(Exp2Task7SyntaxTree "Exp2 Task7 Syntax Tree Generation" tests/exp2/task7_syntax_tree.cpp)
 add_byyl_test(Exp2Task8TinyFull "Exp2 Task8 TINY Full Pipeline" tests/exp2/task8_tiny_full.cpp)
-
-# ============================================================
-# Experiment 3: Mini-C Language Tests (2 task points)
-# ============================================================
 add_byyl_test(Exp3Task1MiniCLexer "Exp3 Task1 Mini-C Lexer Test" tests/exp3/task1_minic_lexer.cpp)
 add_byyl_test(Exp3Task2MiniCParser "Exp3 Task2 Mini-C Parser Test" tests/exp3/task2_minic_parser.cpp)
-
-# ============================================================
-# End of unit test registrations
-# Total: 18 unit test targets (Exp1: 8, Exp2: 8, Exp3: 2)
-# ============================================================
+add_executable(TestRunner tests/TestRunner.cpp)
+target_link_libraries(TestRunner PRIVATE Qt6::Core)
+set_target_properties(TestRunner PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+)

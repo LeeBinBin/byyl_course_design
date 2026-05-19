@@ -111,7 +111,7 @@ private slots:
         QString rule = "token1=a(b|c)*\n";
         DFA dfa     = buildDFAFromRegex(rule);
 
-        QVERIFY2(dfa.states.size() > 0, "DFA应包含至少一个状态");
+        QVERIFY2(dfa.states.size() > 0, "DFA should contain at least one state");
 
         for (auto it = dfa.states.begin(); it != dfa.states.end(); ++it)
         {
@@ -122,7 +122,7 @@ private slots:
 
                 bool isEpsilon = symbol.isEmpty();
                 QVERIFY2(!isEpsilon,
-                         QString("DFA状态%1存在ε转移(符号为空串), 违反确定性")
+                         QString("DFA state %1 has epsilon transition (empty symbol), violates determinism")
                              .arg(ds.id)
                              .toUtf8()
                              .constData());
@@ -143,7 +143,7 @@ private slots:
             {
                 QString sym = tit.key();
                 QVERIFY2(!seen.contains(sym),
-                         QString("DFA状态%1对符号'%2'存在多条转移目标(%3与%4), 违反确定性")
+                         QString("DFA state %1 has multiple transitions for symbol '%2' (%3 and %4), violates determinism")
                              .arg(ds.id)
                              .arg(sym)
                              .arg(seen.value(sym))
@@ -176,7 +176,7 @@ private slots:
             int  dfaSize     = dfa.states.size();
 
             QVERIFY2(dfaSize <= upperBound,
-                     QString("规则[%1]: |DFA.states|=%2 > 2^|NFA.states|=%3 (NFA状态数=%4)")
+                     QString("Rule [%1]: |DFA.states|=%2 > 2^|NFA.states|=%3 (NFA state count=%4)")
                          .arg(tc.rule.trimmed())
                          .arg(dfaSize)
                          .arg(upperBound)
@@ -263,7 +263,7 @@ private slots:
         {
             if (m == "-") { hasStartMark = true; break; }
         }
-        QVERIFY2(hasStartMark, "dfaTable的marks中应包含起始标记'-'");
+        QVERIFY2(hasStartMark, "dfaTable marks should contain start mark '-'");
     }
 
     void test_equivalence_with_nfa()
@@ -328,20 +328,20 @@ private slots:
             DFA dfa = SubsetConstruction::build(nfa);
 
             QVERIFY2(dfa.states.size() >= 1,
-                     QString("含不可达路径的NFA规则[%1]构建DFA后至少应有1个状态")
+                     QString("NFA rule with unreachable paths [%1] should produce at least 1 DFA state")
                          .arg(tc.rule.trimmed())
                          .toUtf8()
                          .constData());
 
             QVERIFY2(dfa.states.contains(dfa.start),
-                     QString("含不可达路径的NFA规则[%1]: DFA必须包含有效的start状态")
+                     QString("NFA rule with unreachable paths [%1]: DFA must contain valid start state")
                          .arg(tc.rule.trimmed())
                          .toUtf8()
                          .constData());
 
             Tables tbl = engine.dfaTable(dfa);
             QVERIFY2(tbl.rows.size() == dfa.states.size(),
-                     QString("含不可达路径的NFA规则[%1]: dfaTable行数(%2)应等于DFA状态数(%3)")
+                     QString("NFA rule with unreachable paths [%1]: dfaTable row count (%2) should equal DFA state count (%3)")
                          .arg(tc.rule.trimmed())
                          .arg(tbl.rows.size())
                          .arg(dfa.states.size())
@@ -354,7 +354,7 @@ private slots:
                 if (it->accept) { anyAccept = true; break; }
             }
             QVERIFY2(anyAccept,
-                     QString("含不可达路径的NFA规则[%1]: DFA应至少有一个接受状态")
+                     QString("NFA rule with unreachable paths [%1]: DFA should have at least one accept state")
                          .arg(tc.rule.trimmed())
                          .toUtf8()
                          .constData());

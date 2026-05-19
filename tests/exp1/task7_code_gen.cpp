@@ -124,7 +124,7 @@ private slots:
         {
             QString codeStr = QString::number(c);
             QVERIFY2(code.contains(codeStr),
-                     QString("组合代码应覆盖所有 Token 编码，缺失编码: %1").arg(codeStr).toUtf8().constData());
+                     QString("Combined code should cover all Token codes, missing: %1").arg(codeStr).toUtf8().constData());
         }
     }
 
@@ -180,7 +180,7 @@ private slots:
         }
 
         QVERIFY2(noCrash,
-                 "空 DFA 列表输入 generateCombined 不应导致崩溃");
+                 "Empty DFA list input to generateCombined should not crash");
     }
 
     void test_method_one_or_two_compliance()
@@ -204,7 +204,7 @@ private slots:
     {
         QFile file("../../tests/test_data/regex/tiny.txt");
         QVERIFY2(file.open(QIODevice::ReadOnly | QIODevice::Text),
-                 "无法打开 TINY 正则规则文件 tiny.txt");
+                 "Failed to open TINY regex rule file tiny.txt");
 
         QString tinyRules = QString::fromUtf8(file.readAll());
         file.close();
@@ -246,7 +246,7 @@ private slots:
         for (int c : codes)
         {
             QVERIFY2(fullCode.contains(QString::number(c)),
-                     QString("完整扫描器源码应包含所有 Token 编码，缺失: %1").arg(c).toUtf8().constData());
+                     QString("Complete scanner source code should contain all Token codes, missing: %1").arg(c).toUtf8().constData());
         }
     }
 };

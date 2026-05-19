@@ -18,7 +18,7 @@ private:
         QString error;
         Grammar g = GrammarParser::parseString(text, error);
         if (!error.isEmpty()) {
-            qFatal("文法解析失败: %s", error.toUtf8().constData());
+            qFatal("Grammar parsing failed: %s", error.toUtf8().constData());
             return Grammar();
         }
         return g;
@@ -61,7 +61,7 @@ private slots:
                 break;
             }
         }
-        QVERIFY2(hasAugmentedStart, "初始项集应包含增广产生式 S' -> .S 且前看符号为 $");
+        QVERIFY2(hasAugmentedStart, "Initial item set should contain augmented production S' -> .S with lookahead $");
 
         bool hasOriginalProd1 = false;
         for (const auto& item : initState) {
@@ -115,7 +115,7 @@ private slots:
                 break;
             }
         }
-        QVERIFY2(hasFProductions, "CLOSURE应展开至所有非终结符的产生式");
+        QVERIFY2(hasFProductions, "CLOSURE should expand to productions of all nonterminals");
     }
 
     void test_goto_transitions()
@@ -142,7 +142,7 @@ private slots:
                             break;
                         }
                     }
-                    QVERIFY2(foundShiftedItem, "GOTO转移后应正确移动圆点位置");
+                    QVERIFY2(foundShiftedItem, "GOTO transition should correctly move dot position");
                 }
             }
         }
@@ -174,9 +174,9 @@ private slots:
 
         int stateCount = graph.states.size();
         QVERIFY2(stateCount >= 20,
-                 QString("状态数 %1 应 >= 20").arg(stateCount).toUtf8().constData());
+                 QString("State count %1 should be >= 20").arg(stateCount).toUtf8().constData());
         QVERIFY2(stateCount <= 50,
-                 QString("状态数 %1 应 <= 50").arg(stateCount).toUtf8().constData());
+                 QString("State count %1 should be <= 50").arg(stateCount).toUtf8().constData());
     }
 
     void test_edges_non_empty()
@@ -195,7 +195,7 @@ private slots:
         for (auto it = graph.edges.begin(); it != graph.edges.end(); ++it) {
             totalEdges += it.value().size();
         }
-        QVERIFY2(totalEdges > 0, "edges映射不应为空，至少存在一条转移边");
+        QVERIFY2(totalEdges > 0, "edges map should not be empty, at least one transition edge should exist");
     }
 
     void test_lookahead_sets_correct()
@@ -219,7 +219,7 @@ private slots:
             }
         }
         QVERIFY2(lookaheadsForSPrime.contains("$"),
-                 "增广产生式的前看符号集合应包含 $");
+                 "Lookahead set of augmented production should contain $");
 
         QSet<QString> allLookaheads;
         for (const auto& item : initState) {
@@ -292,12 +292,12 @@ private slots:
         for (auto it = graph.edges.begin(); it != graph.edges.end(); ++it) {
             int fromState = it.key();
             QVERIFY2(fromState >= 0 && fromState < stateCount,
-                     QString("边起点状态ID %1 超出范围 [0, %2)").arg(fromState).arg(stateCount).toUtf8().constData());
+                     QString("Edge source state ID %1 out of range [0, %2)").arg(fromState).arg(stateCount).toUtf8().constData());
 
             for (auto symIt = it.value().begin(); symIt != it.value().end(); ++symIt) {
                 int toState = symIt.value();
                 QVERIFY2(toState >= 0 && toState < stateCount,
-                         QString("从状态%1 经符号'%2'的转移目标状态ID %3 超出范围 [0, %4)")
+                         QString("Transition from state %1 via symbol '%2' targets state ID %3 out of range [0, %4)")
                              .arg(fromState)
                              .arg(symIt.key())
                              .arg(toState)
@@ -314,7 +314,7 @@ private slots:
 
         for (int stateId : statesWithOutgoingEdges) {
             QVERIFY2(!graph.states[stateId].isEmpty(),
-                     QString("有出边的状态 %1 的项集不应为空").arg(stateId).toUtf8().constData());
+                     QString("State %1 with outgoing edges should have non-empty item set").arg(stateId).toUtf8().constData());
         }
     }
 };

@@ -22,14 +22,14 @@ private:
     {
         QString content = testio_readTestData("syntax/tiny.txt");
         if (content.isEmpty()) {
-            qFatal("无法加载syntax/tiny.txt测试数据");
+            qFatal("Failed to load syntax/tiny.txt test data");
             return Grammar();
         }
 
         QString err;
         Grammar g = GrammarParser::parseString(content, err);
         if (!err.isEmpty()) {
-            qFatal("TINY文法解析失败: %s", qPrintable(QString("TINY文法解析失败: %1").arg(err)));
+            qFatal("TINY grammar parsing failed: %s", qPrintable(QString("TINY grammar parsing failed: %1").arg(err)));
             return Grammar();
         }
         return g;
@@ -87,9 +87,9 @@ private slots:
         QVERIFY(g.nonterminals.contains("if-stmt"));
         QVERIFY(g.nonterminals.contains("assign-stmt"));
 
-        qInfo() << "[T2-8-001] TINY文法加载成功: 产生式数=" << prodCount
-                << "起始符号=" << g.startSymbol
-                << "非终结符数=" << g.nonterminals.size();
+        qInfo() << "[T2-8-001] TINY grammar loaded successfully: production count=" << prodCount
+                << "start symbol=" << g.startSymbol
+                << "nonterminal count=" << g.nonterminals.size();
     }
 
     void test_compute_first_follow_complete()
@@ -98,23 +98,23 @@ private slots:
 
         LL1Info info = LL1::compute(g);
 
-        QVERIFY2(!info.first.isEmpty(), "FIRST集不应为空");
-        QVERIFY2(!info.follow.isEmpty(), "FOLLOW集不应为空");
+        QVERIFY2(!info.first.isEmpty(), "FIRST set should not be empty");
+        QVERIFY2(!info.follow.isEmpty(), "FOLLOW set should not be empty");
 
         for (const auto& nt : g.nonterminals)
         {
             QVERIFY2(info.first.contains(nt),
-                     QString("非终结符'%1'缺少FIRST集").arg(nt).toUtf8().constData());
+                     QString("Nonterminal '%1' is missing FIRST set").arg(nt).toUtf8().constData());
             QVERIFY2(info.follow.contains(nt),
-                     QString("非终结符'%1'缺少FOLLOW集").arg(nt).toUtf8().constData());
+                     QString("Nonterminal '%1' is missing FOLLOW set").arg(nt).toUtf8().constData());
             QVERIFY2(!info.first[nt].isEmpty(),
-                     QString("非终结符'%1'的FIRST集为空").arg(nt).toUtf8().constData());
+                     QString("Nonterminal '%1' has empty FIRST set").arg(nt).toUtf8().constData());
         }
 
-        qInfo() << "[T2-8-002] FIRST/FOLLOW计算完成:"
-                << "非终结符数=" << g.nonterminals.size()
-                << "FIRST条目数=" << info.first.size()
-                << "FOLLOW条目数=" << info.follow.size();
+        qInfo() << "[T2-8-002] FIRST/FOLLOW computation complete:"
+                << "nonterminal count=" << g.nonterminals.size()
+                << "FIRST entries=" << info.first.size()
+                << "FOLLOW entries=" << info.follow.size();
     }
 
     void test_build_lalr1_dfa_successfully()
@@ -122,17 +122,17 @@ private slots:
         Grammar    g   = loadTinyGrammar();
         LALR1Graph lalr = LALR1Builder::build(g);
 
-        QVERIFY2(!lalr.states.isEmpty(), "LALR(1) DFA状态集不应为空");
+        QVERIFY2(!lalr.states.isEmpty(), "LALR(1) DFA state set should not be empty");
         QVERIFY2(lalr.states.size() >= 5,
-                 QString("TINY文法LALR(1)状态数(%1)应>=5").arg(lalr.states.size()).toUtf8().constData());
+                 QString("TINY grammar LALR(1) state count(%1) should be >= 5").arg(lalr.states.size()).toUtf8().constData());
         QVERIFY2(lalr.states.size() <= 200,
-                 QString("TINY文法LALR(1)状态数(%1)应<=200").arg(lalr.states.size()).toUtf8().constData());
+                 QString("TINY grammar LALR(1) state count(%1) should be <= 200").arg(lalr.states.size()).toUtf8().constData());
 
-        QVERIFY2(!lalr.edges.isEmpty(), "LALR(1) DFA边集不应为空");
+        QVERIFY2(!lalr.edges.isEmpty(), "LALR(1) DFA edge set should not be empty");
 
-        qInfo() << "[T2-8-003] LALR(1) DFA构建成功:"
-                << "状态数=" << lalr.states.size()
-                << "转移边数=" << lalr.edges.size();
+        qInfo() << "[T2-8-003] LALR(1) DFA built successfully:"
+                << "state count=" << lalr.states.size()
+                << "transition edges=" << lalr.edges.size();
     }
 
     void test_build_lalr1_table_successfully()
@@ -141,8 +141,8 @@ private slots:
         LALR1Graph       lalr  = LALR1Builder::build(g);
         LALR1ActionTable table = LALR1Builder::computeActionTable(g, lalr);
 
-        QVERIFY2(!table.action.isEmpty(), "Action表不应为空");
-        QVERIFY2(!table.gotoTable.isEmpty(), "GOTO表不应为空");
+        QVERIFY2(!table.action.isEmpty(), "Action table should not be empty");
+        QVERIFY2(!table.gotoTable.isEmpty(), "GOTO table should not be empty");
 
         bool hasAccept = false;
         for (auto sit = table.action.begin(); sit != table.action.end(); ++sit)
@@ -158,7 +158,7 @@ private slots:
             if (hasAccept)
                 break;
         }
-        QVERIFY2(hasAccept, "Action表应包含accept动作");
+        QVERIFY2(hasAccept, "Action table should contain accept action");
 
         int shiftCnt = 0, reduceCnt = 0;
         for (auto sit = table.action.begin(); sit != table.action.end(); ++sit)
@@ -172,19 +172,19 @@ private slots:
             }
         }
 
-        qInfo() << "[T2-8-004] LALR(1)分析表构建成功:"
-                << "Action条目=" << shiftCnt + reduceCnt
-                << "移进=" << shiftCnt << "归约=" << reduceCnt
-                << "GOTO条目=" << countGotoEntries(table.gotoTable);
+        qInfo() << "[T2-8-004] LALR(1) parsing table built successfully:"
+                << "Action entries=" << shiftCnt + reduceCnt
+                << "shift=" << shiftCnt << "reduce=" << reduceCnt
+                << "GOTO entries=" << countGotoEntries(table.gotoTable);
     }
 
     void test_prepare_token_sequence()
     {
         QVector<QString> tokens = buildSampleTokenSequence();
 
-        QVERIFY2(!tokens.isEmpty(), "Token序列不应为空");
-        QVERIFY2(tokens.last() == "$", "Token序列应以$结尾");
-        QVERIFY2(tokens.size() >= 3, "Token序列应包含至少3个元素(含$)");
+        QVERIFY2(!tokens.isEmpty(), "Token sequence should not be empty");
+        QVERIFY2(tokens.last() == "$", "Token sequence should end with $");
+        QVERIFY2(tokens.size() >= 3, "Token sequence should contain at least 3 elements (including $)");
 
         QStringList validTerminals = {
             "identifier", "number", ":=", ";", "+", "-", "*", "/", "^",
@@ -196,12 +196,12 @@ private slots:
         for (int i = 0; i < tokens.size() - 1; ++i)
         {
             QVERIFY2(validTerminals.contains(tokens[i]),
-                     QString("Token '%1'不是有效终结符").arg(tokens[i]).toUtf8().constData());
+                     QString("Token '%1' is not a valid terminal").arg(tokens[i]).toUtf8().constData());
         }
 
-        qInfo() << "[T2-8-005] Token序列准备完成:"
-                << "长度=" << tokens.size()
-                << "内容=" << tokens.join(" ");
+        qInfo() << "[T2-8-005] Token sequence prepared:"
+                << "length=" << tokens.size()
+                << "content=" << tokens.join(" ");
     }
 
     void test_parse_success_no_errors()
@@ -219,11 +219,11 @@ private slots:
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
         QVERIFY2(result.errorPos == -1,
-                 QString("解析失败，错误位置=%1").arg(result.errorPos).toUtf8().constData());
+                 QString("Parsing failed, error position=%1").arg(result.errorPos).toUtf8().constData());
 
-        qInfo() << "[T2-8-006] 解析成功无错误:"
+        qInfo() << "[T2-8-006] Parsing succeeded without errors:"
                 << "errorPos=" << result.errorPos
-                << "分析步骤数=" << result.steps.size();
+                << "analysis step count=" << result.steps.size();
     }
 
     void test_syntax_tree_generated()
@@ -240,14 +240,14 @@ private slots:
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
-        QVERIFY2(result.root != nullptr, "语法树根节点不应为空");
-        QVERIFY2(!result.root->symbol.isEmpty(), "根节点符号不应为空");
+        QVERIFY2(result.root != nullptr, "Syntax tree root node should not be null");
+        QVERIFY2(!result.root->symbol.isEmpty(), "Root node symbol should not be empty");
         QVERIFY2(countNodes(result.root) >= 3,
-                 QString("语法树节点数(%1)应>=3").arg(countNodes(result.root)).toUtf8().constData());
+                 QString("Syntax tree node count(%1) should be >= 3").arg(countNodes(result.root)).toUtf8().constData());
 
-        qInfo() << "[T2-8-007] 语法树生成成功:"
-                << "根符号=" << result.root->symbol
-                << "总节点数=" << countNodes(result.root);
+        qInfo() << "[T2-8-007] Syntax tree generated successfully:"
+                << "root symbol=" << result.root->symbol
+                << "total nodes=" << countNodes(result.root);
     }
 
     void test_tree_root_is_program()
@@ -264,10 +264,10 @@ private slots:
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
-        QVERIFY2(result.root != nullptr, "语法树根节点不应为空");
+        QVERIFY2(result.root != nullptr, "Syntax tree root node should not be null");
         QCOMPARE(result.root->symbol, QString("program"));
 
-        qInfo() << "[T2-8-008] 语法树根节点验证通过: root->symbol=\""
+        qInfo() << "[T2-8-008] Syntax tree root node verification passed: root->symbol=\""
                 << result.root->symbol << "\"";
     }
 
@@ -285,17 +285,17 @@ private slots:
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
-        QVERIFY2(result.root != nullptr, "语法树根节点不应为空");
+        QVERIFY2(result.root != nullptr, "Syntax tree root node should not be null");
 
         bool hasAssignStmt = hasSymbolInTree(result.root, "assign-stmt");
         bool hasStmtSeq    = hasSymbolInTree(result.root, "stmt-sequence");
         bool hasStatement  = hasSymbolInTree(result.root, "statement");
 
-        QVERIFY2(hasStmtSeq, "语法树应包含stmt-sequence节点");
-        QVERIFY2(hasStatement, "语法树应包含statement节点");
-        QVERIFY2(hasAssignStmt, "语法树应包含assign-stmt节点(赋值语句)");
+        QVERIFY2(hasStmtSeq, "Syntax tree should contain stmt-sequence node");
+        QVERIFY2(hasStatement, "Syntax tree should contain statement node");
+        QVERIFY2(hasAssignStmt, "Syntax tree should contain assign-stmt node (assign statement)");
 
-        qInfo() << "[T2-8-009] 关键结构验证:"
+        qInfo() << "[T2-8-009] Key structure verification:"
                 << "stmt-sequence=" << hasStmtSeq
                 << "statement=" << hasStatement
                 << "assign-stmt=" << hasAssignStmt;
@@ -309,16 +309,16 @@ private slots:
         QCOMPARE(countProductions(g), 17);
 
         LL1Info ll1Info = LL1::compute(g);
-        QVERIFY2(!ll1Info.first.isEmpty(), "FIRST集为空");
-        QVERIFY2(!ll1Info.follow.isEmpty(), "FOLLOW集为空");
+        QVERIFY2(!ll1Info.first.isEmpty(), "FIRST set is empty");
+        QVERIFY2(!ll1Info.follow.isEmpty(), "FOLLOW set is empty");
 
         LALR1Graph lalr = LALR1Builder::build(g);
-        QVERIFY2(!lalr.states.isEmpty(), "LALR DFA状态为空");
-        QVERIFY2(!lalr.edges.isEmpty(), "LALR DFA边为空");
+        QVERIFY2(!lalr.states.isEmpty(), "LALR DFA state set is empty");
+        QVERIFY2(!lalr.edges.isEmpty(), "LALR DFA edge set is empty");
 
         LALR1ActionTable table = LALR1Builder::computeActionTable(g, lalr);
-        QVERIFY2(!table.action.isEmpty(), "Action表为空");
-        QVERIFY2(!table.gotoTable.isEmpty(), "GOTO表为空");
+        QVERIFY2(!table.action.isEmpty(), "Action table is empty");
+        QVERIFY2(!table.gotoTable.isEmpty(), "GOTO table is empty");
 
         QVector<QString> tokens = {"identifier", ":=", "number", ";", "$"};
 
@@ -329,26 +329,26 @@ private slots:
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
         QVERIFY2(result.errorPos == -1,
-                 QString("端到端流程解析失败，errorPos=%1").arg(result.errorPos).toUtf8().constData());
-        QVERIFY2(result.root != nullptr, "端到端流程未生成语法树");
+                 QString("End-to-end parsing failed, errorPos=%1").arg(result.errorPos).toUtf8().constData());
+        QVERIFY2(result.root != nullptr, "End-to-end process did not generate syntax tree");
         QCOMPARE(result.root->symbol, QString("program"));
         QVERIFY2(countNodes(result.root) >= 3,
-                 "端到端语法树结构不完整");
+                 "End-to-end syntax tree structure incomplete");
 
         qInfo() << "========================================";
-        qInfo() << "[T2-8-010] 端到端一致性验证报告";
+        qInfo() << "[T2-8-010] End-to-end consistency validation report";
         qInfo() << "----------------------------------------";
-        qInfo() << "  文法产生式数:   " << countProductions(g);
-        qInfo() << "  FIRST集条目数:  " << ll1Info.first.size();
-        qInfo() << "  FOLLOW集条目数: " << ll1Info.follow.size();
-        qInfo() << "  LALR(1)状态数:  " << lalr.states.size();
-        qInfo() << "  Action表条目:   " << countActionEntries(table.action);
-        qInfo() << "  GOTO表条目:     " << countGotoEntries(table.gotoTable);
-        qInfo() << "  Token序列长度:  " << tokens.size();
-        qInfo() << "  解析错误位置:   " << result.errorPos;
-        qInfo() << "  语法树根符号:   " << (result.root ? result.root->symbol : "null");
-        qInfo() << "  语法树总节点:   " << countNodes(result.root);
-        qInfo() << "  分析步骤数:     " << result.steps.size();
+        qInfo() << "  Grammar production count:  " << countProductions(g);
+        qInfo() << "  FIRST set entries:         " << ll1Info.first.size();
+        qInfo() << "  FOLLOW set entries:        " << ll1Info.follow.size();
+        qInfo() << "  LALR(1) state count:       " << lalr.states.size();
+        qInfo() << "  Action table entries:      " << countActionEntries(table.action);
+        qInfo() << "  GOTO table entries:        " << countGotoEntries(table.gotoTable);
+        qInfo() << "  Token sequence length:     " << tokens.size();
+        qInfo() << "  Parsing error position:    " << result.errorPos;
+        qInfo() << "  Syntax tree root symbol:   " << (result.root ? result.root->symbol : "null");
+        qInfo() << "  Syntax tree total nodes:   " << countNodes(result.root);
+        qInfo() << "  Analysis step count:       " << result.steps.size();
         qInfo() << "========================================";
     }
 

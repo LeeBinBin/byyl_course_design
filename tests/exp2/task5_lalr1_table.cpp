@@ -23,7 +23,7 @@ private:
         QString err;
         Grammar g = GrammarParser::parseString(text, err);
         if (!err.isEmpty()) {
-            qFatal("文法解析失败: %s", err.toUtf8().constData());
+            qFatal("Grammar parsing failed: %s", err.toUtf8().constData());
             return Grammar();
         }
         return g;
@@ -99,12 +99,12 @@ private slots:
         LALR1ActionTable table = buildActionTable(g);
 
         QVERIFY2(!table.action.isEmpty(),
-                 "TINY文法的LALR(1) Action表不应为空");
+                 "TINY grammar LALR(1) Action table should not be empty");
 
         int entryCount = countActionEntries(table.action);
-        qInfo() << "[T2-5-001] TINY文法 Action表条目数:" << entryCount;
+        qInfo() << "[T2-5-001] TINY grammar Action table entry count:" << entryCount;
         QVERIFY2(entryCount > 0,
-                 QString("Action表应包含至少一个条目，实际为%1").arg(entryCount).toUtf8().constData());
+                 QString("Action table should contain at least one entry, actual is %1").arg(entryCount).toUtf8().constData());
     }
 
     void test_goto_table_not_empty()
@@ -113,12 +113,12 @@ private slots:
         LALR1ActionTable table = buildActionTable(g);
 
         QVERIFY2(!table.gotoTable.isEmpty(),
-                 "TINY文法的LALR(1) GOTO表不应为空");
+                 "TINY grammar LALR(1) GOTO table should not be empty");
 
         int gotoCount = countGotoEntries(table.gotoTable);
-        qInfo() << "[T2-5-002] TINY文法 GOTO表条目数:" << gotoCount;
+        qInfo() << "[T2-5-002] TINY grammar GOTO table entry count:" << gotoCount;
         QVERIFY2(gotoCount > 0,
-                 QString("GOTO表应包含至少一个条目，实际为%1").arg(gotoCount).toUtf8().constData());
+                 QString("GOTO table should contain at least one entry, actual is %1").arg(gotoCount).toUtf8().constData());
     }
 
     void test_shift_entries_exist()
@@ -132,7 +132,7 @@ private slots:
         LALR1ActionTable table = buildActionTable(g);
 
         bool foundShift = hasShiftEntry(table.action);
-        QVERIFY2(foundShift, "任意文法应存在's'+数字格式的shift移进条目");
+        QVERIFY2(foundShift, "Any grammar should have shift entries in 's'+number format");
 
         int shiftCount = 0;
         for (auto sit = table.action.begin(); sit != table.action.end(); ++sit)
@@ -143,9 +143,9 @@ private slots:
                     shiftCount++;
             }
         }
-        qInfo() << "[T2-5-003] 表达式文法 shift条目数:" << shiftCount;
+        qInfo() << "[T2-5-003] Expression grammar shift entry count:" << shiftCount;
         QVERIFY2(shiftCount > 0,
-                 QString("应存在至少一条shift动作，实际为%1").arg(shiftCount).toUtf8().constData());
+                 QString("Should have at least one shift action, actual is %1").arg(shiftCount).toUtf8().constData());
     }
 
     void test_reduce_entries_exist()
@@ -159,10 +159,10 @@ private slots:
         LALR1ActionTable table = buildActionTable(g);
 
         QVERIFY2(!table.reductions.isEmpty(),
-                 "reductions向量不应为空，应记录归约产生式信息");
+                 "reductions vector should not be empty, should record reduce production info");
 
         int reduceCount = table.reductions.size();
-        qInfo() << "[T2-5-004] 归约产生式数量:" << reduceCount;
+        qInfo() << "[T2-5-004] Reduce production count:" << reduceCount;
 
         bool hasReduceInAction = false;
         for (auto sit = table.action.begin(); sit != table.action.end(); ++sit)
@@ -178,7 +178,7 @@ private slots:
             if (hasReduceInAction)
                 break;
         }
-        QVERIFY2(hasReduceInAction, "Action表中应存在以'r'开头的归约动作");
+        QVERIFY2(hasReduceInAction, "Action table should have reduce actions starting with 'r'");
     }
 
     void test_accept_entry_exists()
@@ -190,9 +190,9 @@ private slots:
         LALR1ActionTable table = buildActionTable(g);
 
         bool foundAccept = hasAcceptEntry(table.action);
-        QVERIFY2(foundAccept, "任意文法应存在'acc'接受状态条目");
+        QVERIFY2(foundAccept, "Any grammar should have 'acc' accept state entry");
 
-        qInfo() << "[T2-5-005] Accept条目检查: 存在acc动作";
+        qInfo() << "[T2-5-005] Accept entry check: acc action exists";
     }
 
     void test_table_size_reasonable()
@@ -203,27 +203,27 @@ private slots:
         int actionEntries = countActionEntries(table.action);
         int gotoEntries   = countGotoEntries(table.gotoTable);
 
-        qInfo() << "[T2-5-006] TINY文法表规模:"
+        qInfo() << "[T2-5-006] TINY grammar table scale:"
                 << "Action=" << actionEntries
                 << "GOTO=" << gotoEntries;
 
         QVERIFY2(actionEntries >= 30,
-                 QString("TINY文法Action表条目数(%1)应在合理范围[30,500]")
+                 QString("TINY grammar Action table entry count(%1) should be in reasonable range [30,500]")
                      .arg(actionEntries)
                      .toUtf8()
                      .constData());
         QVERIFY2(actionEntries <= 500,
-                 QString("TINY文法Action表条目数(%1)应在合理范围[30,500]")
+                 QString("TINY grammar Action table entry count(%1) should be in reasonable range [30,500]")
                      .arg(actionEntries)
                      .toUtf8()
                      .constData());
         QVERIFY2(gotoEntries >= 10,
-                 QString("TINY文法GOTO表条目数(%1)应在合理范围[10,200]")
+                 QString("TINY grammar GOTO table entry count(%1) should be in reasonable range [10,200]")
                      .arg(gotoEntries)
                      .toUtf8()
                      .constData());
         QVERIFY2(gotoEntries <= 200,
-                 QString("TINY文法GOTO表条目数(%1)应在合理范围[10,200]")
+                 QString("TINY grammar GOTO table entry count(%1) should be in reasonable range [10,200]")
                      .arg(gotoEntries)
                      .toUtf8()
                      .constData());
@@ -244,16 +244,16 @@ private slots:
             LALR1ActionTable table = buildActionTable(g);
 
             bool hasConflict = hasConflictMarking(table.action);
-            qInfo() << "[T2-5-007] 可能冲突文法" << gi << ":"
-                    << "冲突标记=" << (hasConflict ? "是" : "否")
-                    << "Action条目=" << countActionEntries(table.action);
+            qInfo() << "[T2-5-007] Potential conflict grammar" << gi << ":"
+                    << "conflict mark=" << (hasConflict ? "yes" : "no")
+                    << "Action entries=" << countActionEntries(table.action);
 
             if (hasConflict)
                 anyConflictMarked = true;
         }
 
         QVERIFY2(anyConflictMarked || true,
-                 "若存在冲突文法，表中应有'|'分隔的冲突标记（部分文法可能无冲突则跳过）");
+                 "If conflict grammar exists, table should have '|' separated conflict marks (some grammars may have no conflict, skip)");
     }
 
     void test_table_entries_accessible()
@@ -262,8 +262,8 @@ private slots:
         LALR1Graph       graph = LALR1Builder::build(g);
         LALR1ActionTable table = LALR1Builder::computeActionTable(g, graph);
 
-        QVERIFY2(!graph.states.isEmpty(), "LALR(1) DFA状态集不应为空");
-        QVERIFY2(!table.action.isEmpty(), "Action表不应为空");
+        QVERIFY2(!graph.states.isEmpty(), "LALR(1) DFA state set should not be empty");
+        QVERIFY2(!table.action.isEmpty(), "Action table should not be empty");
 
         int stateCount      = graph.states.size();
         int accessibleCount = 0;
@@ -289,13 +289,13 @@ private slots:
             }
         }
 
-        qInfo() << "[T2-5-008] TINY文法可访问性:"
-                << "总状态=" << stateCount
-                << "检查前10状态×关键符号对=" << checkedPairs
-                << "命中条目=" << accessibleCount;
+        qInfo() << "[T2-5-008] TINY grammar accessibility:"
+                << "total states=" << stateCount
+                << "checked first 10 states x key symbol pairs=" << checkedPairs
+                << "hit entries=" << accessibleCount;
 
         QVERIFY2(accessibleCount > 0,
-                 QString("主要状态和符号组合应能查到表项，实际命中%1/%2")
+                 QString("Main state and symbol combinations should have table entries, actual hits %1/%2")
                      .arg(accessibleCount)
                      .arg(checkedPairs)
                      .toUtf8()
@@ -313,7 +313,7 @@ private slots:
                 }
             }
         }
-        QVERIFY2(initialStateAccessible, "初始状态(状态0)在Action表中应有可访问条目");
+        QVERIFY2(initialStateAccessible, "Initial state (state 0) should have accessible entries in Action table");
     }
 };
 

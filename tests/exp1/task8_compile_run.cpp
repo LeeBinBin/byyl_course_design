@@ -78,9 +78,9 @@ private slots:
         QString result = engine.run(mdfa, "abc123", 100);
 
         QVERIFY2(result.contains("100"),
-                 QString("单次扫描接受测试失败: 输出[%1]应包含编码100").arg(result).toUtf8().constData());
+                 QString("Single scan accept test failed: output [%1] should contain code 100").arg(result).toUtf8().constData());
         QVERIFY2(!result.contains("ERR"),
-                 QString("单次扫描接受测试失败: 输出[%1]不应包含ERR").arg(result).toUtf8().constData());
+                 QString("Single scan accept test failed: output [%1] should not contain ERR").arg(result).toUtf8().constData());
     }
 
     void test_single_scan_reject()
@@ -158,7 +158,7 @@ private slots:
         }
 
         QVERIFY2(matchedLongest,
-                 QString("最长匹配测试失败: 输入'int'应选择keyword编码200而非ID编码100, 实际输出[%1]")
+                 QString("Longest match test failed: input 'int' should select keyword code 200 instead of ID code 100, actual output [%1]")
                      .arg(result)
                      .toUtf8()
                      .constData());
@@ -167,7 +167,7 @@ private slots:
     void test_tiny_sample_tokens()
     {
         QString tinyText = testio_readTestData("regex/tiny.txt");
-        QVERIFY2(!tinyText.isEmpty(), "无法加载TINY规则测试数据");
+        QVERIFY2(!tinyText.isEmpty(), "Failed to load TINY rule test data");
 
         auto setup = buildMultiDFAFromRules(tinyText);
         QSet<int> idCodes;
@@ -256,7 +256,7 @@ private slots:
                 nonErrCount++;
         }
         QVERIFY2(nonErrCount <= 4,
-                 QString("注释跳过测试失败: 含注释的输入产生的有效Token数(%1)过多, 注释内容可能未被正确跳过")
+                 QString("Comment skip test failed: input with comment produced too many valid Tokens (%1), comment content may not have been skipped correctly")
                      .arg(nonErrCount)
                      .toUtf8()
                      .constData());
@@ -281,14 +281,14 @@ private slots:
         int errCount = countErr(result);
 
         QVERIFY2(errCount <= source.size(),
-                 QString("错误数量合理性测试失败: 输入长度=%1, ERR数量=%2, ERR数不应超过输入长度")
+                 QString("Error count reasonableness test failed: input length=%1, ERR count=%2, ERR count should not exceed input length")
                      .arg(source.size())
                      .arg(errCount)
                      .toUtf8()
                      .constData());
 
         QVERIFY2(errCount > 0,
-                 QString("错误数量合理性测试失败: 全未知字符输入应产生ERR, 实际输出[%1]")
+                 QString("Error count reasonableness test failed: all-unknown character input should produce ERR, actual output [%1]")
                      .arg(result)
                      .toUtf8()
                      .constData());
@@ -317,7 +317,7 @@ private slots:
                 continue;
 
             QVERIFY2(isSpaceSeparatedNumbers(result),
-                     QString("输出格式测试失败: 源码'%1'产生输出[%2], 应为空格分隔的数字编码序列")
+                     QString("Output format test failed: source '%1' produced output [%2], should be space-separated numeric code sequence")
                          .arg(src)
                          .arg(result)
                          .toUtf8()
@@ -333,7 +333,7 @@ private slots:
 
         QString singleResult = engine.run(mdfa, "", 100);
         QVERIFY2(singleResult.isEmpty(),
-                 QString("空源码单次扫描测试失败: 空字符串输入应返回空, 实际返回[%1]")
+                 QString("Empty source single scan test failed: empty string input should return empty, actual return [%1]")
                      .arg(singleResult)
                      .toUtf8()
                      .constData());
@@ -345,7 +345,7 @@ private slots:
 
         QString multiResult = engine.runMultiple(setup.mdfas, setup.codes, "", idCodes, blacklist, kwMap);
         QVERIFY2(multiResult.isEmpty(),
-                 QString("空源码多次扫描测试失败: 空字符串输入应返回空, 实际返回[%1]")
+                 QString("Empty source multi-scan test failed: empty string input should return empty, actual return [%1]")
                      .arg(multiResult)
                      .toUtf8()
                      .constData());
@@ -354,7 +354,7 @@ private slots:
     void test_encoding_example_match()
     {
         QString minicText = testio_readTestData("regex/minic.txt");
-        QVERIFY2(!minicText.isEmpty(), "无法加载Mini-C规则测试数据");
+        QVERIFY2(!minicText.isEmpty(), "Failed to load Mini-C rule test data");
 
         auto setup = buildMultiDFAFromRules(minicText);
         QSet<int> idCodes;
@@ -450,25 +450,25 @@ private slots:
         }
 
         QVERIFY2(!tokens.isEmpty(),
-                 QString("Mini-C编码示例测试失败: 'int a=b+1;'应产生非空输出, 实际输出[%1]")
+                 QString("Mini-C encoding example test failed: 'int a=b+1;' should produce non-empty output, actual output [%1]")
                      .arg(result)
                      .toUtf8()
                      .constData());
 
         QVERIFY2(isSpaceSeparatedNumbers(result),
-                 QString("Mini-C编码示例测试失败: 输出[%1]应为空格分隔的数字编码序列")
+                 QString("Mini-C encoding example test failed: output [%1] should be space-separated numeric code sequence")
                      .arg(result)
                      .toUtf8()
                      .constData());
 
         QVERIFY2(hasIntKw,
-                 QString("Mini-C编码示例测试失败: 输出[%1]应包含int关键词编码(>=200)")
+                 QString("Mini-C encoding example test failed: output [%1] should contain int keyword code (>=200)")
                      .arg(result)
                      .toUtf8()
                      .constData());
 
         QVERIFY2(tokens.size() >= 5,
-                 QString("Mini-C编码示例测试失败: 'int a=b+1;'应产生至少5个Token(int/a/=/b/+/1/;), 实际%1个: [%2]")
+                 QString("Mini-C encoding example test failed: 'int a=b+1;' should produce at least 5 Tokens (int/a/=/b/+/1/;), actual %1: [%2]")
                      .arg(tokens.size())
                      .arg(result)
                      .toUtf8()

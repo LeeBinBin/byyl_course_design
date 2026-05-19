@@ -1,13 +1,13 @@
 /*
- * 版权信息：Copyright (c) 2026 李彬彬
- * 文件名称：task2_regex_operators.cpp
+ * Copyright: Copyright (c) 2026 Li Binbin
+ * File name: task2_regex_operators.cpp
  *
- * 当前版本：1.0.0
- * 作    者：李彬彬
- * 完成日期：2026年5月18日
+ * Version: 1.0.0
+ * Author: Li Binbin
+ * Completion date: May 18, 2026
  *
- * 版本历史：
- * 1.0.0 2026年5月18日 李彬彬 初始版本 - 正则表达式运算符单元测试
+ * Version history:
+ * 1.0.0 May 18, 2026 Li Binbin Initial version - Regex operator unit tests
  */
 
 #include <QtTest/QtTest>
@@ -40,12 +40,12 @@ private slots:
         auto    file  = buildTestFile(input);
         auto    result = RegexParser::parse(file);
 
-        QVERIFY2(!result.tokens.isEmpty(), "解析结果不应为空");
+        QVERIFY2(!result.tokens.isEmpty(), "Parse result should not be empty");
         ASTNode* ast = result.tokens.first().ast;
-        QVERIFY2(ast != nullptr, "AST 根节点不应为空");
+        QVERIFY2(ast != nullptr, "AST root node should not be null");
         QCOMPARE(ast->type, ASTNode::Symbol);
         QCOMPARE(ast->value, QString("+"));
-        QVERIFY2(ast->children.isEmpty(), "Symbol 节点不应有子节点");
+        QVERIFY2(ast->children.isEmpty(), "Symbol node should not have children");
     }
 
     void test_op_concat()
@@ -54,9 +54,9 @@ private slots:
         auto    file  = buildTestFile(input);
         auto    result = RegexParser::parse(file);
 
-        QVERIFY2(!result.tokens.isEmpty(), "解析结果不应为空");
+        QVERIFY2(!result.tokens.isEmpty(), "Parse result should not be empty");
         ASTNode* ast = result.tokens.first().ast;
-        QVERIFY2(ast != nullptr, "AST 根节点不应为空");
+        QVERIFY2(ast != nullptr, "AST root node should not be null");
 
         QCOMPARE(ast->type, ASTNode::Concat);
         QCOMPARE(ast->children.size(), 2);
@@ -141,9 +141,9 @@ private slots:
         QCOMPARE(ast->type, ASTNode::CharSet);
 
         QString chars = ast->value;
-        QVERIFY2(chars.contains('a'), "字符集应包含 'a'");
-        QVERIFY2(chars.contains('b'), "字符集应包含 'b'");
-        QVERIFY2(chars.contains('c'), "字符集应包含 'c'");
+        QVERIFY2(chars.contains('a'), "Charset should contain 'a'");
+        QVERIFY2(chars.contains('b'), "Charset should contain 'b'");
+        QVERIFY2(chars.contains('c'), "Charset should contain 'c'");
         QCOMPARE(chars.size(), 3);
     }
 

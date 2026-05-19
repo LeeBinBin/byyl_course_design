@@ -43,7 +43,7 @@ private:
         result.mdfas       = engine.buildAllMinDFA(result.parsedFile, result.codes);
         result.sampleSource = testio_readTestData("sample/tiny.txt");
         if (result.sampleSource.isEmpty()) {
-            qFatal("无法加载 sample/tiny.txt 测试数据");
+            qFatal("Failed to load sample/tiny.txt test data");
             return result;
         }
 
@@ -63,20 +63,20 @@ private slots:
     void test_stepA_generate_tiny_scanner()
     {
         QString regexContent = testio_readTestData("regex/tiny.txt");
-        QVERIFY2(!regexContent.isEmpty(), "步骤A: 无法加载tiny.txt正则规则文件");
+        QVERIFY2(!regexContent.isEmpty(), "Step A: Failed to load tiny.txt regex rule file");
 
         auto regexFile  = engine.lexFile(regexContent);
         auto parsedFile = engine.parseFile(regexFile);
 
         QVERIFY2(parsedFile.tokens.size() >= 4,
-                 qPrintable(QString("步骤A: 解析后Token数量不足, 实际=%1").arg(parsedFile.tokens.size())));
+                 qPrintable(QString("Step A: Insufficient Token count after parsing, actual=%1").arg(parsedFile.tokens.size())));
 
         QVector<int> codes;
         auto mdfas = engine.buildAllMinDFA(parsedFile, codes);
 
-        QVERIFY2(!mdfas.isEmpty(), "步骤A: buildAllMinDFA未生成任何MinDFA");
+        QVERIFY2(!mdfas.isEmpty(), "Step A: buildAllMinDFA did not generate any MinDFA");
         QVERIFY2(mdfas.size() == codes.size(),
-                 qPrintable(QString("步骤A: MinDFA数量(%1)与codes数量(%2)不一致").arg(mdfas.size()).arg(codes.size())));
+                 qPrintable(QString("Step A: MinDFA count (%1) does not match codes count (%2)").arg(mdfas.size()).arg(codes.size())));
 
         QMap<QString, int> tokenCodes;
         for (int i = 0; i < parsedFile.tokens.size(); ++i) {
@@ -131,7 +131,7 @@ private slots:
 
         QString compilerExe = detectCompiler();
         if (compilerExe.isEmpty()) {
-            QSKIP("步骤B: 未检测到C++编译器(clang++/g++)，跳过编译测试");
+            QSKIP("Step B: C++ compiler (clang++/g++) not detected, skipping compile test");
         }
 
         QStringList args;
@@ -153,11 +153,11 @@ private slots:
         auto result = buildFullPipeline();
 
         QVERIFY2(!result.runOutput.isEmpty(),
-                 "步骤C: runMultiple返回空输出");
+                 "Step C: runMultiple returned empty output");
 
         QStringList tokens = result.runOutput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
         QVERIFY2(tokens.size() >= 5,
-                 qPrintable(QString("步骤C: Token数量过少, 实际=%1, 期望>=5").arg(tokens.size())));
+                 qPrintable(QString("Step C: Too few Tokens, actual=%1, expected>=5").arg(tokens.size())));
 
         bool hasKeyword = false;
         bool hasIdentifier = false;
@@ -173,9 +173,9 @@ private slots:
             if (code == 101) hasNumber = true;
         }
 
-        QVERIFY2(hasKeyword, "步骤C: 输出中未检测到关键词Token(编码>=200)");
+        QVERIFY2(hasKeyword, "Step C: No keyword Token (code>=200) detected in output");
         QVERIFY2(hasIdentifier || tokens.contains("x") || tokens.contains("fact"),
-                 "步骤C: 输出中未检测到标识符Token");
+                 "Step C: No identifier Token detected in output");
     }
 
     void test_tiny_regex_parsed_correctly()
@@ -212,7 +212,7 @@ private slots:
 
         for (const auto& pt : parsedFile.tokens) {
             QVERIFY2(pt.ast != nullptr,
-                     qPrintable(QString("T9-001: Token[%1]的AST为空").arg(pt.rule.name)));
+                     qPrintable(QString("T9-001: Token[%1] AST is null").arg(pt.rule.name)));
         }
     }
 
@@ -226,21 +226,21 @@ private slots:
         auto mdfas = engine.buildAllMinDFA(parsedFile, codes);
 
         QVERIFY2(!mdfas.isEmpty(),
-                 "T9-002: buildAllMinDFA返回空集合");
+                 "T9-002: buildAllMinDFA returned empty set");
 
         QVERIFY2(mdfas.size() >= 5,
-                 qPrintable(QString("T9-002: MinDFA数量=%1, 期望>=5").arg(mdfas.size())));
+                 qPrintable(QString("T9-002: MinDFA count=%1, expected>=5").arg(mdfas.size())));
 
         QVERIFY2(mdfas.size() <= 20,
-                 qPrintable(QString("T9-002: MinDFA数量=%1, 异常偏多(>20)").arg(mdfas.size())));
+                 qPrintable(QString("T9-002: MinDFA count=%1, excessively high (>20)").arg(mdfas.size())));
 
         QCOMPARE(mdfas.size(), codes.size());
 
         for (int i = 0; i < mdfas.size(); ++i) {
             QVERIFY2(mdfas[i].states.size() > 0,
-                     qPrintable(QString("T9-002: 第%1个MinDFA(code=%2)状态数为0").arg(i).arg(codes[i])));
+                     qPrintable(QString("T9-002: MinDFA #%1 (code=%2) state count is 0").arg(i).arg(codes[i])));
             QVERIFY2(mdfas[i].states.contains(mdfas[i].start),
-                     qPrintable(QString("T9-002: 第%1个MinDFA缺少起始状态").arg(i)));
+                     qPrintable(QString("T9-002: MinDFA #%1 missing start state").arg(i)));
         }
 
         int acceptCount = 0;
@@ -259,11 +259,11 @@ private slots:
         auto result = buildFullPipeline();
 
         QVERIFY2(!result.runOutput.trimmed().isEmpty(),
-                 "T9-003: sample.tny扫描输出为空");
+                 "T9-003: sample.tny scan output is empty");
 
         QStringList tokens = result.runOutput.trimmed().split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
         QVERIFY2(tokens.size() >= 10,
-                 qPrintable(QString("T9-003: 输出Token数=%1, 期望>=10").arg(tokens.size())));
+                 qPrintable(QString("T9-003: Output Token count=%1, expected>=10").arg(tokens.size())));
     }
 
     void test_sample_tny_err_count_acceptable()
@@ -331,7 +331,7 @@ private slots:
             }
         }
         QVERIFY2(hasSemicolon,
-                 "T9-005: 未检测到分号等特殊符号Token");
+                 "T9-005: Semicolon special symbol Token not detected");
     }
 
     void test_save_lex_file_format()
@@ -364,7 +364,7 @@ private slots:
 
         for (auto it = regexFile.rules.begin(); it != regexFile.rules.end(); ++it) {
             QVERIFY2(reRead.rules.contains(it->name),
-                     qPrintable(QString("T9-006: 重读后丢失宏规则: %1").arg(it->name)));
+                     qPrintable(QString("T9-006: Lost macro rule after re-read: %1").arg(it->name)));
             QCOMPARE(reRead.rules[it->name].expr, it->expr);
         }
 

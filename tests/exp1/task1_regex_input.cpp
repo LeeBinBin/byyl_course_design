@@ -181,11 +181,11 @@ void TestExp1Task1_RegexInput::test_empty_input()
 void TestExp1Task1_RegexInput::test_comment_line_skip()
 {
     QString input =
-        "// 这是注释行\n"
+        "// This is a comment line\n"
         "letter=[A-Za-z]\n"
-        "# 另一种注释\n"
+        "# Another type of comment\n"
         "digit=[0-9]\n"
-        "纯文本无等号也会被跳过";
+        "Plain text without equals sign should also be skipped";
 
     RegexFile result = RegexLexer::lex(input);
 

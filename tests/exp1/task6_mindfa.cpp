@@ -106,7 +106,7 @@ private slots:
         MinDFA mdfa = Hopcroft::minimize(dfa);
 
         QVERIFY2(mdfa.states.size() < dfa.states.size(),
-                 QString("含等价状态的DFA最小化后状态数应减少: |DFA|=%1, |MinDFA|=%2")
+                 QString("DFA with equivalent states should have fewer states after minimization: |DFA|=%1, |MinDFA|=%2")
                      .arg(dfa.states.size())
                      .arg(mdfa.states.size())
                      .toUtf8()
@@ -153,7 +153,7 @@ private slots:
                 bool dfaAcc  = dfaAccepts(dfa, s);
                 bool mdfAcc  = mindfaAccepts(mdfa, s);
                 QVERIFY2(!mdfAcc,
-                         QString("规则[%1]: MinDFA不应接受字符串\"%2\"(原DFA接受=%3)")
+                         QString("Rule [%1]: MinDFA should not accept string \"%2\" (original DFA accepts=%3)")
                              .arg(tc.rule.trimmed())
                              .arg(s)
                              .arg(dfaAcc)
@@ -178,7 +178,7 @@ private slots:
             MinDFA mdfa = buildMinDFAFromRegex(tc.rule);
 
             QVERIFY2(allStatesReachable(mdfa),
-                     QString("规则[%1]: MinDFA的所有状态应从起始态可达(总状态数=%2)")
+                     QString("Rule [%1]: All MinDFA states should be reachable from start (total states=%2)")
                          .arg(tc.rule.trimmed())
                          .arg(mdfa.states.size())
                          .toUtf8()
@@ -200,7 +200,7 @@ private slots:
             MinDFA mdfa = buildMinDFAFromRegex(tc.rule);
 
             QVERIFY2(mdfa.states.contains(mdfa.start),
-                     QString("规则[%1]: MinDFA的start(%2)必须属于states集合")
+                     QString("Rule [%1]: MinDFA start (%2) must belong to states set")
                          .arg(tc.rule.trimmed())
                          .arg(mdfa.start)
                          .toUtf8()
@@ -208,7 +208,7 @@ private slots:
 
             auto it = mdfa.states.find(mdfa.start);
             QVERIFY2(it != mdfa.states.end(),
-                     QString("规则[%1]: MinDFA的start状态必须在states中可查")
+                     QString("Rule [%1]: MinDFA start state must be queryable in states")
                          .arg(tc.rule.trimmed())
                          .toUtf8()
                          .constData());
@@ -232,11 +232,11 @@ private slots:
 
         QCOMPARE(mdfa.states.size(), 1);
         QVERIFY2(mdfa.states.contains(mdfa.start),
-                 "单态MinDFA的start必须在其唯一状态中");
+                 "Single-state MinDFA start must be in its only state");
 
         auto it = mdfa.states.find(mdfa.start);
         QVERIFY2(it != mdfa.states.end() && it->accept,
-                 "单态MinDFA的唯一状态应为接受态(因a*接受空串)");
+                 "Single-state MinDFA's only state should be accept (since a* accepts empty string)");
     }
 
     void test_accept_states_merged()
@@ -274,7 +274,7 @@ private slots:
         for (const QString& s : {"ac", "ad", "bc", "bd", "accc", "bdddd"})
         {
             QVERIFY2(mindfaAccepts(mdfa, s),
-                     QString("等价接受态合并后MinDFA仍应接受字符串\"%1\"").arg(s).toUtf8().constData());
+                     QString("After merging equivalent accept states, MinDFA should still accept string \"%1\"").arg(s).toUtf8().constData());
         }
     }
 
@@ -325,7 +325,7 @@ private slots:
         DFA  dfa  = SubsetConstruction::build(nfa);
         MinDFA mdfa = Hopcroft::minimize(dfa);
 
-        QVERIFY2(mdfa.states.size() > 0, "TINY identifier规则的最小化DFA应至少包含一个状态");
+        QVERIFY2(mdfa.states.size() > 0, "TINY identifier rule minimized DFA should contain at least one state");
         QVERIFY2(mdfa.states.size() <= dfa.states.size(),
                  QString("TINY identifier: |MinDFA|(%1) <= |DFA|(%2)")
                      .arg(mdfa.states.size())
@@ -358,7 +358,7 @@ private slots:
             bool dfaAcc  = dfaAccepts(dfa, id);
             bool mdfAcc  = mindfaAccepts(mdfa, id);
             QVERIFY2(!mdfAcc,
-                     QString("TINY identifier: MinDFA不应接受非法标识符\"%1\"(DFA接受=%2)")
+                     QString("TINY identifier: MinDFA should not accept invalid identifier \"%1\" (DFA accepts=%2)")
                          .arg(id)
                          .arg(dfaAcc)
                          .toUtf8()
@@ -366,17 +366,17 @@ private slots:
         }
 
         QVERIFY2(allStatesReachable(mdfa),
-                 QString("TINY identifier: MinDFA所有%1个状态均应从start可达")
+                 QString("TINY identifier: All %1 MinDFA states should be reachable from start")
                      .arg(mdfa.states.size())
                      .toUtf8()
                      .constData());
 
         QVERIFY2(mdfa.states.contains(mdfa.start),
-                 "TINY identifier: MinDFA.start必须在states集合中");
+                 "TINY identifier: MinDFA.start must be in states set");
 
         Tables tbl = engine.minTable(mdfa);
         QVERIFY2(tbl.rows.size() == mdfa.states.size(),
-                 QString("TINY identifier: minTable行数(%1)应等于MinDFA状态数(%2)")
+                 QString("TINY identifier: minTable row count (%1) should equal MinDFA state count (%2)")
                      .arg(tbl.rows.size())
                      .arg(mdfa.states.size())
                      .toUtf8()

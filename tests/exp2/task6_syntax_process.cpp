@@ -16,11 +16,11 @@ private:
     void initTestCase()
     {
         QString content = testio_readTestData("syntax/tiny.txt");
-        QVERIFY2(!content.isEmpty(), "无法加载测试文法数据 syntax/tiny.txt");
+        QVERIFY2(!content.isEmpty(), "Failed to load test grammar data syntax/tiny.txt");
 
         QString error;
         m_grammar = GrammarParser::parseString(content, error);
-        QVERIFY2(error.isEmpty(), qPrintable(QString("文法解析失败: %1").arg(error)));
+        QVERIFY2(error.isEmpty(), qPrintable(QString("grammar parsing failed: %1").arg(error)));
 
         auto graph = LR1Builder::build(m_grammar);
         m_table    = LR1Builder::computeActionTable(m_grammar, graph);
@@ -42,7 +42,7 @@ private slots:
 
 void TestExp2Task6_SyntaxProcess::test_successful_parse_read_stmt()
 {
-    QVERIFY2(m_ready, "初始化未完成");
+    QVERIFY2(m_ready, "initialization not complete");
 
     QVector<QString> tokens = {"read", "identifier", ";"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
@@ -53,7 +53,7 @@ void TestExp2Task6_SyntaxProcess::test_successful_parse_read_stmt()
 
 void TestExp2Task6_SyntaxProcess::test_successful_parse_assign()
 {
-    QVERIFY2(m_ready, "初始化未完成");
+    QVERIFY2(m_ready, "initialization not complete");
 
     QVector<QString> tokens = {"identifier", ":=", "number", ";"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
@@ -69,12 +69,12 @@ void TestExp2Task6_SyntaxProcess::test_successful_parse_assign()
             break;
         }
     }
-    QVERIFY2(foundAssign, "未能检测到 assign-stmt 归约步骤");
+    QVERIFY2(foundAssign, "failed to detect assign-stmt reduction step");
 }
 
 void TestExp2Task6_SyntaxProcess::test_successful_parse_if_stmt()
 {
-    QVERIFY2(m_ready, "初始化未完成");
+    QVERIFY2(m_ready, "initialization not complete");
 
     QVector<QString> tokens = {
         "if", "number", "<", "identifier",
@@ -92,31 +92,31 @@ void TestExp2Task6_SyntaxProcess::test_successful_parse_if_stmt()
             ifReduceCount++;
     }
     QVERIFY2(ifReduceCount > 0,
-             qPrintable(QString("if-stmt 归约次数应为正数，实际: %1").arg(ifReduceCount)));
+             qPrintable(QString("if-stmt reduction count should be positive, actual: %1").arg(ifReduceCount)));
 }
 
 void TestExp2Task6_SyntaxProcess::test_steps_recorded()
 {
-    QVERIFY2(m_ready, "初始化未完成");
+    QVERIFY2(m_ready, "initialization not complete");
 
     QVector<QString> tokens = {"read", "identifier", ";"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     QVERIFY2(res.steps.size() > 0,
-             qPrintable(QString("应记录至少一步，实际: %1").arg(res.steps.size())));
+             qPrintable(QString("should record at least one step, actual: %1").arg(res.steps.size())));
 
     for (int i = 0; i < res.steps.size(); ++i) {
         const auto& s = res.steps[i];
         QVERIFY2(!s.stack.isEmpty(),
-                 qPrintable(QString("步骤%1: stack不应为空").arg(i)));
+                 qPrintable(QString("step %1: stack should not be empty").arg(i)));
         QVERIFY2(!s.action.isEmpty(),
-                 qPrintable(QString("步骤%1: action不应为空").arg(i)));
+                 qPrintable(QString("step %1: action should not be empty").arg(i)));
     }
 }
 
 void TestExp2Task6_SyntaxProcess::test_shift_actions_present()
 {
-    QVERIFY2(m_ready, "初始化未完成");
+    QVERIFY2(m_ready, "initialization not complete");
 
     QVector<QString> tokens = {"identifier", ":=", "number", ";", "read", "identifier", ";"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
@@ -128,12 +128,12 @@ void TestExp2Task6_SyntaxProcess::test_shift_actions_present()
     }
 
     QVERIFY2(shiftCount > 0,
-             qPrintable(QString("应包含shift动作，实际shift次数: %1").arg(shiftCount)));
+             qPrintable(QString("should contain shift actions, actual shift count: %1").arg(shiftCount)));
 }
 
 void TestExp2Task6_SyntaxProcess::test_reduce_actions_present()
 {
-    QVERIFY2(m_ready, "初始化未完成");
+    QVERIFY2(m_ready, "initialization not complete");
 
     QVector<QString> tokens = {"number", ";"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
@@ -153,7 +153,7 @@ void TestExp2Task6_SyntaxProcess::test_reduce_actions_present()
 
 void TestExp2Task6_SyntaxProcess::test_stack_evolution()
 {
-    QVERIFY2(m_ready, "初始化未完成");
+    QVERIFY2(m_ready, "initialization not complete");
 
     QVector<QString> tokens = {"read", "identifier", ";"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
@@ -186,7 +186,7 @@ void TestExp2Task6_SyntaxProcess::test_stack_evolution()
 
 void TestExp2Task6_SyntaxProcess::test_error_detection_missing_semicolon()
 {
-    QVERIFY2(m_ready, "初始化未完成");
+    QVERIFY2(m_ready, "initialization not complete");
 
     QVector<QString> tokens = {"identifier", ":=", "number"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
@@ -197,7 +197,7 @@ void TestExp2Task6_SyntaxProcess::test_error_detection_missing_semicolon()
 
 void TestExp2Task6_SyntaxProcess::test_parse_tree_root_symbol()
 {
-    QVERIFY2(m_ready, "初始化未完成");
+    QVERIFY2(m_ready, "initialization not complete");
 
     QVector<QString> tokens = {"read", "identifier", ";"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);

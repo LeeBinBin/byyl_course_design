@@ -78,7 +78,7 @@ private:
         QString err;
         Grammar g = GrammarParser::parseString(text, err);
         if (!err.isEmpty()) {
-            qFatal("文法解析失败: %s", err.toUtf8().constData());
+            qFatal("Grammar parsing failed: %s", err.toUtf8().constData());
             return Grammar();
         }
         return g;
@@ -96,8 +96,8 @@ private slots:
         LR1Graph   lr1  = LR1Builder::build(g);
         LALR1Graph lalr = LALR1Builder::build(g);
 
-        QVERIFY2(lr1.states.size() > 0, "LR(1)应产生至少一个状态");
-        QVERIFY2(lalr.states.size() > 0, "LALR(1)应产生至少一个状态");
+        QVERIFY2(lr1.states.size() > 0, "LR(1) should produce at least one state");
+        QVERIFY2(lalr.states.size() > 0, "LALR(1) should produce at least one state");
 
         qInfo() << "[T2-4-001] LR(1)状态数:" << lr1.states.size()
                 << "LALR(1)状态数:" << lalr.states.size();
@@ -110,7 +110,7 @@ private slots:
                      .constData());
 
         QVERIFY2(lalr.states.size() < lr1.states.size(),
-                 QString("复杂文法应发生状态合并: LALR(1)=%1 < LR(1)=%2")
+                 QString("Complex grammar should trigger state merging: LALR(1)=%1 < LR(1)=%2")
                      .arg(lalr.states.size())
                      .arg(lr1.states.size())
                      .toUtf8()
@@ -128,8 +128,8 @@ private slots:
         LR1Graph   lr1  = LR1Builder::build(g);
         LALR1Graph lalr = LALR1Builder::build(g);
 
-        QVERIFY2(!lr1.states.isEmpty(), "LR(1)状态集不应为空");
-        QVERIFY2(!lalr.states.isEmpty(), "LALR(1)状态集不应为空");
+        QVERIFY2(!lr1.states.isEmpty(), "LR(1) state set should not be empty");
+        QVERIFY2(!lalr.states.isEmpty(), "LALR(1) state set should not be empty");
 
         QMap<QString, QVector<int>> lr1CoreGroups;
         for (int i = 0; i < lr1.states.size(); ++i)
@@ -158,7 +158,7 @@ private slots:
                     }
                 }
                 QVERIFY2(matched,
-                         QString("LR(1)同心项组(大小=%1)应在LALR(1)中找到对应合并状态")
+                         QString("LR(1) core item group (size=%1) should have corresponding merged state in LALR(1)")
                              .arg(it.value().size())
                              .toUtf8()
                              .constData());
@@ -169,7 +169,7 @@ private slots:
                 << std::count_if(lr1CoreGroups.begin(), lr1CoreGroups.end(),
                                  [](const QVector<int>& v) { return v.size() > 1; });
         QVERIFY2(foundMergeGroup || lr1.states.size() == lalr.states.size(),
-                 "若LR(1)存在多状态共享核心，LALR(1)必须正确合并");
+                 "If LR(1) has multiple states sharing the same core, LALR(1) must merge them correctly");
     }
 
     void test_lookahead_union()
@@ -183,7 +183,7 @@ private slots:
         LALR1Graph lalr = LALR1Builder::build(g);
 
         QVERIFY2(!lr1.states.isEmpty() && !lalr.states.isEmpty(),
-                 "LR(1)与LALR(1)均应产生有效状态");
+                 "Both LR(1) and LALR(1) should produce valid states");
 
         QMap<QString, QVector<int>> lr1CoreGroups;
         for (int i = 0; i < lr1.states.size(); ++i)
@@ -231,15 +231,15 @@ private slots:
                     for (const auto& la : unionLookaheads)
                     {
                         QVERIFY2(mergedLas.contains(la),
-                                 QString("合并后lookahead应包含原始并集中的'%1'").arg(la).toUtf8().constData());
+                                 QString("Merged lookahead should contain '%1' from original union").arg(la).toUtf8().constData());
                     }
-                    qInfo() << "[T2-4-003] 核心组大小:" << group.size()
-                            << "原始lookahead并集大小:" << unionLookaheads.size()
-                            << "合并后lookahead大小:" << mergedLas.size();
+                    qInfo() << "[T2-4-003] Core group size:" << group.size()
+                            << "Original lookahead union size:" << unionLookaheads.size()
+                            << "Merged lookahead size:" << mergedLas.size();
                     break;
                 }
             }
-            QVERIFY2(foundMerged, "LALR(1)中应存在对应合并状态");
+            QVERIFY2(foundMerged, "LALR(1) should have corresponding merged state");
         }
     }
 
@@ -247,7 +247,7 @@ private slots:
     {
         QFile tinyFile("../../tests/test_data/syntax/tiny.txt");
         QVERIFY2(tinyFile.open(QIODevice::ReadOnly | QIODevice::Text),
-                 "无法打开TINY文法文件");
+                 "Failed to open TINY grammar file");
 
         QString     grammarText = QTextStream(&tinyFile).readAll();
         tinyFile.close();
@@ -256,8 +256,8 @@ private slots:
         LALR1Graph       lalr  = LALR1Builder::build(g);
         LALR1ActionTable table = LALR1Builder::computeActionTable(g, lalr);
 
-        QVERIFY2(!lalr.states.isEmpty(), "LALR(1)对TINY文法应产生非空状态集");
-        QVERIFY2(!table.action.isEmpty(), "LALR(1)动作表不应为空");
+        QVERIFY2(!lalr.states.isEmpty(), "LALR(1) should produce non-empty state set for TINY grammar");
+        QVERIFY2(!table.action.isEmpty(), "LALR(1) action table should not be empty");
 
         bool hasAccept = false;
         for (auto sit = table.action.begin(); sit != table.action.end(); ++sit)
@@ -273,7 +273,7 @@ private slots:
             if (hasAccept)
                 break;
         }
-        QVERIFY2(hasAccept, "LALR(1)分析表应包含accept动作(TINY文法)");
+        QVERIFY2(hasAccept, "LALR(1) parsing table should contain accept action (TINY grammar)");
 
         int shiftCount = 0, reduceCount = 0;
         for (auto sit = table.action.begin(); sit != table.action.end(); ++sit)
@@ -286,11 +286,11 @@ private slots:
                     reduceCount++;
             }
         }
-        qInfo() << "[T2-4-004] TINY文法 LALR(1): 状态数=" << lalr.states.size()
-                << "移进动作=" << shiftCount << "归约动作=" << reduceCount
-                << "goto条目=" << table.gotoTable.size();
-        QVERIFY2(shiftCount > 0, "应有移进动作");
-        QVERIFY2(reduceCount > 0, "应有归约动作");
+        qInfo() << "[T2-4-004] TINY grammar LALR(1): states=" << lalr.states.size()
+                << "shifts=" << shiftCount << "reduces=" << reduceCount
+                << "goto entries=" << table.gotoTable.size();
+        QVERIFY2(shiftCount > 0, "Should have shift actions");
+        QVERIFY2(reduceCount > 0, "Should have reduce actions");
     }
 
     void test_no_new_conflicts_from_merge()
@@ -312,15 +312,15 @@ private slots:
             bool lr1Conflict  = hasActionConflict(lr1Table.action);
             bool lalrConflict = hasActionConflict(lalrTable.action);
 
-            qInfo() << "[T2-4-005] 文法" << gi << ": LR(1)冲突=" << lr1Conflict
-                    << "LALR(1)冲突=" << lalrConflict
-                    << "LR(1)状态=" << lr1.states.size()
-                    << "LALR(1)状态=" << lalr.states.size();
+            qInfo() << "[T2-4-005] Grammar" << gi << ": LR(1) conflict=" << lr1Conflict
+                    << "LALR(1) conflict=" << lalrConflict
+                    << "LR(1) states=" << lr1.states.size()
+                    << "LALR(1) states=" << lalr.states.size();
 
             if (!lr1Conflict)
             {
                 QVERIFY2(!lalrConflict,
-                         QString("文法%1: LR(1)无冲突但LALR(1)引入了新冲突").arg(gi).toUtf8().constData());
+                         QString("Grammar %1: LR(1) has no conflict but LALR(1) introduced new conflict").arg(gi).toUtf8().constData());
             }
         }
     }
@@ -336,11 +336,11 @@ private slots:
         LALR1Graph lalr = LALR1Builder::build(g);
         QString    dot  = LALR1Builder::toDot(lalr);
 
-        QVERIFY2(!dot.isEmpty(), "toDot()输出不应为空");
-        QVERIFY2(dot.startsWith("digraph"), "DOT输出应以'digraph'开头");
-        QVERIFY2(dot.trimmed().endsWith("}"), "DOT输出应以'}'结尾");
-        QVERIFY2(dot.contains("rankdir=LR"), "DOT应包含rankdir属性");
-        QVERIFY2(dot.contains("node [shape=box"), "DOT应包含节点形状声明");
+        QVERIFY2(!dot.isEmpty(), "toDot() output should not be empty");
+        QVERIFY2(dot.startsWith("digraph"), "DOT output should start with 'digraph'");
+        QVERIFY2(dot.trimmed().endsWith("}"), "DOT output should end with '}'");
+        QVERIFY2(dot.contains("rankdir=LR"), "DOT should contain rankdir attribute");
+        QVERIFY2(dot.contains("node [shape=box"), "DOT should contain node shape declaration");
 
         int nodeCount = 0;
         int edgeCount = 0;
@@ -353,21 +353,21 @@ private slots:
         }
 
         QVERIFY2(nodeCount >= lalr.states.size(),
-                 QString("DOT节点声明数(%1)应>=LALR(1)状态数(%2)")
+                 QString("DOT node declaration count(%1) should be >= LALR(1) state count(%2)")
                      .arg(nodeCount)
                      .arg(lalr.states.size())
                      .toUtf8()
                      .constData());
 
-        qInfo() << "[T2-4-006] DOT输出长度:" << dot.size()
-                << "节点数:" << nodeCount << "边数:" << edgeCount;
+        qInfo() << "[T2-4-006] DOT output length:" << dot.size()
+                << "nodes:" << nodeCount << "edges:" << edgeCount;
     }
 
     void test_comparison_lr1_vs_lalr1()
     {
         QFile tinyFile("../../tests/test_data/syntax/tiny.txt");
         QVERIFY2(tinyFile.open(QIODevice::ReadOnly | QIODevice::Text),
-                 "无法打开TINY文法文件");
+                 "Failed to open TINY grammar file");
 
         QString     grammarText = QTextStream(&tinyFile).readAll();
         tinyFile.close();
@@ -384,26 +384,26 @@ private slots:
         double ratio   = lr1States > 0 ? (double)lalrStates / lr1States : 0.0;
 
         qInfo() << "========================================";
-        qInfo() << "[T2-4-007] LR(1) vs LALR(1) 对比报告 (TINY文法)";
+        qInfo() << "[T2-4-007] LR(1) vs LALR(1) Comparison Report (TINY grammar)";
         qInfo() << "----------------------------------------";
-        qInfo() << "  LR(1) 状态数:     " << lr1States;
-        qInfo() << "  LALR(1) 状态数:   " << lalrStates;
-        qInfo() << "  合并减少状态数:   " << reduced;
-        qInfo() << "  压缩比(LALR/LR):" << QString::number(ratio, 'f', 2);
+        qInfo() << "  LR(1) states:     " << lr1States;
+        qInfo() << "  LALR(1) states:   " << lalrStates;
+        qInfo() << "  States reduced:    " << reduced;
+        qInfo() << "  Compression ratio (LALR/LR):" << QString::number(ratio, 'f', 2);
         qInfo() << "----------------------------------------";
-        qInfo() << "  LR(1) 动作表条目:  " << countActions(lr1Tab.action);
-        qInfo() << "  LALR(1) 动作表条目:" << countActions(lalrTab.action);
-        qInfo() << "  LR(1) goto条目:   " << countGotos(lr1Tab.gotoTable);
-        qInfo() << "  LALR(1) goto条目: " << countGotos(lalrTab.gotoTable);
+        qInfo() << "  LR(1) action entries:  " << countActions(lr1Tab.action);
+        qInfo() << "  LALR(1) action entries:" << countActions(lalrTab.action);
+        qInfo() << "  LR(1) goto entries:   " << countGotos(lr1Tab.gotoTable);
+        qInfo() << "  LALR(1) goto entries: " << countGotos(lalrTab.gotoTable);
         qInfo() << "----------------------------------------";
-        qInfo() << "  LR(1) 冲突:       " << (hasActionConflict(lr1Tab.action) ? "是" : "否");
-        qInfo() << "  LALR(1) 冲突:     " << (hasActionConflict(lalrTab.action) ? "是" : "否");
+        qInfo() << "  LR(1) conflict:       " << (hasActionConflict(lr1Tab.action) ? "Yes" : "No");
+        qInfo() << "  LALR(1) conflict:     " << (hasActionConflict(lalrTab.action) ? "Yes" : "No");
         qInfo() << "========================================";
 
-        QVERIFY2(lr1States > 0, "LR(1)应对TINY文法产生状态");
-        QVERIFY2(lalrStates > 0, "LALR(1)应对TINY文法产生状态");
+        QVERIFY2(lr1States > 0, "LR(1) should produce states for TINY grammar");
+        QVERIFY2(lalrStates > 0, "LALR(1) should produce states for TINY grammar");
         QVERIFY2(lalrStates <= lr1States,
-                 "LALR(1)状态数不应超过LR(1)状态数");
+                 "LALR(1) state count should not exceed LR(1) state count");
     }
 
 private:

@@ -39,7 +39,7 @@ private:
         QString error;
         Grammar g = GrammarParser::parseString(text, error);
         if (!error.isEmpty()) {
-            qFatal("文法解析失败: %s", error.toUtf8().constData());
+            qFatal("grammar parsing failed: %s", error.toUtf8().constData());
             return Grammar();
         }
         return g;
@@ -114,7 +114,7 @@ private slots:
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
-        QVERIFY2(res.root != nullptr, "解析成功后根节点不应为空");
+        QVERIFY2(res.root != nullptr, "root node should not be empty after successful parse");
 
         ParseTreeNode* root = res.root;
 
@@ -132,7 +132,7 @@ private slots:
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
-        QVERIFY2(res.root != nullptr, "解析成功后根节点不应为空");
+        QVERIFY2(res.root != nullptr, "root node should not be empty after successful parse");
 
         ParseTreeNode* root = res.root;
 
@@ -150,14 +150,14 @@ private slots:
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
-        QVERIFY2(res.root != nullptr, "解析成功后根节点不应为空");
+        QVERIFY2(res.root != nullptr, "root node should not be empty after successful parse");
 
         int depth = treeDepth(res.root);
 
         QVERIFY2(depth >= 5,
-                 QString("树深度 %1 应 >= 5").arg(depth).toUtf8().constData());
+                 QString("tree depth %1 should be >= 5").arg(depth).toUtf8().constData());
         QVERIFY2(depth <= 10,
-                 QString("树深度 %1 应 <= 10").arg(depth).toUtf8().constData());
+                 QString("tree depth %1 should be <= 10").arg(depth).toUtf8().constData());
     }
 
     void test_tree_node_count_sufficient()
@@ -167,13 +167,13 @@ private slots:
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
-        QVERIFY2(res.root != nullptr, "解析成功后根节点不应为空");
+        QVERIFY2(res.root != nullptr, "root node should not be empty after successful parse");
 
         int totalNodes = nodeCount(res.root);
         int tokenCount = tokens.size();
 
         QVERIFY2(totalNodes >= tokenCount,
-                 QString("节点数 %1 应 >= Token数 %2（含非终结符内部节点）")
+                 QString("node count %1 should be >= token count %2 (including nonterminal internal nodes)")
                      .arg(totalNodes)
                      .arg(tokenCount)
                      .toUtf8()
@@ -187,7 +187,7 @@ private slots:
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
-        QVERIFY2(res.root != nullptr, "解析成功后根节点不应为空");
+        QVERIFY2(res.root != nullptr, "root node should not be empty after successful parse");
 
         ParseTreeNode* root = res.root;
 
@@ -205,7 +205,7 @@ private slots:
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
-        QVERIFY2(res.root != nullptr, "解析成功后根节点不应为空");
+        QVERIFY2(res.root != nullptr, "root node should not be empty after successful parse");
 
         ParseTreeNode* root = res.root;
 
@@ -222,7 +222,7 @@ private slots:
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
-        QVERIFY2(res.root != nullptr, "解析成功后根节点不应为空");
+        QVERIFY2(res.root != nullptr, "root node should not be empty after successful parse");
 
         QVector<QString> leaves = leafSymbols(res.root);
 
@@ -235,7 +235,7 @@ private slots:
                 }
             }
             QVERIFY2(found,
-                     QString("Token '%1' 应出现在语法树的叶子节点中").arg(tok).toUtf8().constData());
+                     QString("token '%1' should appear in syntax tree leaf nodes").arg(tok).toUtf8().constData());
         }
     }
 
@@ -246,7 +246,7 @@ private slots:
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
-        QVERIFY2(res.root != nullptr, "解析成功后根节点不应为空");
+        QVERIFY2(res.root != nullptr, "root node should not be empty after successful parse");
 
         QString dotOutput = parseTreeToDot(res.root);
 
@@ -259,7 +259,7 @@ private slots:
         int openBracePos  = dotOutput.indexOf("{");
         int closeBracePos = dotOutput.lastIndexOf("}");
         QVERIFY2(closeBracePos > openBracePos,
-                 "DOT输出应包含匹配的大括号对");
+                 "DOT output should contain matching brace pair");
 
         QVERIFY(dotOutput.contains("->"));
         QVERIFY(dotOutput.contains("[label="));

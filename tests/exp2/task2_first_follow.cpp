@@ -20,7 +20,7 @@ private:
         QString error;
         Grammar g = GrammarParser::parseString(text, error);
         if (!error.isEmpty()) {
-            qFatal("文法解析失败: %s", qPrintable(error));
+            qFatal("Grammar parsing failed: %s", qPrintable(error));
             return LL1Info();
         }
         return LL1::compute(g);
@@ -31,7 +31,7 @@ private:
         QString error;
         Grammar g = GrammarParser::parseString(text, error);
         if (!error.isEmpty()) {
-            qFatal("文法解析失败: %s", qPrintable(error));
+            qFatal("Grammar parsing failed: %s", qPrintable(error));
             return Grammar();
         }
         return g;
@@ -44,7 +44,7 @@ private slots:
         QString text = "A -> a";
         auto info = computeFromText(text);
 
-        QVERIFY2(info.first.contains("A"), "T2-2-001: FIRST集合中缺少非终结符A");
+        QVERIFY2(info.first.contains("A"), "T2-2-001: FIRST set missing nonterminal A");
         QSet<QString> expected = {"a"};
         QCOMPARE(info.first["A"], expected);
     }
@@ -54,9 +54,9 @@ private slots:
         QString text = "S -> #";
         auto info = computeFromText(text);
 
-        QVERIFY2(info.first.contains("S"), "T2-2-002: FIRST集合中缺少非终结符S");
+        QVERIFY2(info.first.contains("S"), "T2-2-002: FIRST set missing nonterminal S");
         QVERIFY2(info.first["S"].contains("#"),
-                 "T2-2-002: FIRST(S)应包含ε(即'#')");
+                 "T2-2-002: FIRST(S) should contain epsilon (i.e. '#')");
     }
 
     void test_first_union()
@@ -64,7 +64,7 @@ private slots:
         QString text = "A -> a | b";
         auto info = computeFromText(text);
 
-        QVERIFY2(info.first.contains("A"), "T2-2-003: FIRST集合中缺少非终结符A");
+        QVERIFY2(info.first.contains("A"), "T2-2-003: FIRST set missing nonterminal A");
         QSet<QString> expected = {"a", "b"};
         QCOMPARE(info.first["A"], expected);
     }
@@ -77,9 +77,9 @@ private slots:
             "F -> ( E ) | id";
         auto info = computeFromText(text);
 
-        QVERIFY2(info.first.contains("E"), "T2-2-004: FIRST集合中缺少E");
-        QVERIFY2(info.first.contains("T"), "T2-2-004: FIRST集合中缺少T");
-        QVERIFY2(info.first.contains("F"), "T2-2-004: FIRST集合中缺少F");
+        QVERIFY2(info.first.contains("E"), "T2-2-004: FIRST set missing E");
+        QVERIFY2(info.first.contains("T"), "T2-2-004: FIRST set missing T");
+        QVERIFY2(info.first.contains("F"), "T2-2-004: FIRST set missing F");
 
         QSet<QString> expectedFirstE = {"(", "id"};
         QSet<QString> expectedFirstT = {"(", "id"};
@@ -90,9 +90,9 @@ private slots:
         QCOMPARE(info.first["F"], expectedFirstF);
 
         QVERIFY2(!info.first["E"].contains("+"),
-                 "T2-2-004: FIRST(E)不应包含运算符+");
+                 "T2-2-004: FIRST(E) should not contain operator +");
         QVERIFY2(!info.first["E"].contains("*"),
-                 "T2-2-004: FIRST(E)不应包含运算符*");
+                 "T2-2-004: FIRST(E) should not contain operator *");
     }
 
     void test_follow_contains_dollar()
@@ -103,9 +103,9 @@ private slots:
             "B -> b";
         auto info = computeFromText(text);
 
-        QVERIFY2(info.follow.contains("S"), "T2-2-005: FOLLOW集合中缺少起始符号S");
+        QVERIFY2(info.follow.contains("S"), "T2-2-005: FOLLOW set missing start symbol S");
         QVERIFY2(info.follow["S"].contains("$"),
-                 "T2-2-005: FOLLOW(startSymbol)必须包含$");
+                 "T2-2-005: FOLLOW(startSymbol) must contain $");
     }
 
     void test_follow_propagation()
@@ -115,9 +115,9 @@ private slots:
             "A -> a";
         auto info = computeFromText(text);
 
-        QVERIFY2(info.follow.contains("A"), "T2-2-006: FOLLOW集合中缺少非终结符A");
+        QVERIFY2(info.follow.contains("A"), "T2-2-006: FOLLOW set missing nonterminal A");
         QVERIFY2(info.follow["A"].contains("b"),
-                 "T2-2-006: 产生式S->Ab, 终结符b应传播至FOLLOW(A)");
+                 "T2-2-006: In production S->Ab, terminal b should propagate to FOLLOW(A)");
     }
 
     void test_follow_through_epsilon()
@@ -129,75 +129,75 @@ private slots:
             "C -> c";
         auto info = computeFromText(text);
 
-        QVERIFY2(info.follow.contains("A"), "T2-2-007: FOLLOW集合中缺少A");
-        QVERIFY2(info.follow.contains("B"), "T2-2-007: FOLLOW集合中缺少B");
+        QVERIFY2(info.follow.contains("A"), "T2-2-007: FOLLOW set missing A");
+        QVERIFY2(info.follow.contains("B"), "T2-2-007: FOLLOW set missing B");
 
         bool aHasB = info.follow["A"].contains("b");
         bool aHasC = info.follow["A"].contains("c");
         bool bHasC = info.follow["B"].contains("c");
 
         QVERIFY2(aHasB,
-                 "T2-2-007: B可推导ε, FIRST(B)中的b应传播到FOLLOW(A)");
+                 "T2-2-007: B can derive epsilon, b in FIRST(B) should propagate to FOLLOW(A)");
         QVERIFY2(aHasC,
-                 "T2-2-007: A和B均可推导ε, FIRST(C)中的c应传播到FOLLOW(A)");
+                 "T2-2-007: Both A and B can derive epsilon, c in FIRST(C) should propagate to FOLLOW(A)");
         QVERIFY2(bHasC,
-                 "T2-2-007: FIRST(C)中的c应传播到FOLLOW(B)");
+                 "T2-2-007: c in FIRST(C) should propagate to FOLLOW(B)");
 
         bool aHasDollar = info.follow["A"].contains("$");
         bool bHasDollar = info.follow["B"].contains("$");
         QVERIFY2(aHasDollar,
-                 "T2-2-007: A可推导ε, FOLLOW(S)中的$应传播到FOLLOW(A)");
+                 "T2-2-007: A can derive epsilon, $ in FOLLOW(S) should propagate to FOLLOW(A)");
         QVERIFY2(bHasDollar,
-                 "T2-2-007: B可推导ε, FOLLOW(S)中的$应传播到FOLLOW(B)");
+                 "T2-2-007: B can derive epsilon, $ in FOLLOW(S) should propagate to FOLLOW(B)");
     }
 
     void test_tiny_grammar_first()
     {
         QString content = testio_readTestData("syntax/tiny.txt");
-        QVERIFY2(!content.isEmpty(), "T2-2-008: 无法加载TINY文法文件");
+        QVERIFY2(!content.isEmpty(), "T2-2-008: Failed to load TINY grammar file");
 
         Grammar g = parseGrammar(content);
         auto info = LL1::compute(g);
 
         QVERIFY2(info.first.contains("identifier"),
-                 "T2-2-008: FIRST集合中应包含终结符identifier");
+                 "T2-2-008: FIRST set should contain terminal identifier");
         QVERIFY2(info.first["identifier"].contains("identifier"),
                  "T2-2-008: FIRST(identifier) == {identifier}");
 
         QVERIFY2(info.first.contains("factor"),
-                 "T2-2-008: FIRST集合中应包含非终结符factor");
+                 "T2-2-008: FIRST set should contain nonterminal factor");
         QVERIFY2(info.first["factor"].contains("("),
-                 "T2-2-008: FIRST(factor)应包含'(' (来自产生式factor->(exp))");
+                 "T2-2-008: FIRST(factor) should contain '(' (from production factor->(exp))");
         QVERIFY2(info.first["factor"].contains("number"),
-                 "T2-2-008: FIRST(factor)应包含number (来自产生式factor->number)");
+                 "T2-2-008: FIRST(factor) should contain number (from production factor->number)");
         QVERIFY2(info.first["factor"].contains("identifier"),
-                 "T2-2-008: FIRST(factor)应包含identifier (来自产生式factor->identifier)");
+                 "T2-2-008: FIRST(factor) should contain identifier (from production factor->identifier)");
     }
 
     void test_tiny_grammar_follow()
     {
         QString content = testio_readTestData("syntax/tiny.txt");
-        QVERIFY2(!content.isEmpty(), "T2-2-009: 无法加载TINY文法文件");
+        QVERIFY2(!content.isEmpty(), "T2-2-009: Failed to load TINY grammar file");
 
         Grammar g = parseGrammar(content);
         auto info = LL1::compute(g);
 
         QVERIFY2(info.follow.contains("stmt-sequence"),
-                 "T2-2-009: FOLLOW集合中应包含stmt-sequence");
+                 "T2-2-009: FOLLOW set should contain stmt-sequence");
 
         const auto& followSS = info.follow["stmt-sequence"];
         QVERIFY2(followSS.contains(";"),
-                 "T2-2-009: FOLLOW(stmt-sequence)应包含';' "
-                 "(来自产生式stmt-sequence->stmt-sequence;statement)");
+                 "T2-2-009: FOLLOW(stmt-sequence) should contain ';' "
+                 "(from production stmt-sequence->stmt-sequence;statement)");
         QVERIFY2(followSS.contains("$"),
-                 "T2-2-009: FOLLOW(stmt-sequence)应包含'$' "
-                 "(通过ε/推导链从startSymbol传播)");
+                 "T2-2-009: FOLLOW(stmt-sequence) should contain '$' "
+                 "(propagated from startSymbol via epsilon/derivation chain)");
     }
 
     void test_all_nonterminals_covered()
     {
         QString content = testio_readTestData("syntax/tiny.txt");
-        QVERIFY2(!content.isEmpty(), "T2-2-010: 无法加载TINY文法文件");
+        QVERIFY2(!content.isEmpty(), "T2-2-010: Failed to load TINY grammar file");
 
         Grammar g = parseGrammar(content);
         auto info = LL1::compute(g);
@@ -205,12 +205,12 @@ private slots:
         for (const auto& nt : g.nonterminals)
         {
             QVERIFY2(info.first.contains(nt),
-                     qPrintable(QString("T2-2-010: 非终结符%1缺少FIRST集").arg(nt)));
+                     qPrintable(QString("T2-2-010: Nonterminal %1 missing FIRST set").arg(nt)));
             QVERIFY2(info.follow.contains(nt),
-                     qPrintable(QString("T2-2-010: 非终结符%1缺少FOLLOW集").arg(nt)));
+                     qPrintable(QString("T2-2-010: Nonterminal %1 missing FOLLOW set").arg(nt)));
 
             QVERIFY2(!info.first[nt].isEmpty(),
-                     qPrintable(QString("T2-2-010: 非终结符%1的FIRST集为空").arg(nt)));
+                     qPrintable(QString("T2-2-010: FIRST set of nonterminal %1 is empty").arg(nt)));
         }
 
         int firstCount = 0;
@@ -233,7 +233,7 @@ private slots:
     void test_first_follow_as_rows()
     {
         QString content = testio_readTestData("syntax/tiny.txt");
-        QVERIFY2(!content.isEmpty(), "T2-2-011: 无法加载TINY文法文件");
+        QVERIFY2(!content.isEmpty(), "T2-2-011: Failed to load TINY grammar file");
 
         Grammar g = parseGrammar(content);
         auto info = LL1::compute(g);
@@ -242,7 +242,7 @@ private slots:
         auto rows = engine.firstFollowAsRows(info);
 
         QVERIFY2(!rows.isEmpty(),
-                 "T2-2-011: firstFollowAsRows()返回空映射");
+                 "T2-2-011: firstFollowAsRows() returned empty map");
 
         bool hasNonterminalRow = false;
         for (const auto& nt : g.nonterminals)
@@ -251,16 +251,16 @@ private slots:
             {
                 hasNonterminalRow = true;
                 QVERIFY2(!rows[nt].isEmpty(),
-                         qPrintable(QString("T2-2-011: 符号%1的行数据为空").arg(nt)));
+                         qPrintable(QString("T2-2-011: Row data for symbol %1 is empty").arg(nt)));
             }
         }
         QVERIFY2(hasNonterminalRow,
-                 "T2-2-011: firstFollowAsRows()结果中应至少包含一个非终结符行");
+                 "T2-2-011: firstFollowAsRows() result should contain at least one nonterminal row");
 
         QVERIFY2(rows.contains("program"),
-                 "T2-2-011: 行数据应包含program符号");
+                 "T2-2-011: Row data should contain program symbol");
         QVERIFY2(rows.contains("stmt-sequence"),
-                 "T2-2-011: 行数据应包含stmt-sequence符号");
+                 "T2-2-011: Row data should contain stmt-sequence symbol");
 
         const auto& programRow = rows["program"];
         bool foundInFirst = false;
@@ -273,7 +273,7 @@ private slots:
             }
         }
         QVERIFY2(foundInFirst,
-                 "T2-2-011: program行的数据应与FIRST(program)一致");
+                 "T2-2-011: program row data should be consistent with FIRST(program)");
     }
 };
 
