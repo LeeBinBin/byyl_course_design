@@ -20,6 +20,8 @@ static QSet<QString> firstSeq(const Grammar&                      g,
     bool          allEps = true;
     for (const auto& s : seq)
     {
+        if (s == Config::epsilonSymbol())
+            continue;
         if (g.terminals.contains(s))
         {
             r.insert(s);

@@ -400,7 +400,7 @@ void Config::load()
         s_multiOps = QVector<QString>({"<=", ">=", "<>", ":=", "==", "!="});
     if (s_singleOps.isEmpty())
         s_singleOps = QVector<QString>(
-            {"(", ")", ";", ",", "<", ">", "=", "+", "-", "*", "/", "%", "{", "}", "[", "]"});
+            {"(", ")", ";", ",", "<", ">", "=", "+", "-", "*", "/", "%", "^", "{", "}", "[", "]"});
     if (s_semRoleMeaning.isEmpty())
     {
         s_semRoleMeaning[0] = "discard";

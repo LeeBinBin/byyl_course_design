@@ -18,9 +18,9 @@ parameter -> type-indicator identifier | type-indicator identifier [ ]
 1 2 | 1 2 0 0
 compound-stmt -> { local-definitions statement-list }
 0 1 1 0
-local-definitions -> local-definitions variable-definition | #
+local-definitions -> local-definitions variable-definition | @
 1 1 | 1
-statement-list -> statement-list statement | #
+statement-list -> statement-list statement | @
 1 1 | 1
 statement -> matched-stmt | open-stmt
 1 | 1
@@ -36,9 +36,9 @@ dowhile-stmt -> do statement while ( expression )
 1 2 0 0 2 0
 for-stmt -> for ( for-init ; expression ; for-update ) statement
 1 0 2 0 2 0 2 0 2
-for-init -> expression | variable-definition | #
+for-init -> expression | variable-definition | @
 1 | 1 | 1
-for-update -> expression-list | #
+for-update -> expression-list | @
 1 | 1
 expression-list -> expression-list , expression | expression
 1 0 1 | 1
@@ -64,7 +64,7 @@ factor -> ( expression ) | variable | call | number | ++ variable | -- variable
 0 1 0 | 1 | 1 | 1 | 1 2 | 1 2
 call -> identifier ( arguments )
 1 0 2 0
-arguments -> argument-list | #
+arguments -> argument-list | @
 1 | 1
 argument-list -> argument-list , expression | expression
 1 0 1 | 1

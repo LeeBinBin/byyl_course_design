@@ -28,7 +28,7 @@ private:
         QString err;
         Grammar g = GrammarParser::parseString(content, err);
         if (!err.isEmpty()) {
-            qFatal("Mini-C文法解析失败: %s", qPrintable(QString("Mini-C文法解析失败: %1").arg(err)));
+            qFatal("Mini-C grammar parse failed: %s", qPrintable(QString("Mini-C grammar parse failed: %1").arg(err)));
             return Grammar();
         }
         return g;
@@ -44,14 +44,15 @@ private:
 
     QVector<QString> buildMiniCTokenSequence()
     {
-        return {"int", "identifier", "=", "number", ";", "$"};
+        return {"int", "identifier", ";", "$"};
     }
 
     QVector<QString> buildMiniCMultiStmtTokens()
     {
-        return {"int", "identifier", "=", "number", ";",
-                "int", "identifier", "[", "number", "]", ";",
-                "$"};
+        return {"int", "identifier", "(", "void", ")", "{",
+                "int", "identifier", ";",
+                "identifier", "=", "number", ";",
+                "}", "$"};
     }
 
     bool hasSymbolInTree(const ParseTreeNode* node, const QString& target)
@@ -96,12 +97,6 @@ private slots:
         QVERIFY(g.nonterminals.contains("compound-stmt"));
         QVERIFY(g.nonterminals.contains("statement"));
         QVERIFY(g.nonterminals.contains("expression"));
-
-        qInfo() << "[T3-2-001] Mini-C BNF文法加载成功:"
-                << "产生式数=" << prodCount
-                << "起始符号=" << g.startSymbol
-                << "非终结符数=" << g.nonterminals.size()
-                << "终结符数=" << g.terminals.size();
     }
 
     void test_minic_first_follow_complete()
@@ -111,7 +106,7 @@ private slots:
         LL1Info info = LL1::compute(g);
 
         QVERIFY2(!info.first.isEmpty(), "FIRST set should not be empty");
-        QVERIFY2(!info.follow.isEmpty(), "FOLLOW集不应为空");
+        QVERIFY2(!info.follow.isEmpty(), "FOLLOW set should not be empty");
 
         QStringList keyNonTerminals = {
             "program", "definition-list", "definition",
@@ -125,15 +120,10 @@ private slots:
             QVERIFY2(info.first.contains(nt),
                      QString("Key nonterminal '%1' missing FIRST set").arg(nt).toUtf8().constData());
             QVERIFY2(info.follow.contains(nt),
-                     QString("关键非终结符'%1'缺少FOLLOW集").arg(nt).toUtf8().constData());
+                     QString("Key nonterminal '%1' missing FOLLOW set").arg(nt).toUtf8().constData());
             QVERIFY2(!info.first[nt].isEmpty(),
                      QString("Key nonterminal '%1' FIRST set is empty").arg(nt).toUtf8().constData());
         }
-
-        qInfo() << "[T3-2-002] Mini-C FIRST/FOLLOW计算完成:"
-                << "非终结符数=" << g.nonterminals.size()
-                << "FIRST条目数=" << info.first.size()
-                << "FOLLOW条目数=" << info.follow.size();
     }
 
     void test_build_minic_lalr1()
@@ -141,17 +131,13 @@ private slots:
         Grammar    g   = loadMiniCGrammar();
         LALR1Graph lalr = LALR1Builder::build(g);
 
-        QVERIFY2(!lalr.states.isEmpty(), "LALR(1) DFA状态集不应为空");
+        QVERIFY2(!lalr.states.isEmpty(), "LALR(1) DFA state set should not be empty");
         QVERIFY2(lalr.states.size() >= 10,
-                 QString("Mini-C LALR(1)状态数(%1)应>=10").arg(lalr.states.size()).toUtf8().constData());
+                 QString("Mini-C LALR(1) state count (%1) should be >= 10").arg(lalr.states.size()).toUtf8().constData());
         QVERIFY2(lalr.states.size() <= 500,
                  QString("Mini-C LALR(1) state count (%1) should be <= 500").arg(lalr.states.size()).toUtf8().constData());
 
         QVERIFY2(!lalr.edges.isEmpty(), "LALR(1) DFA edge set should not be empty");
-
-        qInfo() << "[T3-2-003] Mini-C LALR(1) DFA和表构建成功:"
-                << "状态数=" << lalr.states.size()
-                << "转移边数=" << lalr.edges.size();
     }
 
     void test_parse_minic_tokens()
@@ -165,16 +151,12 @@ private slots:
         LR1ActionTable lr1Table;
         lr1Table.action    = table.action;
         lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
         QVERIFY2(result.errorPos == -1,
                  QString("Mini-C Token sequence parsing failed, error position=%1").arg(result.errorPos).toUtf8().constData());
-
-        qInfo() << "[T3-2-004] Mini-C Token sequence syntax analysis successful:"
-                << "errorPos=" << result.errorPos
-                << "Token length=" << tokens.size()
-                << "analysis step count=" << result.steps.size();
     }
 
     void test_minic_syntax_tree_generated()
@@ -188,17 +170,14 @@ private slots:
         LR1ActionTable lr1Table;
         lr1Table.action    = table.action;
         lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
-        QVERIFY2(result.root != nullptr, "Mini-C语法树根节点不应为空");
-        QVERIFY2(!result.root->symbol.isEmpty(), "Mini-C根节点符号不应为空");
+        QVERIFY2(result.root != nullptr, "Mini-C syntax tree root node should not be empty");
+        QVERIFY2(!result.root->symbol.isEmpty(), "Mini-C root node symbol should not be empty");
         QVERIFY2(countNodes(result.root) >= 5,
-                 QString("Mini-C语法树节点数(%1)应>=5").arg(countNodes(result.root)).toUtf8().constData());
-
-        qInfo() << "[T3-2-005] Mini-C语法树(ParseTreeNode)构建成功:"
-                << "根符号=" << result.root->symbol
-                << "总节点数=" << countNodes(result.root);
+                 QString("Mini-C syntax tree node count (%1) should be >= 5").arg(countNodes(result.root)).toUtf8().constData());
     }
 
     void test_minic_tree_root_symbol()
@@ -212,14 +191,12 @@ private slots:
         LR1ActionTable lr1Table;
         lr1Table.action    = table.action;
         lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
         QVERIFY2(result.root != nullptr, "Syntax tree root node should not be empty");
         QCOMPARE(result.root->symbol, QString("program"));
-
-        qInfo() << "[T3-2-006] Mini-C syntax tree root symbol verification passed: root->symbol=\""
-                << result.root->symbol << "\"";
     }
 
     void test_minic_tree_contains_declarations()
@@ -233,10 +210,11 @@ private slots:
         LR1ActionTable lr1Table;
         lr1Table.action    = table.action;
         lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
-        QVERIFY2(result.root != nullptr, "语法树根节点不应为空");
+        QVERIFY2(result.root != nullptr, "Syntax tree root node should not be empty");
 
         bool hasDefinitionList   = hasSymbolInTree(result.root, "definition-list");
         bool hasVariableDef      = hasSymbolInTree(result.root, "variable-definition");
@@ -245,20 +223,12 @@ private slots:
         bool hasStatementList    = hasSymbolInTree(result.root, "statement-list");
         bool hasExpressionStmt   = hasSymbolInTree(result.root, "expression-stmt");
 
-        QVERIFY2(hasDefinitionList, "语法树应包含definition-list节点(定义列表)");
-        QVERIFY2(hasVariableDef, "语法树应包含variable-definition节点(变量声明)");
-        QVERIFY2(hasTypeDef, "语法树应包含type-indicator节点(类型指示符)");
-        QVERIFY2(hasExpression, "语法树应包含expression节点(表达式)");
+        QVERIFY2(hasDefinitionList, "Syntax tree should contain definition-list node");
+        QVERIFY2(hasVariableDef, "Syntax tree should contain variable-definition node");
+        QVERIFY2(hasTypeDef, "Syntax tree should contain type-indicator node");
+        QVERIFY2(hasExpression, "Syntax tree should contain expression node");
         QVERIFY2(hasStatementList || hasExpressionStmt,
-                 "Syntax tree should contain statement-list or expression-stmt node (statement structure)");
-
-        qInfo() << "[T3-2-007] Mini-C语法树关键结构验证:"
-                << "definition-list=" << hasDefinitionList
-                << " variable-definition=" << hasVariableDef
-                << " type-indicator=" << hasTypeDef
-                << " expression=" << hasExpression
-                << " statement-list=" << hasStatementList
-                << " expression-stmt=" << hasExpressionStmt;
+                 "Syntax tree should contain statement-list or expression-stmt node");
     }
 
     void test_end_to_end_minic_pipeline()
@@ -271,51 +241,32 @@ private slots:
                  QString("End-to-end: Mini-C production count (%1) insufficient").arg(prodCount).toUtf8().constData());
 
         LL1Info ll1Info = LL1::compute(g);
-        QVERIFY2(!ll1Info.first.isEmpty(), "端到端: FIRST集为空");
-        QVERIFY2(!ll1Info.follow.isEmpty(), "端到端: FOLLOW集为空");
+        QVERIFY2(!ll1Info.first.isEmpty(), "End-to-end: FIRST set is empty");
+        QVERIFY2(!ll1Info.follow.isEmpty(), "End-to-end: FOLLOW set is empty");
 
         LALR1Graph lalr = LALR1Builder::build(g);
-        QVERIFY2(!lalr.states.isEmpty(), "端到端: LALR DFA状态为空");
-        QVERIFY2(!lalr.edges.isEmpty(), "端到端: LALR DFA边为空");
+        QVERIFY2(!lalr.states.isEmpty(), "End-to-end: LALR DFA state set is empty");
+        QVERIFY2(!lalr.edges.isEmpty(), "End-to-end: LALR DFA edge set is empty");
 
         LALR1ActionTable table = LALR1Builder::computeActionTable(g, lalr);
         QVERIFY2(!table.action.isEmpty(), "End-to-end: Action table is empty");
-        QVERIFY2(!table.gotoTable.isEmpty(), "端到端: GOTO表为空");
+        QVERIFY2(!table.gotoTable.isEmpty(), "End-to-end: GOTO table is empty");
 
-        QVector<QString> tokens = {"int", "identifier", "=", "number", ";", "$"};
+        QVector<QString> tokens = {"int", "identifier", ";", "$"};
 
         LR1ActionTable lr1Table;
         lr1Table.action    = table.action;
         lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
         QVERIFY2(result.errorPos == -1,
                  QString("End-to-end pipeline parsing failed, errorPos=%1").arg(result.errorPos).toUtf8().constData());
-        QVERIFY2(result.root != nullptr, "端到端流程未生成语法树");
+        QVERIFY2(result.root != nullptr, "End-to-end process did not generate syntax tree");
         QCOMPARE(result.root->symbol, QString("program"));
         QVERIFY2(countNodes(result.root) >= 5,
-                 "端到端语法树结构不完整");
-
-        qInfo() << "========================================";
-        qInfo() << "[T3-2-008] Mini-C full pipeline end-to-end validation report";
-        qInfo() << "----------------------------------------";
-        qInfo() << "  Grammar productions:   " << prodCount;
-        qInfo() << "  Start symbol:          " << g.startSymbol;
-        qInfo() << "  Nonterminal count:     " << g.nonterminals.size();
-        qInfo() << "  Terminal count:        " << g.terminals.size();
-        qInfo() << "  FIRST set entries:     " << ll1Info.first.size();
-        qInfo() << "  FOLLOW set entries:    " << ll1Info.follow.size();
-        qInfo() << "  LALR(1) state count:   " << lalr.states.size();
-        qInfo() << "  Action table entries:  " << countActionEntries(table.action);
-        qInfo() << "  GOTO table entries:    " << countGotoEntries(table.gotoTable);
-        qInfo() << "  Token sequence length: " << tokens.size();
-        qInfo() << "  Token content:         " << tokens.join(" ");
-        qInfo() << "  Parse error position:  " << result.errorPos;
-        qInfo() << "  Syntax tree root:      " << (result.root ? result.root->symbol : "null");
-        qInfo() << "  Syntax tree nodes:     " << countNodes(result.root);
-        qInfo() << "  Analysis step count:   " << result.steps.size();
-        qInfo() << "========================================";
+                 "End-to-end syntax tree structure is incomplete");
     }
 
 private:

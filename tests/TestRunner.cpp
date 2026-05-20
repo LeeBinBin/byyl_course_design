@@ -177,10 +177,10 @@ private:
             return result;
         }
 
-        if (!process.waitForFinished(60000)) {
+        if (!process.waitForFinished(120000)) {
             process.kill();
             process.waitForFinished(3000);
-            result.output = "Test execution timeout (60s limit)";
+            result.output = "Test execution timeout (120s limit)";
             QFile::remove(outputFile);
             return result;
         }

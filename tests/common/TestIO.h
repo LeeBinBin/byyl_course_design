@@ -10,13 +10,9 @@ namespace testio {
 
 inline QString readTestData(const QString& relativePath)
 {
-    QString baseDir;
-
     QStringList searchPaths = {
-        QDir::currentPath() + "/tests/test_data/",
-        QDir::currentPath() + "/../tests/test_data/",
-        QCoreApplication::applicationDirPath() + "/../tests/test_data/",
-        QCoreApplication::applicationDirPath() + "/tests/test_data/"
+        QCoreApplication::applicationDirPath() + "/../../tests/test_data/",
+        QDir::currentPath() + "/tests/test_data/"
     };
 
     for (const auto& path : searchPaths) {
@@ -38,9 +34,8 @@ inline QString readTestData(const QString& relativePath)
 inline QByteArray readTestDataRaw(const QString& relativePath)
 {
     QStringList searchPaths = {
-        QDir::currentPath() + "/tests/test_data/",
-        QDir::currentPath() + "/../tests/test_data/",
-        QCoreApplication::applicationDirPath() + "/../tests/test_data/"
+        QCoreApplication::applicationDirPath() + "/../../tests/test_data/",
+        QDir::currentPath() + "/tests/test_data/"
     };
 
     for (const auto& path : searchPaths) {

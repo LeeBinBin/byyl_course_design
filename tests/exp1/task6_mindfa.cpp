@@ -126,7 +126,8 @@ private slots:
             {"token1=a*\n",          {"", "a", "aaa"},  {"b", "ab"}},
             {"token1=(a|b)\n",       {"a", "b"},        {"", "c", "aa"}},
             {"token1=ab\n",          {"ab"},            {"a", "ba", ""}},
-            {"token1=a(b|c)*d\n",    {"ad", "abd", "accd"}, {"a", "abc", "abcd"}},
+            // 注意: a(b|c)*d 可以匹配 abcd (a + bc + d)，所以 abcd 不在拒绝列表中
+            {"token1=a(b|c)*d\n",    {"ad", "abd", "accd", "abcd"}, {"a", "abc", "abdd"}},
             {"token1=(a|b)*(c|d)+\n", {"c", "acd", "bbcd"}, {"", "ab", "ababa"}},
         };
 

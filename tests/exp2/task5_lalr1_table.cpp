@@ -102,7 +102,6 @@ private slots:
                  "TINY grammar LALR(1) Action table should not be empty");
 
         int entryCount = countActionEntries(table.action);
-        qInfo() << "[T2-5-001] TINY grammar Action table entry count:" << entryCount;
         QVERIFY2(entryCount > 0,
                  QString("Action table should contain at least one entry, actual is %1").arg(entryCount).toUtf8().constData());
     }
@@ -116,7 +115,6 @@ private slots:
                  "TINY grammar LALR(1) GOTO table should not be empty");
 
         int gotoCount = countGotoEntries(table.gotoTable);
-        qInfo() << "[T2-5-002] TINY grammar GOTO table entry count:" << gotoCount;
         QVERIFY2(gotoCount > 0,
                  QString("GOTO table should contain at least one entry, actual is %1").arg(gotoCount).toUtf8().constData());
     }
@@ -143,7 +141,6 @@ private slots:
                     shiftCount++;
             }
         }
-        qInfo() << "[T2-5-003] Expression grammar shift entry count:" << shiftCount;
         QVERIFY2(shiftCount > 0,
                  QString("Should have at least one shift action, actual is %1").arg(shiftCount).toUtf8().constData());
     }
@@ -162,7 +159,6 @@ private slots:
                  "reductions vector should not be empty, should record reduce production info");
 
         int reduceCount = table.reductions.size();
-        qInfo() << "[T2-5-004] Reduce production count:" << reduceCount;
 
         bool hasReduceInAction = false;
         for (auto sit = table.action.begin(); sit != table.action.end(); ++sit)
@@ -184,15 +180,13 @@ private slots:
     void test_accept_entry_exists()
     {
         QString grammarText =
-            "S -> ( S ) S | epsilon\n";
+            "S -> ( S ) S | @\n";
 
         Grammar          g     = parseGrammar(grammarText);
         LALR1ActionTable table = buildActionTable(g);
 
         bool foundAccept = hasAcceptEntry(table.action);
         QVERIFY2(foundAccept, "Any grammar should have 'acc' accept state entry");
-
-        qInfo() << "[T2-5-005] Accept entry check: acc action exists";
     }
 
     void test_table_size_reasonable()
@@ -202,10 +196,6 @@ private slots:
 
         int actionEntries = countActionEntries(table.action);
         int gotoEntries   = countGotoEntries(table.gotoTable);
-
-        qInfo() << "[T2-5-006] TINY grammar table scale:"
-                << "Action=" << actionEntries
-                << "GOTO=" << gotoEntries;
 
         QVERIFY2(actionEntries >= 30,
                  QString("TINY grammar Action table entry count(%1) should be in reasonable range [30,500]")
@@ -244,9 +234,6 @@ private slots:
             LALR1ActionTable table = buildActionTable(g);
 
             bool hasConflict = hasConflictMarking(table.action);
-            qInfo() << "[T2-5-007] Potential conflict grammar" << gi << ":"
-                    << "conflict mark=" << (hasConflict ? "yes" : "no")
-                    << "Action entries=" << countActionEntries(table.action);
 
             if (hasConflict)
                 anyConflictMarked = true;
@@ -288,11 +275,6 @@ private slots:
                 checkedPairs++;
             }
         }
-
-        qInfo() << "[T2-5-008] TINY grammar accessibility:"
-                << "total states=" << stateCount
-                << "checked first 10 states x key symbol pairs=" << checkedPairs
-                << "hit entries=" << accessibleCount;
 
         QVERIFY2(accessibleCount > 0,
                  QString("Main state and symbol combinations should have table entries, actual hits %1/%2")

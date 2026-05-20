@@ -140,7 +140,6 @@ private slots:
         bool finished = compiler.waitForFinished(30000);
 
         if (!finished || compiler.exitCode() != 0) {
-            qWarning() << "Step B: Compiler output:" << compiler.readAllStandardError();
             QSKIP("Step B: Compilation failed or timed out, skipping this test");
         }
 
@@ -287,46 +286,47 @@ private slots:
 
         QStringList tokens = result.runOutput.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
-        bool foundRead = false;
-        bool foundIf = false;
-        bool foundEnd = false;
+        bool foundRead   = false;
+        bool foundIf     = false;
+        bool foundEnd    = false;
         bool foundIdentifier = false;
+        bool foundSemi   = false;
+        bool foundAssign = false;
 
-        for (int i = 0; i < tokens.size(); ++i) {
-            const QString& tok = tokens[i];
-            bool ok;
+        for (const QString& tok : tokens) {
+            bool ok = false;
             int code = tok.toInt(&ok);
             if (!ok) continue;
 
-            if (code >= 200 && code < 210) {
-                if (!foundRead) {
-                    QString context = tokens.mid(qMax(0, i - 1), qMin(3, tokens.size() - i + 1)).join(" ");
-                    if (context.contains("read", Qt::CaseInsensitive)) foundRead = true;
-                }
-                if (code == 200 || code == 201) foundIf = true;
-                if (code == 204) foundEnd = true;
-            }
+            if (code == 206) foundRead = true;      // READ
+            if (code == 200) foundIf = true;       // IF  
+            if (code == 203) foundEnd = true;      // END           
+            // identifier
             if (code == 100) foundIdentifier = true;
+            if (code == 118) foundSemi = true;     // ;
+            if (code == 117) foundAssign = true;   // :=
         }
 
         QVERIFY2(foundRead,
-                 "T9-005: READ keyword Token code not detected in output");
+                 "T9-005: READ keyword Token code (206) not detected in output");
         QVERIFY2(foundIf,
-                 "T9-005: IF keyword Token code not detected in output");
+                 "T9-005: IF keyword Token code (200) not detected in output");
         QVERIFY2(foundEnd,
-                 "T9-005: END keyword Token code not detected in output");
+                 "T9-005: END keyword Token code (203) not detected in output");
         QVERIFY2(foundIdentifier,
-                 "T9-005: IDENTIFIER (100) Token code not detected in output");
+                 "T9-005: Identifier Token code (100) not detected in output");
 
         bool hasSemicolon = false;
         bool hasAssign = false;
         for (const QString& tok : tokens) {
             bool ok;
             int code = tok.toInt(&ok);
-            if (ok && code == 103) {
+            // special103B: ; 是第16个符号(索引15)，编码 = 103 + 15 = 118
+            if (ok && code == 118) {
                 hasSemicolon = true;
             }
-            if (ok && (code == 103 || tok.contains(":="))) {
+            // special103B: := 是第15个符号(索引14)，编码 = 103 + 14 = 117
+            if (ok && code == 117) {
                 hasAssign = true;
             }
         }

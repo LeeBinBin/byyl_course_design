@@ -45,7 +45,7 @@ private:
 
     QVector<QString> buildSampleTokenSequence()
     {
-        return {"identifier", ":=", "number", ";", "$"};
+        return {"identifier", ":=", "number", "$"};
     }
 
     bool hasSymbolInTree(const ParseTreeNode* node, const QString& target)
@@ -89,9 +89,6 @@ private slots:
         QVERIFY(g.nonterminals.contains("if-stmt"));
         QVERIFY(g.nonterminals.contains("assign-stmt"));
 
-        qInfo() << "[T2-8-001] TINY grammar loaded successfully: production count=" << prodCount
-                << "start symbol=" << g.startSymbol
-                << "nonterminal count=" << g.nonterminals.size();
     }
 
     void test_compute_first_follow_complete()
@@ -113,10 +110,7 @@ private slots:
                      QString("Nonterminal '%1' has empty FIRST set").arg(nt).toUtf8().constData());
         }
 
-        qInfo() << "[T2-8-002] FIRST/FOLLOW computation complete:"
-                << "nonterminal count=" << g.nonterminals.size()
-                << "FIRST entries=" << info.first.size()
-                << "FOLLOW entries=" << info.follow.size();
+        QVERIFY2(!info.follow.isEmpty(), "FOLLOW set should not be empty");
     }
 
     void test_build_lalr1_dfa_successfully()
@@ -131,10 +125,6 @@ private slots:
                  QString("TINY grammar LALR(1) state count(%1) should be <= 200").arg(lalr.states.size()).toUtf8().constData());
 
         QVERIFY2(!lalr.edges.isEmpty(), "LALR(1) DFA edge set should not be empty");
-
-        qInfo() << "[T2-8-003] LALR(1) DFA built successfully:"
-                << "state count=" << lalr.states.size()
-                << "transition edges=" << lalr.edges.size();
     }
 
     void test_build_lalr1_table_successfully()
@@ -174,10 +164,6 @@ private slots:
             }
         }
 
-        qInfo() << "[T2-8-004] LALR(1) parsing table built successfully:"
-                << "Action entries=" << shiftCnt + reduceCnt
-                << "shift=" << shiftCnt << "reduce=" << reduceCnt
-                << "GOTO entries=" << countGotoEntries(table.gotoTable);
     }
 
     void test_prepare_token_sequence()
@@ -186,7 +172,7 @@ private slots:
 
         QVERIFY2(!tokens.isEmpty(), "Token sequence should not be empty");
         QVERIFY2(tokens.last() == "$", "Token sequence should end with $");
-        QVERIFY2(tokens.size() >= 3, "Token sequence should contain at least 3 elements (including $)");
+        QVERIFY2(tokens.size() >= 2, "Token sequence should contain at least 2 elements (including $)");
 
         QStringList validTerminals = {
             "identifier", "number", ":=", ";", "+", "-", "*", "/", "^",
@@ -201,9 +187,7 @@ private slots:
                      QString("Token '%1' is not a valid terminal").arg(tokens[i]).toUtf8().constData());
         }
 
-        qInfo() << "[T2-8-005] Token sequence prepared:"
-                << "length=" << tokens.size()
-                << "content=" << tokens.join(" ");
+        QVERIFY2(tokens.last() == "$", "Token sequence should end with $");
     }
 
     void test_parse_success_no_errors()
@@ -217,15 +201,12 @@ private slots:
         LR1ActionTable lr1Table;
         lr1Table.action    = table.action;
         lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
         QVERIFY2(result.errorPos == -1,
                  QString("Parsing failed, error position=%1").arg(result.errorPos).toUtf8().constData());
-
-        qInfo() << "[T2-8-006] Parsing succeeded without errors:"
-                << "errorPos=" << result.errorPos
-                << "analysis step count=" << result.steps.size();
     }
 
     void test_syntax_tree_generated()
@@ -239,6 +220,7 @@ private slots:
         LR1ActionTable lr1Table;
         lr1Table.action    = table.action;
         lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
@@ -247,9 +229,7 @@ private slots:
         QVERIFY2(countNodes(result.root) >= 3,
                  QString("Syntax tree node count(%1) should be >= 3").arg(countNodes(result.root)).toUtf8().constData());
 
-        qInfo() << "[T2-8-007] Syntax tree generated successfully:"
-                << "root symbol=" << result.root->symbol
-                << "total nodes=" << countNodes(result.root);
+        QVERIFY2(!result.root->symbol.isEmpty(), "Root node symbol should not be empty");
     }
 
     void test_tree_root_is_program()
@@ -263,14 +243,12 @@ private slots:
         LR1ActionTable lr1Table;
         lr1Table.action    = table.action;
         lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
         QVERIFY2(result.root != nullptr, "Syntax tree root node should not be null");
         QCOMPARE(result.root->symbol, QString("program"));
-
-        qInfo() << "[T2-8-008] Syntax tree root node verification passed: root->symbol=\""
-                << result.root->symbol << "\"";
     }
 
     void test_tree_contains_key_structures()
@@ -279,11 +257,12 @@ private slots:
         LALR1Graph       lalr  = LALR1Builder::build(g);
         LALR1ActionTable table = LALR1Builder::computeActionTable(g, lalr);
 
-        QVector<QString> tokens = {"identifier", ":=", "number", ";", "$"};
+        QVector<QString> tokens = {"identifier", ":=", "number", "$"};
 
         LR1ActionTable lr1Table;
         lr1Table.action    = table.action;
         lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
@@ -296,11 +275,6 @@ private slots:
         QVERIFY2(hasStmtSeq, "Syntax tree should contain stmt-sequence node");
         QVERIFY2(hasStatement, "Syntax tree should contain statement node");
         QVERIFY2(hasAssignStmt, "Syntax tree should contain assign-stmt node (assign statement)");
-
-        qInfo() << "[T2-8-009] Key structure verification:"
-                << "stmt-sequence=" << hasStmtSeq
-                << "statement=" << hasStatement
-                << "assign-stmt=" << hasAssignStmt;
     }
 
     void test_end_to_end_consistency()
@@ -324,11 +298,12 @@ private slots:
         QVERIFY2(!table.action.isEmpty(), "Action table is empty");
         QVERIFY2(!table.gotoTable.isEmpty(), "GOTO table is empty");
 
-        QVector<QString> tokens = {"identifier", ":=", "number", ";", "$"};
+        QVector<QString> tokens = {"identifier", ":=", "number", "$"};
 
         LR1ActionTable lr1Table;
         lr1Table.action    = table.action;
         lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
 
         ParseResult result = LR1Parser::parse(tokens, g, lr1Table);
 
@@ -338,22 +313,6 @@ private slots:
         QCOMPARE(result.root->symbol, QString("program"));
         QVERIFY2(countNodes(result.root) >= 3,
                  "End-to-end syntax tree structure incomplete");
-
-        qInfo() << "========================================";
-        qInfo() << "[T2-8-010] End-to-end consistency validation report";
-        qInfo() << "----------------------------------------";
-        qInfo() << "  Grammar production count:  " << countProductions(g);
-        qInfo() << "  FIRST set entries:         " << ll1Info.first.size();
-        qInfo() << "  FOLLOW set entries:        " << ll1Info.follow.size();
-        qInfo() << "  LALR(1) state count:       " << lalr.states.size();
-        qInfo() << "  Action table entries:      " << countActionEntries(table.action);
-        qInfo() << "  GOTO table entries:        " << countGotoEntries(table.gotoTable);
-        qInfo() << "  Token sequence length:     " << tokens.size();
-        qInfo() << "  Parsing error position:    " << result.errorPos;
-        qInfo() << "  Syntax tree root symbol:   " << (result.root ? result.root->symbol : "null");
-        qInfo() << "  Syntax tree total nodes:   " << countNodes(result.root);
-        qInfo() << "  Analysis step count:       " << result.steps.size();
-        qInfo() << "========================================";
     }
 
 private:

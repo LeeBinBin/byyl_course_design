@@ -185,6 +185,8 @@ static void putAction(QMap<int, QMap<QString, QString>>& action,
                       const QString&                     val)
 {
     QString prev = action[st].value(a);
+    if (prev == "acc")
+        return;
     if (!prev.isEmpty() && prev != val)
         action[st][a] = prev + "|" + val;
     else
@@ -243,16 +245,19 @@ LALR1ActionTable LALR1Builder::computeActionTable(const Grammar& g, const LALR1G
                 {
                     putAction(t.action, i, Config::eofSymbol(), "acc");
                 }
-                QStringList lookaheads = it.lookahead.split("|");
-                for (const auto& a : lookaheads)
+                else
                 {
-                    if (!a.isEmpty() && a != Config::epsilonSymbol())
+                    QStringList lookaheads = it.lookahead.split("|");
+                    for (const auto& a : lookaheads)
                     {
-                        QString key = it.left + "->" + it.right.join(" ");
-                        int     rk  = redIndex.value(key, -1);
-                        QString r   = rk >= 0 ? QString("r%1").arg(rk)
-                                              : QString("r %1 -> %2").arg(it.left).arg(it.right.join(" "));
-                        putAction(t.action, i, a, r);
+                        if (!a.isEmpty() && a != Config::epsilonSymbol())
+                        {
+                            QString key = it.left + "->" + it.right.join(" ");
+                            int     rk  = redIndex.value(key, -1);
+                            QString r   = rk >= 0 ? QString("r%1").arg(rk)
+                                                  : QString("r %1 -> %2").arg(it.left).arg(it.right.join(" "));
+                            putAction(t.action, i, a, r);
+                        }
                     }
                 }
             }

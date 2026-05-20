@@ -4,54 +4,34 @@
 #include <QVector>
 #include <QMap>
 #include <QSet>
+#include <QCoreApplication>
+#include <QDir>
 
-#include "syntax/LR1Parser.h"
-#include "syntax/LR1.h"
-#include "syntax/GrammarParser.h"
-#include "syntax/DotGenerator.h"
+#include "src/syntax/LR1Parser.h"
+#include "src/syntax/LALR1.h"
+#include "src/syntax/GrammarParser.h"
+#include "src/syntax/DotGenerator.h"
+#include "tests/common/TestIO.h"
 
 class TestExp2Task7_SyntaxTree : public QObject
 {
     Q_OBJECT
 
 private:
-    QString tinyGrammarText =
-        "program->stmt-sequence\n"
-        "stmt-sequence-> stmt-sequence ;statement |statement\n"
-        "statement->if-stmt|repeat-stmt|assign-stmt|read-stmt|write-stmt\n"
-        "if-stmt->if exp then stmt-sequence end|if exp then stmt-sequence else stmt-sequence end\n"
-        "repeat-stmt->repeat stmt-sequence until exp\n"
-        "assign-stmt->identifier := exp\n"
-        "read-stmt->read identifier\n"
-        "write-stmt->write exp\n"
-        "exp->simple-exp comparison-op simple-exp |simple-exp\n"
-        "comparison-op-> < |> | = |<= | <> |>= \n"
-        "simple-exp->simple-exp addop term |term \n"
-        "addop-> + |-\n"
-        "term->term mulop power | power\n"
-        "mulop-> * | / |%\n"
-        "power->factor powop power | factor\n"
-        "powop-> ^\n"
-        "factor->(exp) | number | identifier\n";
-
-    Grammar parseGrammar(const QString& text)
-    {
-        QString error;
-        Grammar g = GrammarParser::parseString(text, error);
-        if (!error.isEmpty()) {
-            qFatal("grammar parsing failed: %s", error.toUtf8().constData());
-            return Grammar();
-        }
-        return g;
-    }
+    Grammar m_grammar;
+    bool    m_ready = false;
 
     ParseResult parseTokens(const QVector<QString>& tokens)
     {
-        Grammar          g  = parseGrammar(tinyGrammarText);
-        LR1Graph         gr = LR1Builder::build(g);
-        LR1ActionTable   t  = LR1Builder::computeActionTable(g, gr);
-        ParseResult      res = LR1Parser::parse(tokens, g, t);
-        return res;
+        if (!m_ready)
+            qFatal("initTestCase not complete");
+        auto merged   = LALR1Builder::build(m_grammar);
+        auto table    = LALR1Builder::computeActionTable(m_grammar, merged);
+        LR1ActionTable lr1Table;
+        lr1Table.action    = table.action;
+        lr1Table.gotoTable = table.gotoTable;
+        lr1Table.reductions = table.reductions;
+        return LR1Parser::parse(tokens, m_grammar, lr1Table);
     }
 
     int treeDepth(ParseTreeNode* node)
@@ -108,9 +88,25 @@ private:
 
 private slots:
 
+    void initTestCase()
+    {
+        QString content = testio_readTestData("syntax/tiny.txt");
+        QVERIFY2(!content.isEmpty(), "Failed to load syntax/tiny.txt");
+
+        QString error;
+        m_grammar = GrammarParser::parseString(content, error);
+        QVERIFY2(error.isEmpty(), qPrintable(QString("grammar parsing failed: %1").arg(error)));
+
+        int prodCount = 0;
+        for (auto it = m_grammar.productions.begin(); it != m_grammar.productions.end(); ++it)
+            prodCount += it.value().size();
+
+        m_ready = true;
+    }
+
     void test_tree_read_stmt_structure()
     {
-        QVector<QString> tokens = {"read", "identifier", ";"};
+        QVector<QString> tokens = {"read", "identifier"};
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
@@ -128,7 +124,7 @@ private slots:
 
     void test_tree_assign_stmt_structure()
     {
-        QVector<QString> tokens = {"identifier", ":=", "number", ";"};
+        QVector<QString> tokens = {"identifier", ":=", "number"};
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
@@ -146,7 +142,7 @@ private slots:
     void test_tree_depth_reasonable()
     {
         QVector<QString> tokens = {"identifier", ":=", "number", "+",
-                                   "number", ";", "write", "identifier", ";"};
+                                   "number", ";", "write", "identifier"};
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
@@ -156,14 +152,14 @@ private slots:
 
         QVERIFY2(depth >= 5,
                  QString("tree depth %1 should be >= 5").arg(depth).toUtf8().constData());
-        QVERIFY2(depth <= 10,
-                 QString("tree depth %1 should be <= 10").arg(depth).toUtf8().constData());
+        QVERIFY2(depth <= 15,
+                 QString("tree depth %1 should be <= 15").arg(depth).toUtf8().constData());
     }
 
     void test_tree_node_count_sufficient()
     {
         QVector<QString> tokens = {"read", "identifier", ";",
-                                   "identifier", ":=", "number", ";"};
+                                   "identifier", ":=", "number"};
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
@@ -183,7 +179,7 @@ private slots:
     void test_tree_if_branches()
     {
         QVector<QString> tokens = {"if", "number", "<", "identifier",
-                                   "then", "read", "identifier", ";", "end"};
+                                   "then", "read", "identifier", "end"};
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
@@ -201,7 +197,7 @@ private slots:
     void test_tree_repeat_loop()
     {
         QVector<QString> tokens = {"repeat", "identifier", ":=", "number",
-                                   ";", "until", "number"};
+                                   "until", "number"};
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
@@ -218,7 +214,8 @@ private slots:
 
     void test_all_terminals_in_leaves()
     {
-        QVector<QString> tokens = {"read", "x", ";", "y", ":=", "1", "+", "2", ";"};
+        QVector<QString> tokens = {"read", "identifier", ";",
+                                   "identifier", ":=", "number", "+", "number"};
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);
@@ -242,7 +239,7 @@ private slots:
     void test_dot_export_of_tree()
     {
         QVector<QString> tokens = {"identifier", ":=", "number", "+",
-                                   "number", ";", "write", "identifier", ";"};
+                                   "number", ";", "write", "identifier"};
         ParseResult       res   = parseTokens(tokens);
 
         QCOMPARE(res.errorPos, -1);

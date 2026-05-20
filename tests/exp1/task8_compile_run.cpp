@@ -131,7 +131,7 @@ private slots:
         QSet<int> idCodes;
         idCodes.insert(100);
         QSet<int> blacklist;
-        QMap<QString, int> kwMap;
+        QMap<QString, int> kwMap = Engine::buildKeywordLexemeMap(setup.pf, setup.codes);
 
         QString result = engine.runMultiple(setup.mdfas, setup.codes, "if abc", idCodes, blacklist, kwMap);
 
@@ -157,17 +157,20 @@ private slots:
 
     void test_longest_match_wins()
     {
+        // 使用 B 后缀确保 keyword 被拆分为独立 DFA
         QString rule =
-            "keyword200=int\n"
+            "keyword200B=int\n"
             "identifier100=letter(letter|digit)*\n"
             "letter=[A-Za-z]\n"
             "digit=[0-9]\n";
 
         auto setup = buildMultiDFAFromRules(rule);
         QSet<int> idCodes;
+        idCodes.insert(100);
         QSet<int> blacklist;
-        QMap<QString, int> kwMap;
-        kwMap.insert("int", 200);
+        
+        // 构建关键词映射
+        QMap<QString, int> kwMap = Engine::buildKeywordLexemeMap(setup.pf, setup.codes);
 
         QString result = engine.runMultiple(setup.mdfas, setup.codes, "int", idCodes, blacklist, kwMap);
 
@@ -216,11 +219,14 @@ private slots:
             int code = t.toInt(&ok);
             if (!ok) continue;
 
-            if (code >= 200 && code <= 210)
+            // keyword200B: IF(200), THEN(201), ELSE(202), END(203),
+            //               REPEAT(204), UNTIL(205), READ(206), WRITE(207)...
+            if (code == 206)
                 hasRead = true;
             else if (code == 100)
                 hasId = true;
-            else if (code == 103)
+            // special103B: 分号是第16个符号(索引15)，所以编码 = 103 + 15 = 118
+            else if (code == 118)
                 hasSemi = true;
         }
 
@@ -416,11 +422,12 @@ private slots:
                 else
                     hasIdB = true;
             }
-            else if (code == 103)
+            // Mini-C special103B: = 是第13个符号(索引12)，编码 = 103 + 12 = 115
+            else if (code == 115)
                 hasAssign = true;
-            else if (code == 103 || code == 101)
+            else if (code == 115 || code == 101)
             {
-                if (code == 103 && !hasAssign)
+                if (code == 115 && !hasAssign)
                     hasAssign = true;
                 else if (code == 101)
                     hasNum1 = true;
@@ -453,7 +460,8 @@ private slots:
         {
             bool ok = false;
             int code = t.toInt(&ok);
-            if (ok && code == 103)
+            // Mini-C special103B: 收集所有特殊符号 (编码 103-126)
+            if (ok && code >= 103 && code <= 126)
                 specialTokens.append(t);
         }
         if (specialTokens.size() >= 2)
@@ -464,7 +472,8 @@ private slots:
             {
                 bool ok = false;
                 int code = t.toInt(&ok);
-                if (ok && code == 103)
+                // Mini-C special103B: = 是 115, ; 是 116
+                if (ok && code == 115)
                 {
                     if (!hasAssign)
                         hasAssign = true;

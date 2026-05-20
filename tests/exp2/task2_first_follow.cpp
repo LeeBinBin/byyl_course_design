@@ -7,6 +7,7 @@
 #include "src/syntax/GrammarParser.h"
 #include "src/syntax/Grammar.h"
 #include "src/syntax/LL1.h"
+#include "src/config/Config.h"
 #include "src/Engine.h"
 #include "tests/common/TestIO.h"
 
@@ -51,12 +52,12 @@ private slots:
 
     void test_first_of_epsilon()
     {
-        QString text = "S -> #";
+        QString text = "S -> @";
         auto info = computeFromText(text);
 
         QVERIFY2(info.first.contains("S"), "T2-2-002: FIRST set missing nonterminal S");
-        QVERIFY2(info.first["S"].contains("#"),
-                 "T2-2-002: FIRST(S) should contain epsilon (i.e. '#')");
+        QVERIFY2(info.first["S"].contains(Config::epsilonSymbol()),
+                 "T2-2-002: FIRST(S) should contain epsilon (i.e. '@')");
     }
 
     void test_first_union()
@@ -124,8 +125,8 @@ private slots:
     {
         QString text =
             "S -> A B C\n"
-            "A -> a | #\n"
-            "B -> b | #\n"
+            "A -> a | @\n"
+            "B -> b | @\n"
             "C -> c";
         auto info = computeFromText(text);
 
@@ -145,10 +146,10 @@ private slots:
 
         bool aHasDollar = info.follow["A"].contains("$");
         bool bHasDollar = info.follow["B"].contains("$");
-        QVERIFY2(aHasDollar,
-                 "T2-2-007: A can derive epsilon, $ in FOLLOW(S) should propagate to FOLLOW(A)");
-        QVERIFY2(bHasDollar,
-                 "T2-2-007: B can derive epsilon, $ in FOLLOW(S) should propagate to FOLLOW(B)");
+        QVERIFY2(!aHasDollar,
+                 "T2-2-007: C->c cannot derive epsilon, $ should NOT propagate to FOLLOW(A)");
+        QVERIFY2(!bHasDollar,
+                 "T2-2-007: C->c cannot derive epsilon, $ should NOT propagate to FOLLOW(B)");
     }
 
     void test_tiny_grammar_first()

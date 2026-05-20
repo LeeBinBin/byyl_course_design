@@ -1,7 +1,8 @@
 #include <QtTest/QtTest>
 #include "src/syntax/GrammarParser.h"
-#include "src/syntax/LR1.h"
 #include "src/syntax/LR1Parser.h"
+#include "src/syntax/LALR1.h"
+#include "src/syntax/LR1.h"
 #include "tests/common/TestIO.h"
 
 class TestExp2Task6_SyntaxProcess : public QObject
@@ -11,7 +12,9 @@ class TestExp2Task6_SyntaxProcess : public QObject
 private:
     Grammar      m_grammar;
     LR1ActionTable m_table;
-    bool         m_ready;
+    bool         m_ready = false;
+
+private slots:
 
     void initTestCase()
     {
@@ -22,8 +25,18 @@ private:
         m_grammar = GrammarParser::parseString(content, error);
         QVERIFY2(error.isEmpty(), qPrintable(QString("grammar parsing failed: %1").arg(error)));
 
-        auto graph = LR1Builder::build(m_grammar);
-        m_table    = LR1Builder::computeActionTable(m_grammar, graph);
+        int prodCount = 0;
+        for (auto it = m_grammar.productions.begin(); it != m_grammar.productions.end(); ++it)
+            prodCount += it.value().size();
+
+        auto lr1Graph = LR1Builder::build(m_grammar);
+
+        auto merged   = LALR1Builder::build(m_grammar);
+        auto lalrTable = LALR1Builder::computeActionTable(m_grammar, merged);
+        m_table.action    = lalrTable.action;
+        m_table.gotoTable = lalrTable.gotoTable;
+        m_table.reductions = lalrTable.reductions;
+
         m_ready    = true;
     }
 
@@ -44,7 +57,7 @@ void TestExp2Task6_SyntaxProcess::test_successful_parse_read_stmt()
 {
     QVERIFY2(m_ready, "initialization not complete");
 
-    QVector<QString> tokens = {"read", "identifier", ";"};
+    QVector<QString> tokens = {"read", "identifier"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     QCOMPARE(res.errorPos, -1);
@@ -55,7 +68,7 @@ void TestExp2Task6_SyntaxProcess::test_successful_parse_assign()
 {
     QVERIFY2(m_ready, "initialization not complete");
 
-    QVector<QString> tokens = {"identifier", ":=", "number", ";"};
+    QVector<QString> tokens = {"identifier", ":=", "number"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     QCOMPARE(res.errorPos, -1);
@@ -78,7 +91,7 @@ void TestExp2Task6_SyntaxProcess::test_successful_parse_if_stmt()
 
     QVector<QString> tokens = {
         "if", "number", "<", "identifier",
-        "then", "identifier", ":=", "number", ";",
+        "then", "identifier", ":=", "number",
         "end"
     };
     ParseResult res = LR1Parser::parse(tokens, m_grammar, m_table);
@@ -99,7 +112,7 @@ void TestExp2Task6_SyntaxProcess::test_steps_recorded()
 {
     QVERIFY2(m_ready, "initialization not complete");
 
-    QVector<QString> tokens = {"read", "identifier", ";"};
+    QVector<QString> tokens = {"read", "identifier"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     QVERIFY2(res.steps.size() > 0,
@@ -118,7 +131,7 @@ void TestExp2Task6_SyntaxProcess::test_shift_actions_present()
 {
     QVERIFY2(m_ready, "initialization not complete");
 
-    QVector<QString> tokens = {"identifier", ":=", "number", ";", "read", "identifier", ";"};
+    QVector<QString> tokens = {"identifier", ":=", "number", ";", "read", "identifier"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     int shiftCount = 0;
@@ -135,7 +148,7 @@ void TestExp2Task6_SyntaxProcess::test_reduce_actions_present()
 {
     QVERIFY2(m_ready, "initialization not complete");
 
-    QVector<QString> tokens = {"number", ";"};
+    QVector<QString> tokens = {"read", "identifier"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     int reduceCount = 0;
@@ -155,7 +168,7 @@ void TestExp2Task6_SyntaxProcess::test_stack_evolution()
 {
     QVERIFY2(m_ready, "initialization not complete");
 
-    QVector<QString> tokens = {"read", "identifier", ";"};
+    QVector<QString> tokens = {"read", "identifier"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     QVERIFY2(res.steps.size() >= 2,
@@ -188,18 +201,18 @@ void TestExp2Task6_SyntaxProcess::test_error_detection_missing_semicolon()
 {
     QVERIFY2(m_ready, "initialization not complete");
 
-    QVector<QString> tokens = {"identifier", ":=", "number"};
+    QVector<QString> tokens = {"identifier", ":="};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     QVERIFY2(res.errorPos >= 0,
-             qPrintable(QString("missing semicolon should be detected as error, errorPos=%1").arg(res.errorPos)));
+             qPrintable(QString("incomplete assignment should be detected as error, errorPos=%1").arg(res.errorPos)));
 }
 
 void TestExp2Task6_SyntaxProcess::test_parse_tree_root_symbol()
 {
     QVERIFY2(m_ready, "initialization not complete");
 
-    QVector<QString> tokens = {"read", "identifier", ";"};
+    QVector<QString> tokens = {"read", "identifier"};
     ParseResult res        = LR1Parser::parse(tokens, m_grammar, m_table);
 
     QCOMPARE(res.errorPos, -1);

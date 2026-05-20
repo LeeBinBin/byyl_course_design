@@ -100,9 +100,6 @@ private slots:
         QVERIFY2(lr1.states.size() > 0, "LR(1) should produce at least one state");
         QVERIFY2(lalr.states.size() > 0, "LALR(1) should produce at least one state");
 
-        qInfo() << "[T2-4-001] LR(1) state count:" << lr1.states.size()
-                << "LALR(1) state count:" << lalr.states.size();
-
         QVERIFY2(lalr.states.size() <= lr1.states.size(),
                  QString("LALR(1) state count(%1) should be <= LR(1) state count(%2)")
                      .arg(lalr.states.size())
@@ -111,7 +108,6 @@ private slots:
                      .constData());
 
         if (lalr.states.size() == lr1.states.size()) {
-            qInfo() << "[INFO] Grammar has no mergeable core items (LALR=LR=" << lalr.states.size() << ", this is valid)";
 
             QString complexGrammar =
                 "E -> E + T | T\n"
@@ -120,9 +116,6 @@ private slots:
             Grammar gComplex = parseGrammar(complexGrammar);
             LR1Graph   lr1Complex  = LR1Builder::build(gComplex);
             LALR1Graph lalrComplex = LALR1Builder::build(gComplex);
-
-            qInfo() << "[INFO] Complex grammar: LR(1)=" << lr1Complex.states.size()
-                    << " LALR(1)=" << lalrComplex.states.size();
 
             QVERIFY2(lalrComplex.states.size() <= lr1Complex.states.size(),
                      "More complex grammar should show state count reduction benefit");
@@ -180,9 +173,6 @@ private slots:
             }
         }
 
-        qInfo() << "[T2-4-002] LR(1) core item group count:"
-                << std::count_if(lr1CoreGroups.begin(), lr1CoreGroups.end(),
-                                 [](const QVector<int>& v) { return v.size() > 1; });
         QVERIFY2(foundMergeGroup || lr1.states.size() == lalr.states.size(),
                  "If LR(1) has multiple states sharing the same core, LALR(1) must merge them correctly");
     }
@@ -191,7 +181,7 @@ private slots:
     {
         QString grammarText =
             "S->A a | A b\n"
-            "A->a A | epsilon\n";
+            "A->a A | @\n";
         Grammar g = parseGrammar(grammarText);
 
         LR1Graph   lr1  = LR1Builder::build(g);
@@ -248,9 +238,6 @@ private slots:
                         QVERIFY2(mergedLas.contains(la),
                                  QString("Merged lookahead should contain '%1' from original union").arg(la).toUtf8().constData());
                     }
-                    qInfo() << "[T2-4-003] Core group size:" << group.size()
-                            << "Original lookahead union size:" << unionLookaheads.size()
-                            << "Merged lookahead size:" << mergedLas.size();
                     break;
                 }
             }
@@ -298,9 +285,6 @@ private slots:
                     reduceCount++;
             }
         }
-        qInfo() << "[T2-4-004] TINY grammar LALR(1): states=" << lalr.states.size()
-                << "shifts=" << shiftCount << "reduces=" << reduceCount
-                << "goto entries=" << table.gotoTable.size();
         QVERIFY2(shiftCount > 0, "Should have shift actions");
         QVERIFY2(reduceCount > 0, "Should have reduce actions");
     }
@@ -310,7 +294,7 @@ private slots:
         QStringList grammars = {
             "S->A B\nA->a A|a\nB->b B|b\n",
             "E->E + T|T\nT->T * F|F\nF->( E )|id\n",
-            "S->( S ) S|epsilon\n",
+            "S->( S ) S|@\n",
         };
 
         for (int gi = 0; gi < grammars.size(); ++gi)
@@ -323,11 +307,6 @@ private slots:
 
             bool lr1Conflict  = hasActionConflict(lr1Table.action);
             bool lalrConflict = hasActionConflict(lalrTable.action);
-
-            qInfo() << "[T2-4-005] Grammar" << gi << ": LR(1) conflict=" << lr1Conflict
-                    << "LALR(1) conflict=" << lalrConflict
-                    << "LR(1) states=" << lr1.states.size()
-                    << "LALR(1) states=" << lalr.states.size();
 
             if (!lr1Conflict)
             {
@@ -376,9 +355,6 @@ private slots:
                      .arg(lalr.states.size())
                      .toUtf8()
                      .constData());
-
-        qInfo() << "[T2-4-006] DOT output length:" << dot.size()
-                << "nodes:" << nodeCount << "edges:" << edgeCount;
     }
 
     void test_comparison_lr1_vs_lalr1()
@@ -397,23 +373,6 @@ private slots:
         int lalrStates = lalr.states.size();
         int reduced    = lr1States - lalrStates;
         double ratio   = lr1States > 0 ? (double)lalrStates / lr1States : 0.0;
-
-        qInfo() << "========================================";
-        qInfo() << "[T2-4-007] LR(1) vs LALR(1) Comparison Report (TINY grammar)";
-        qInfo() << "----------------------------------------";
-        qInfo() << "  LR(1) states:     " << lr1States;
-        qInfo() << "  LALR(1) states:   " << lalrStates;
-        qInfo() << "  States reduced:    " << reduced;
-        qInfo() << "  Compression ratio (LALR/LR):" << QString::number(ratio, 'f', 2);
-        qInfo() << "----------------------------------------";
-        qInfo() << "  LR(1) action entries:  " << countActions(lr1Tab.action);
-        qInfo() << "  LALR(1) action entries:" << countActions(lalrTab.action);
-        qInfo() << "  LR(1) goto entries:   " << countGotos(lr1Tab.gotoTable);
-        qInfo() << "  LALR(1) goto entries: " << countGotos(lalrTab.gotoTable);
-        qInfo() << "----------------------------------------";
-        qInfo() << "  LR(1) conflict:       " << (hasActionConflict(lr1Tab.action) ? "Yes" : "No");
-        qInfo() << "  LALR(1) conflict:     " << (hasActionConflict(lalrTab.action) ? "Yes" : "No");
-        qInfo() << "========================================";
 
         QVERIFY2(lr1States > 0, "LR(1) should produce states for TINY grammar");
         QVERIFY2(lalrStates > 0, "LALR(1) should produce states for TINY grammar");

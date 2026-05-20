@@ -12,6 +12,7 @@
 #include "LR1.h"
 #include "LL1.h"
 #include "../config/Config.h"
+#include <QStringList>
 
 static bool isTerminal(const QSet<QString>& terms, const QString& s)
 {
@@ -33,6 +34,8 @@ static QSet<QString> firstSeqLL1(const Grammar&          g,
     for (int i = 0; i < seq.size(); ++i)
     {
         const QString& X = seq[i];
+        if (X == Config::epsilonSymbol())
+            continue;
         if (isTerminal(g.terminals, X) && X != Config::epsilonSymbol())
         {
             res.insert(X);
@@ -155,7 +158,7 @@ LR1Graph LR1Builder::build(const Grammar& g)
         return LR1Graph{};
     }
     LL1Info          info = LL1::compute(aug);
-    QVector<LR1Item> I0   = closureLL1(
+    QVector<LR1Item> I0 = closureLL1(
         aug,
         info,
         QVector<LR1Item>{LR1Item{
@@ -165,10 +168,12 @@ LR1Graph LR1Builder::build(const Grammar& g)
     QMap<QString, int> stateIndex;
     stateIndex[serializeSet(I0)] = 0;
     bool changed                 = true;
+    int  iter                    = 0;
     while (changed)
     {
         changed = false;
         int S   = gr.states.size();
+        int prevSize = S;
         for (int i = 0; i < S; ++i)
         {
             auto          I = gr.states[i];
@@ -200,6 +205,7 @@ LR1Graph LR1Builder::build(const Grammar& g)
                 gr.edges[i][X] = idx;
             }
         }
+        iter++;
     }
     return gr;
 }
@@ -250,6 +256,8 @@ static void putAction(QMap<int, QMap<QString, QString>>& action,
                       const QString&                     val)
 {
     QString prev = action[st].value(a);
+    if (prev == "acc")
+        return;
     if (!prev.isEmpty() && prev != val)
         action[st][a] = prev + "|" + val;
     else
@@ -308,15 +316,18 @@ LR1ActionTable LR1Builder::computeActionTable(const Grammar& g, const LR1Graph& 
                 {
                     putAction(t.action, i, Config::eofSymbol(), "acc");
                 }
-                QString a = it.lookahead;
-                if (!a.isEmpty() && a != Config::epsilonSymbol())
+                else
                 {
-                    QString key = it.left + "->" + it.right.join(" ");
-                    int     rk  = redIndex.value(key, -1);
-                    QString r   = rk >= 0
-                                      ? QString("r%1").arg(rk)
-                                      : QString("r %1 -> %2").arg(it.left).arg(it.right.join(" "));
-                    putAction(t.action, i, a, r);
+                    QString a = it.lookahead;
+                    if (!a.isEmpty() && a != Config::epsilonSymbol())
+                    {
+                        QString key = it.left + "->" + it.right.join(" ");
+                        int     rk  = redIndex.value(key, -1);
+                        QString r   = rk >= 0
+                                          ? QString("r%1").arg(rk)
+                                          : QString("r %1 -> %2").arg(it.left).arg(it.right.join(" "));
+                        putAction(t.action, i, a, r);
+                    }
                 }
             }
         }
@@ -333,5 +344,22 @@ LR1ActionTable LR1Builder::computeActionTable(const Grammar& g, const LR1Graph& 
             }
         }
     }
+    int shiftStates = 0, reduceStates = 0, gotoStates = 0, actionEntries = 0;
+    for (auto it = t.action.begin(); it != t.action.end(); ++it)
+    {
+        actionEntries += it.value().size();
+        bool hasShift = false, hasReduce = false;
+        for (auto ait = it.value().begin(); ait != it.value().end(); ++ait)
+        {
+            if (ait.value().startsWith("s")) hasShift = true;
+            if (ait.value().startsWith("r")) hasReduce = true;
+        }
+        if (hasShift) shiftStates++;
+        if (hasReduce) reduceStates++;
+    }
+    for (auto it = t.gotoTable.begin(); it != t.gotoTable.end(); ++it)
+        if (!it.value().isEmpty()) gotoStates++;
+    fprintf(stderr, "[LR1-ACT] States=%d ActionEntries=%d ShiftStates=%d ReduceStates=%d GotoStates=%d\n",
+            gr.states.size(), actionEntries, shiftStates, reduceStates, gotoStates);
     return t;
 }
