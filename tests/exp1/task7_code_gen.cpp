@@ -13,6 +13,7 @@
 #include "src/automata/Hopcroft.h"
 #include "src/generator/CodeGenerator.h"
 #include "src/Engine.h"
+#include "../common/TestIO.h"
 
 class TestExp1Task7_CodeGen : public QObject
 {
@@ -48,14 +49,17 @@ private slots:
 
     void test_single_token_code()
     {
-        QString rule = "ID=letter(letter|digit)*\n";
+        QString rule =
+            "letter=[A-Za-z]\n"
+            "digit=[0-9]\n"
+            "ID100=letter(letter|digit)*\n";
         MinDFA  mdfa = buildMinDFAFromRegex(rule);
 
         QVERIFY2(mdfa.states.size() > 0,
                  "Generated MinDFA should not be empty for ID rule (check if regex parsing succeeded)");
 
         QMap<QString, int> tokenCodes;
-        tokenCodes["ID"] = 100;
+        tokenCodes["ID100"] = 100;  // Key must match rule name "ID100"
 
         QString code = CodeGenerator::generate(mdfa, tokenCodes);
 
@@ -92,7 +96,10 @@ private slots:
 
     void test_token_code_embedded()
     {
-        QString rule = "ID=letter(letter|digit)*\n";
+        QString rule =
+            "letter=[A-Za-z]\n"
+            "digit=[0-9]\n"
+            "ID100=letter(letter|digit)*\n";
         MinDFA  mdfa = buildMinDFAFromRegex(rule);
 
         QMap<QString, int> tokenCodes;
@@ -211,12 +218,9 @@ private slots:
 
     void test_tiny_full_code_generation()
     {
-        QFile file("../../tests/test_data/regex/tiny.txt");
-        QVERIFY2(file.open(QIODevice::ReadOnly | QIODevice::Text),
-                 "Failed to open TINY regex rule file tiny.txt");
-
-        QString tinyRules = QString::fromUtf8(file.readAll());
-        file.close();
+        QString tinyRules = testio_readTestData("regex/tiny.txt");
+        QVERIFY2(!tinyRules.isEmpty(),
+                 "Failed to load TINY regex rule file tiny.txt");
 
         QVector<int> codes;
         QVector<MinDFA> mdfas = buildAllMinDFAFromText(tinyRules, codes);

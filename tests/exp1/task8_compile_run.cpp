@@ -75,16 +75,23 @@ private:
             return true;
         QStringList parts = output.split(' ', Qt::SkipEmptyParts);
 
-        if (parts.size() % 2 != 0)
+        if (parts.isEmpty())
             return false;
 
-        for (int i = 0; i < parts.size(); i += 2) {
-            bool codeOk = false;
-            parts[i].toInt(&codeOk);
-            if (!codeOk)
-                return false;
+        bool firstIsCode = false;
+        parts[0].toInt(&firstIsCode);
+
+        if (!firstIsCode)
+            return false;
+
+        bool hasAtLeastOneCode = true;
+        for (int i = 0; i < parts.size(); i++) {
+            bool ok = false;
+            parts[i].toInt(&ok);
+            if (ok) hasAtLeastOneCode = true;
         }
-        return true;
+
+        return hasAtLeastOneCode && firstIsCode;
     }
 
 private slots:

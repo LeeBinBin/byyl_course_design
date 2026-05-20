@@ -316,7 +316,10 @@ private slots:
 
     void test_tiny_identifier_mindfa()
     {
-        QString rule = "identifier=[a-zA-Z_][a-zA-Z0-9_]*\n";
+        QString rule =
+            "letter=[A-Za-z]\n"
+            "digit=[0-9]\n"
+            "identifier100=(_|letter)(_|letter|digit)*\n";
 
         auto rf   = engine.lexFile(rule);
         auto pf   = engine.parseFile(rf);

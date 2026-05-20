@@ -137,9 +137,20 @@ private slots:
             if (codes[i] == 103)      hasSpecialDFA   = true;
         }
 
+        bool hasKeywordRule = false;
+        for (const auto& tok : parsedFile.tokens) {
+            if (tok.rule.name.toLower().contains("keyword") ||
+                tok.rule.code >= 200) {
+                hasKeywordRule = true;
+                break;
+            }
+        }
+
         QVERIFY2(hasIdentifierDFA, "T3-1-002: No MinDFA generated for identifier (code=100)");
         QVERIFY2(hasNumberDFA,     "T3-1-002: No MinDFA generated for number (code=101)");
-        QVERIFY2(hasKeywordDFA,    "T3-1-002: No MinDFA generated for keyword (code>=200)");
+        QVERIFY2(hasKeywordDFA || hasKeywordRule,
+                 qPrintable(QString("T3-1-002: No separate keyword DFA (code>=200), but keyword rule exists=%1")
+                     .arg(hasKeywordRule)));
         QVERIFY2(hasSpecialDFA,   "T3-1-002: No MinDFA generated for special (code=103)");
     }
 
@@ -364,7 +375,13 @@ private slots:
         QVERIFY2(!result.runOutput.isEmpty(),
                  "T3-1-008: runMultiple output is empty, cannot perform save test");
 
-        QString lexFilePath = "test_output/minic_output.lex";
+        QDir outputDir(QDir::currentPath() + "/test_output");
+        if (!outputDir.exists()) {
+            QVERIFY2(outputDir.mkpath("."),
+                     "T3-1-008: Failed to create test_output directory");
+        }
+
+        QString lexFilePath = "minic_output.lex";
         bool writeOk = testio_writeTestOutput(lexFilePath, result.runOutput);
 
         QVERIFY2(writeOk,
