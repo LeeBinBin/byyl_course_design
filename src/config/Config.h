@@ -64,8 +64,10 @@ class Config
     static QString          productionArrow();
     static void             setProductionArrow(const QString& arrow);
     static bool             emitIdentifierLexeme();
-    static QVector<QString> identifierTokenNames();
+    static QVector<QString> emitIdLexemeNames();
     static void setEmitIdentifierLexeme(bool v);
+    static void setEmitIdLexemeNames(const QVector<QString>& names);
+    static QVector<QString> identifierTokenNames();
     static void setIdentifierTokenNames(const QVector<QString>& names);
     static QVector<QString> keywordTokenNames();
     static void setKeywordTokenNames(const QVector<QString>& names);
@@ -184,6 +186,7 @@ class Config
     static QString             s_dotEpsLabel;
     static QVector<QString>    s_cfgSearchPaths;
     static bool                s_emitIdentifierLexeme;
+    static QVector<QString>    s_emitIdLexemeNames;
     static QVector<QString>    s_identifierNames;
     static QVector<QString>    s_keywordNames;
     static bool                s_useBlacklistForTokenOutput;

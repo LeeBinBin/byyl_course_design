@@ -381,7 +381,7 @@ void LR1Controller::runLR1Process()
     tokMap                = TokenMapBuilder::build(regexText, pf);
     int           unknown = 0;
     QSet<QString> idNames;
-    for (auto s : Config::identifierTokenNames()) idNames.insert(s.trimmed().toLower());
+    for (auto s : Config::emitIdLexemeNames()) idNames.insert(s.trimmed().toLower());
     for (int i = 0; i < tokensCodes.size(); ++i)
     {
         QString raw    = tokensCodes[i];

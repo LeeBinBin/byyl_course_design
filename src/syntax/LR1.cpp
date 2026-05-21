@@ -321,7 +321,7 @@ LR1ActionTable LR1Builder::computeActionTable(const Grammar& g, const LR1Graph& 
                     QString a = it.lookahead;
                     if (!a.isEmpty() && a != Config::epsilonSymbol())
                     {
-                        QString key = it.left + "->" + it.right.join(" ");
+                        QString key = it.left + Config::productionArrow() + it.right.join(" ");
                         int     rk  = redIndex.value(key, -1);
                         QString r   = rk >= 0
                                           ? QString("r%1").arg(rk)

@@ -496,7 +496,8 @@ QString Engine::runMultiple(const QVector<MinDFA>& mdfas,
                             const QString&         source,
                             const QSet<int>&       identifierCodes,
                             const QSet<int>&       blacklistCodes,
-                            const QMap<QString, int>& keywordLexemeMap)
+                            const QMap<QString, int>& keywordLexemeMap,
+                            const QSet<int>&       emitLexemeCodes)
 {
     QString out;
     int     pos = 0;
@@ -657,8 +658,17 @@ QString Engine::runMultiple(const QVector<MinDFA>& mdfas,
             }
 
             out += QString::number(outputCode) + " ";
-            // 只有当输出代码仍然是标识符代码时才打印词素（不打印转换后的关键词词素）
-            if (Config::emitIdentifierLexeme() && identifierCodes.contains(outputCode))
+            // 根据配置决定是否追加词素
+            // 如果提供了emitLexemeCodes，则使用它；否则回退到原来的identifierCodes逻辑
+            bool shouldEmitLexeme = false;
+            if (Config::emitIdentifierLexeme()) {
+                if (!emitLexemeCodes.isEmpty()) {
+                    shouldEmitLexeme = emitLexemeCodes.contains(outputCode);
+                } else {
+                    shouldEmitLexeme = identifierCodes.contains(outputCode);
+                }
+            }
+            if (shouldEmitLexeme)
             {
                 out += source.mid(pos, bestLen) + " ";
             }
@@ -1147,14 +1157,40 @@ static void aggregateTableByMacros(Tables&                           t,
         newCols.push_back(Config::epsilonSymbol());
     auto mergeTargets = [&](const QStringList& parts)
     {
-        QSet<QString> uniq;
+        QSet<int> uniq;
         for (const auto& p : parts)
         {
-            for (const auto& seg : p.split(',', Qt::SkipEmptyParts)) uniq.insert(seg.trimmed());
+            QString trimmed = p.trimmed();
+            if (trimmed.isEmpty())
+                continue;
+            if (trimmed.startsWith('{') && trimmed.endsWith('}'))
+            {
+                trimmed = trimmed.mid(1, trimmed.length() - 2);
+            }
+            for (const auto& seg : trimmed.split(',', Qt::SkipEmptyParts))
+            {
+                QString numStr = seg.trimmed();
+                if (numStr.isEmpty())
+                    continue;
+                bool ok;
+                int  num = numStr.toInt(&ok);
+                if (ok)
+                    uniq.insert(num);
+            }
         }
-        QList<QString> v = QList<QString>(uniq.begin(), uniq.end());
+        QList<int> v = QList<int>(uniq.begin(), uniq.end());
         std::sort(v.begin(), v.end());
-        return v.isEmpty() ? QString() : v.join(',');
+        if (v.isEmpty())
+            return QString();
+        QString r = "{";
+        for (int i = 0; i < v.size(); ++i)
+        {
+            r += QString::number(v[i]);
+            if (i + 1 < v.size())
+                r += ", ";
+        }
+        r += "}";
+        return r;
     };
     QVector<QVector<QString>> newRows;
     for (const auto& row : t.rows)

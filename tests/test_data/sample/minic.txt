@@ -14,14 +14,14 @@ int main(void) {
     int a[10]; 
     t = n = 10; 
     x = (x - 1) * x % 10 + x / (x + 1); 
-    while (t >= 0) {
+    do {
         a[t] = fact(a[t]);
         t = t - 1;
-    }
-    while (t <= n) {
+    } while (t >= 0)
+    do {
         ans = ans * a[t] * 1;
         t = t + 1;
-    }
+    } while (t <= n)
     if (ans < 0) { 
         ans = 0; 
     } else {

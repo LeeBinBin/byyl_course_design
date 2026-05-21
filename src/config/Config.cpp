@@ -44,6 +44,7 @@ QString                     Config::s_dotNodeShape;
 QString                     Config::s_dotEpsLabel;
 QVector<QString>            Config::s_cfgSearchPaths;
 bool                        Config::s_emitIdentifierLexeme = true;
+QVector<QString>            Config::s_emitIdLexemeNames;
 QVector<QString>            Config::s_identifierNames;
 QVector<QString>            Config::s_keywordNames;
 bool                        Config::s_useBlacklistForTokenOutput = true;
@@ -118,6 +119,8 @@ void Config::load()
     s_dotEpsLabel   = QStringLiteral("ε");
     s_cfgSearchPaths.clear();
     s_emitIdentifierLexeme = true;
+    s_emitIdLexemeNames =
+        QVector<QString>({QStringLiteral("identifier"), QStringLiteral("number")});
     s_identifierNames =
         QVector<QString>({QStringLiteral("identifier"), QStringLiteral("identifiers")});
     s_keywordNames = QVector<QString>({QStringLiteral("keyword"), QStringLiteral("keywords")});
@@ -259,6 +262,19 @@ void Config::load()
                 }
                 if (obj.contains("emit_identifier_lexeme"))
                     s_emitIdentifierLexeme = obj.value("emit_identifier_lexeme").toBool(true);
+                if (obj.contains("emit_id_lexeme_names") &&
+                    obj.value("emit_id_lexeme_names").isArray())
+                {
+                    s_emitIdLexemeNames.clear();
+                    for (auto v : obj.value("emit_id_lexeme_names").toArray())
+                    {
+                        auto s = v.toString().trimmed();
+                        if (!s.isEmpty())
+                            s_emitIdLexemeNames.push_back(s);
+                    }
+                    if (s_emitIdLexemeNames.isEmpty())
+                        s_emitIdLexemeNames.push_back(QStringLiteral("identifier"));
+                }
                 if (obj.contains("identifier_token_names") &&
                     obj.value("identifier_token_names").isArray())
                 {
@@ -902,6 +918,11 @@ bool Config::saveJson(const QString& path)
     obj.insert("emit_identifier_lexeme", s_emitIdentifierLexeme);
     {
         QJsonArray arr;
+        for (const auto& s : s_emitIdLexemeNames) arr.append(s);
+        obj.insert("emit_id_lexeme_names", arr);
+    }
+    {
+        QJsonArray arr;
         for (const auto& s : s_identifierNames) arr.append(s);
         obj.insert("identifier_token_names", arr);
     }
@@ -1173,6 +1194,24 @@ bool Config::emitIdentifierLexeme()
 {
     load();
     return s_emitIdentifierLexeme;
+}
+QVector<QString> Config::emitIdLexemeNames()
+{
+    load();
+    return s_emitIdLexemeNames;
+}
+void Config::setEmitIdLexemeNames(const QVector<QString>& names)
+{
+    load();
+    s_emitIdLexemeNames.clear();
+    for (auto s : names)
+    {
+        auto t = s.trimmed();
+        if (!t.isEmpty())
+            s_emitIdLexemeNames.push_back(t);
+    }
+    if (s_emitIdLexemeNames.isEmpty())
+        s_emitIdLexemeNames.push_back(QStringLiteral("identifier"));
 }
 
 QVector<QString> Config::identifierTokenNames()

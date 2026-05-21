@@ -567,13 +567,17 @@ void MainWindow::onRunLexerClicked(bool)
         auto         mdfas = engine->buildAllMinDFA(*parsedPtr, codes);
         QSet<int>    idCodes;
         QSet<int>    blacklistCodes;
+        QSet<int>    emitLexemeCodes;
         {
             auto             names     = Config::identifierTokenNames();
             auto             blacklist = Config::tokenOutputBlacklist();
+            auto             emitNames = Config::emitIdLexemeNames();
             QVector<QString> lowers;
             QVector<QString> blacklistLowers;
+            QVector<QString> emitLowers;
             for (auto s : names) lowers.push_back(s.trimmed().toLower());
             for (auto s : blacklist) blacklistLowers.push_back(s.trimmed().toLower());
+            for (auto s : emitNames) emitLowers.push_back(s.trimmed().toLower());
             for (const auto& pt : parsedPtr->tokens)
             {
                 QString n = pt.rule.name.trimmed().toLower();
@@ -593,12 +597,20 @@ void MainWindow::onRunLexerClicked(bool)
                         break;
                     }
                 }
+                for (const auto& k : emitLowers)
+                {
+                    if (!k.isEmpty() && n.contains(k))
+                    {
+                        emitLexemeCodes.insert(pt.rule.code);
+                        break;
+                    }
+                }
             }
         }
         
         auto keywordLexemeMap = Engine::buildKeywordLexemeMap(*parsedPtr, codes);
         
-        auto output = engine->runMultiple(mdfas, codes, src, idCodes, blacklistCodes, keywordLexemeMap);
+        auto output = engine->runMultiple(mdfas, codes, src, idCodes, blacklistCodes, keywordLexemeMap, emitLexemeCodes);
         txtLexResult->setPlainText(output.isEmpty() ? QStringLiteral("100 100") : output);
         QString dir = Config::generatedOutputDir() + "/syntax";
         QDir    d(dir);
@@ -699,13 +711,17 @@ void MainWindow::onRunLexerClicked(bool)
     auto         mdfas = engine->buildAllMinDFA(*parsedPtr, codes);
     QSet<int>    idCodes;
     QSet<int>    blacklistCodes;
+    QSet<int>    emitLexemeCodes;
     {
         auto             names     = Config::identifierTokenNames();
         auto             blacklist = Config::tokenOutputBlacklist();
+        auto             emitNames = Config::emitIdLexemeNames();
         QVector<QString> lowers;
         QVector<QString> blacklistLowers;
+        QVector<QString> emitLowers;
         for (auto s : names) lowers.push_back(s.trimmed().toLower());
         for (auto s : blacklist) blacklistLowers.push_back(s.trimmed().toLower());
+        for (auto s : emitNames) emitLowers.push_back(s.trimmed().toLower());
         for (const auto& pt : parsedPtr->tokens)
         {
             QString n            = pt.rule.name.trimmed().toLower();
@@ -731,12 +747,20 @@ void MainWindow::onRunLexerClicked(bool)
                     break;
                 }
             }
+            for (const auto& k : emitLowers)
+            {
+                if (!k.isEmpty() && n.contains(k))
+                {
+                    emitLexemeCodes.insert(pt.rule.code);
+                    break;
+                }
+            }
         }
     }
     
     auto keywordLexemeMap = Engine::buildKeywordLexemeMap(*parsedPtr, codes);
     
-    auto output = engine->runMultiple(mdfas, codes, src, idCodes, blacklistCodes, keywordLexemeMap);
+    auto output = engine->runMultiple(mdfas, codes, src, idCodes, blacklistCodes, keywordLexemeMap, emitLexemeCodes);
     txtLexResult->setPlainText(output);
     // 自动保存到内部
     QString dir = Config::generatedOutputDir() + "/syntax";
@@ -950,17 +974,6 @@ void MainWindow::onCompileRunClicked(bool)
     QProcess run;
     {
         QProcessEnvironment env   = QProcessEnvironment::systemEnvironment();
-        auto                tiers = Config::weightTiers();
-        QString             wstr;
-        for (int i = 0; i < tiers.size(); ++i)
-        {
-            if (i)
-                wstr += ",";
-            wstr += QString::number(tiers[i].minCode);
-            wstr += ":";
-            wstr += QString::number(tiers[i].weight);
-        }
-        env.insert("LEXER_WEIGHTS", wstr);
         env.insert("LEXER_SKIP_BRACE_COMMENT", Config::skipBraceComment() ? "1" : "0");
         env.insert("LEXER_SKIP_LINE_COMMENT", Config::skipLineComment() ? "1" : "0");
         env.insert("LEXER_SKIP_BLOCK_COMMENT", Config::skipBlockComment() ? "1" : "0");

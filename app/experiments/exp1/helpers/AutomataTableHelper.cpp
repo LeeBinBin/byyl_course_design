@@ -216,14 +216,40 @@ QMap<QString, QString> AutomataTableHelper::buildMacroExprs(const QMap<QString, 
 
 static QString mergeTargets(const QStringList& parts)
 {
-    QSet<QString> uniq;
+    QSet<int> uniq;
     for (const auto& p : parts)
     {
-        for (const auto& seg : p.split(',', Qt::SkipEmptyParts)) uniq.insert(seg.trimmed());
+        QString trimmed = p.trimmed();
+        if (trimmed.isEmpty())
+            continue;
+        if (trimmed.startsWith('{') && trimmed.endsWith('}'))
+        {
+            trimmed = trimmed.mid(1, trimmed.length() - 2);
+        }
+        for (const auto& seg : trimmed.split(',', Qt::SkipEmptyParts))
+        {
+            QString numStr = seg.trimmed();
+            if (numStr.isEmpty())
+                continue;
+            bool ok;
+            int  num = numStr.toInt(&ok);
+            if (ok)
+                uniq.insert(num);
+        }
     }
-    QList<QString> v = QList<QString>(uniq.begin(), uniq.end());
+    QList<int> v = QList<int>(uniq.begin(), uniq.end());
     std::sort(v.begin(), v.end());
-    return v.isEmpty() ? QString() : v.join(',');
+    if (v.isEmpty())
+        return QString();
+    QString r = "{";
+    for (int i = 0; i < v.size(); ++i)
+    {
+        r += QString::number(v[i]);
+        if (i + 1 < v.size())
+            r += ", ";
+    }
+    r += "}";
+    return r;
 }
 
 void AutomataTableHelper::aggregateByMacros(Tables&                           t,

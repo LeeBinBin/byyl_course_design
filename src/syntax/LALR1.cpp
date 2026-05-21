@@ -124,16 +124,37 @@ LALR1Graph LALR1Builder::build(const Grammar& g)
         for (int idx : group)
             lr1ToLalr[idx] = lid;
     }
-    for (auto eit = lr1gr.edges.begin(); eit != lr1gr.edges.end(); ++eit)
+    // 重新构建边：按合并后的状态分组，确保每个LALR1状态包含所有被合并LR1状态的边
+    for (int lid = 0; lid < lalrGr.states.size(); ++lid)
     {
-        int fromLalr = lr1ToLalr.value(eit.key(), -1);
-        if (fromLalr < 0)
-            continue;
-        for (auto sit = eit.value().begin(); sit != eit.value().end(); ++sit)
+        // 找到所有映射到这个LALR1状态的LR1状态
+        QVector<int> lr1States;
+        for (auto it = lr1ToLalr.begin(); it != lr1ToLalr.end(); ++it)
         {
-            int toLalr = lr1ToLalr.value(sit.value(), -1);
-            if (toLalr >= 0)
-                lalrGr.edges[fromLalr][sit.key()] = toLalr;
+            if (it.value() == lid)
+                lr1States.push_back(it.key());
+        }
+        
+        // 收集所有LR1状态的边
+        for (int lr1State : lr1States)
+        {
+            auto edIt = lr1gr.edges.constFind(lr1State);
+            if (edIt == lr1gr.edges.constEnd())
+                continue;
+            
+            for (auto sit = edIt.value().begin(); sit != edIt.value().end(); ++sit)
+            {
+                QString symbol = sit.key();
+                int     toLalr = lr1ToLalr.value(sit.value(), -1);
+                if (toLalr >= 0)
+                {
+                    // 确保边被添加（如果已存在则保留现有映射）
+                    if (!lalrGr.edges[lid].contains(symbol))
+                    {
+                        lalrGr.edges[lid][symbol] = toLalr;
+                    }
+                }
+            }
         }
     }
     return lalrGr;
@@ -252,7 +273,7 @@ LALR1ActionTable LALR1Builder::computeActionTable(const Grammar& g, const LALR1G
                     {
                         if (!a.isEmpty() && a != Config::epsilonSymbol())
                         {
-                            QString key = it.left + "->" + it.right.join(" ");
+                            QString key = it.left + Config::productionArrow() + it.right.join(" ");
                             int     rk  = redIndex.value(key, -1);
                             QString r   = rk >= 0 ? QString("r%1").arg(rk)
                                                   : QString("r %1 -> %2").arg(it.left).arg(it.right.join(" "));

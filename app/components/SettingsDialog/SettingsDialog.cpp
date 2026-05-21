@@ -12,6 +12,7 @@
 #include "SettingsDialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QGridLayout>
 #include <QLineEdit>
 #include <QTableWidget>
 #include <QHeaderView>
@@ -75,43 +76,32 @@ void SettingsDialog::buildUi()
     stacked->addWidget(pagePaths);
     navList->addItem("目录与输出");
 
-    // Weights & Skip page
+    // Skip & Filter page
     pageWeightsSkip = new QWidget(this);
     {
         auto v = new QVBoxLayout(pageWeightsSkip);
-        v->addWidget(new QLabel("权重层级（min_code / weight）"));
-        tblTiers = new QTableWidget;
-        tblTiers->setColumnCount(2);
-        QStringList headers;
-        headers << "min_code" << "weight";
-        tblTiers->setHorizontalHeaderLabels(headers);
-        tblTiers->horizontalHeader()->setStretchLastSection(true);
-        tblTiers->verticalHeader()->setVisible(false);
-        tblTiers->setSelectionBehavior(QAbstractItemView::SelectRows);
-        v->addWidget(tblTiers);
-        auto lTierBtns = new QHBoxLayout;
-        btnAddRow      = new QPushButton("新增行");
-        btnDelRow      = new QPushButton("删除选中行");
-        lTierBtns->addWidget(btnAddRow);
-        lTierBtns->addWidget(btnDelRow);
-        v->addLayout(lTierBtns);
         v->addWidget(new QLabel("Token 输出过滤"));
         chkUseBlacklist = new QCheckBox("启用 Token 输出过滤");
         v->addWidget(chkUseBlacklist);
-        auto lBlacklist = new QHBoxLayout;
+        wBlacklistContainer = new QWidget;
+        auto lBlacklist = new QHBoxLayout(wBlacklistContainer);
+        lBlacklist->setContentsMargins(0, 0, 0, 0);
         lBlacklist->addWidget(new QLabel("过滤规则名（逗号分隔，匹配的Token将不输出）"));
         edtBlacklist = new QLineEdit;
         lBlacklist->addWidget(edtBlacklist);
-        v->addLayout(lBlacklist);
+        v->addWidget(wBlacklistContainer);
         v->addWidget(new QLabel("DFA 转换跳过"));
         chkUseDfaSkip = new QCheckBox("启用 DFA 转换跳过");
         v->addWidget(chkUseDfaSkip);
-        auto lDfaSkip = new QHBoxLayout;
+        wDfaSkipContainer = new QWidget;
+        auto lDfaSkip = new QHBoxLayout(wDfaSkipContainer);
+        lDfaSkip->setContentsMargins(0, 0, 0, 0);
         lDfaSkip->addWidget(new QLabel("不参与DFA转换的Token名（逗号分隔）"));
         edtDfaSkipTokens = new QLineEdit;
         lDfaSkip->addWidget(edtDfaSkipTokens);
-        v->addLayout(lDfaSkip);
+        v->addWidget(wDfaSkipContainer);
         v->addWidget(new QLabel("跳过注释与字符串"));
+        auto skipGrid = new QGridLayout;
         chkSkipBrace    = new QCheckBox("跳过花括号注释");
         chkSkipLine     = new QCheckBox("跳过行注释");
         chkSkipBlock    = new QCheckBox("跳过块注释");
@@ -119,17 +109,18 @@ void SettingsDialog::buildUi()
         chkSkipSingle   = new QCheckBox("跳过单引号字符串");
         chkSkipDouble   = new QCheckBox("跳过双引号字符串");
         chkSkipTemplate = new QCheckBox("跳过模板字符串");
-        v->addWidget(chkSkipBrace);
-        v->addWidget(chkSkipLine);
-        v->addWidget(chkSkipBlock);
-        v->addWidget(chkSkipHash);
-        v->addWidget(chkSkipSingle);
-        v->addWidget(chkSkipDouble);
-        v->addWidget(chkSkipTemplate);
+        skipGrid->addWidget(chkSkipBrace, 0, 0);
+        skipGrid->addWidget(chkSkipLine, 0, 1);
+        skipGrid->addWidget(chkSkipBlock, 0, 2);
+        skipGrid->addWidget(chkSkipHash, 1, 0);
+        skipGrid->addWidget(chkSkipSingle, 1, 1);
+        skipGrid->addWidget(chkSkipDouble, 1, 2);
+        skipGrid->addWidget(chkSkipTemplate, 2, 0);
+        v->addLayout(skipGrid);
         v->addStretch(1);
     }
     stacked->addWidget(pageWeightsSkip);
-    navList->addItem("权重与跳过");
+    navList->addItem("跳过与过滤");
 
     // Lexer & Identifier page
     pageLexerId = new QWidget(this);
@@ -173,6 +164,15 @@ void SettingsDialog::buildUi()
         v->addWidget(new QLabel("标识符设置"));
         chkEmitIdLexeme = new QCheckBox("在指定标识符规则名后追加词素");
         v->addWidget(chkEmitIdLexeme);
+        wEmitIdLexemeContainer = new QWidget;
+        auto lEmitId = new QHBoxLayout(wEmitIdLexemeContainer);
+        lEmitId->setContentsMargins(0, 0, 0, 0);
+        lEmitId->addWidget(new QLabel("追加词素的规则名（逗号分隔）"));
+        edtEmitIdLexemeNames = new QLineEdit;
+        edtEmitIdLexemeNames->setPlaceholderText("identifier,keyword,number");
+        lEmitId->addWidget(edtEmitIdLexemeNames);
+        v->addWidget(wEmitIdLexemeContainer);
+        v->addWidget(new QLabel("标识符与关键词规则名（用于语义区分）"));
         auto lId = new QHBoxLayout;
         lId->addWidget(new QLabel("标识符规则名（逗号分隔）"));
         edtIdentifierNames = new QLineEdit;
@@ -306,33 +306,11 @@ void SettingsDialog::buildUi()
     root->addLayout(lBtns);
     connect(navList, &QListWidget::currentRowChanged, stacked, &QStackedWidget::setCurrentIndex);
     navList->setCurrentRow(0);
-    connect(btnAddRow,
-            &QPushButton::clicked,
-            [this]()
-            {
-                int r = tblTiers->rowCount();
-                tblTiers->insertRow(r);
-            });
-    connect(btnDelRow,
-            &QPushButton::clicked,
-            [this]()
-            {
-                auto rows = tblTiers->selectionModel()->selectedRows();
-                for (int i = rows.size() - 1; i >= 0; --i) tblTiers->removeRow(rows[i].row());
-            });
     connect(btnDefaults,
             &QPushButton::clicked,
             [this]()
             {
-                auto v = QVector<Config::WeightTier>();
                 edtOutDir->setText(QCoreApplication::applicationDirPath() + "/../../generated/lex");
-                tblTiers->setRowCount(0);
-                for (int i = 0; i < v.size(); ++i)
-                {
-                    tblTiers->insertRow(i);
-                    tblTiers->setItem(i, 0, new QTableWidgetItem(QString::number(v[i].minCode)));
-                    tblTiers->setItem(i, 1, new QTableWidgetItem(QString::number(v[i].weight)));
-                }
                 chkSkipBrace->setChecked(false);
                 chkSkipLine->setChecked(false);
                 chkSkipBlock->setChecked(false);
@@ -382,6 +360,25 @@ void SettingsDialog::buildUi()
                     edtOutDir->setText(dir);
                 }
             });
+    connect(chkEmitIdLexeme,
+            &QCheckBox::toggled,
+            [this](bool checked)
+            {
+                wEmitIdLexemeContainer->setVisible(checked);
+                if (checked && edtEmitIdLexemeNames->text().isEmpty())
+                {
+                    edtEmitIdLexemeNames->setText("identifier,keyword,number");
+                }
+            });
+    wEmitIdLexemeContainer->setVisible(chkEmitIdLexeme->isChecked());
+    connect(chkUseBlacklist,
+            &QCheckBox::toggled,
+            [this](bool checked) { wBlacklistContainer->setVisible(checked); });
+    wBlacklistContainer->setVisible(chkUseBlacklist->isChecked());
+    connect(chkUseDfaSkip,
+            &QCheckBox::toggled,
+            [this](bool checked) { wDfaSkipContainer->setVisible(checked); });
+    wDfaSkipContainer->setVisible(chkUseDfaSkip->isChecked());
 }
 
 void SettingsDialog::loadCurrent()
@@ -475,31 +472,6 @@ void SettingsDialog::loadCurrent()
     }
     edtSemRootPolicy->setText(Config::semanticRootSelectionPolicy());
     edtSemChildOrder->setText(Config::semanticChildOrderPolicy());
-    tblTiers->setRowCount(0);
-    QVector<int> probe;
-    for (int i = 0; i <= 3; ++i) probe.push_back(i ? i * 100 : 0);
-    QSet<int> emitted;
-    for (int c : probe)
-    {
-        int w = Config::weightForCode(c);
-        if (!emitted.contains(w))
-            emitted.insert(w);
-    }
-    auto tiers = QVector<Config::WeightTier>();
-    tiers.push_back({220, Config::weightForCode(220)});
-    tiers.push_back({200, Config::weightForCode(200)});
-    tiers.push_back({100, Config::weightForCode(100)});
-    tiers.push_back({0, Config::weightForCode(0)});
-    std::sort(tiers.begin(),
-              tiers.end(),
-              [](const Config::WeightTier& a, const Config::WeightTier& b)
-              { return a.minCode > b.minCode; });
-    tblTiers->setRowCount(tiers.size());
-    for (int i = 0; i < tiers.size(); ++i)
-    {
-        tblTiers->setItem(i, 0, new QTableWidgetItem(QString::number(tiers[i].minCode)));
-        tblTiers->setItem(i, 1, new QTableWidgetItem(QString::number(tiers[i].weight)));
-    }
     chkSkipBrace->setChecked(Config::skipBraceComment());
     chkSkipLine->setChecked(Config::skipLineComment());
     chkSkipBlock->setChecked(Config::skipBlockComment());
@@ -508,6 +480,18 @@ void SettingsDialog::loadCurrent()
     chkSkipDouble->setChecked(Config::skipDoubleQuoteString());
     chkSkipTemplate->setChecked(Config::skipTemplateString());
     chkEmitIdLexeme->setChecked(Config::emitIdentifierLexeme());
+    {
+        auto    names = Config::emitIdLexemeNames();
+        QString s;
+        for (int i = 0; i < names.size(); ++i)
+        {
+            s += names[i];
+            if (i + 1 < names.size())
+                s += ",";
+        }
+        edtEmitIdLexemeNames->setText(s);
+    }
+    wEmitIdLexemeContainer->setVisible(chkEmitIdLexeme->isChecked());
     {
         auto    names = Config::identifierTokenNames();
         QString s;
@@ -542,6 +526,7 @@ void SettingsDialog::loadCurrent()
         }
         edtBlacklist->setText(s);
     }
+    wBlacklistContainer->setVisible(chkUseBlacklist->isChecked());
     chkUseDfaSkip->setChecked(Config::useDfaSkip());
     {
         auto    names = Config::dfaSkipTokenNames();
@@ -554,6 +539,7 @@ void SettingsDialog::loadCurrent()
         }
         edtDfaSkipTokens->setText(s);
     }
+    wDfaSkipContainer->setVisible(chkUseDfaSkip->isChecked());
 }
 
 static bool parseInt(const QString& s, int& out)
@@ -574,25 +560,6 @@ bool SettingsDialog::collectAndApply()
         if (!QDir().mkpath(dir))
             return false;
     }
-    QVector<Config::WeightTier> tiers;
-    for (int r = 0; r < tblTiers->rowCount(); ++r)
-    {
-        auto mi = tblTiers->item(r, 0);
-        auto wi = tblTiers->item(r, 1);
-        if (!mi || !wi)
-            continue;
-        int m = 0, w = 0;
-        if (!parseInt(mi->text(), m))
-            return false;
-        if (!parseInt(wi->text(), w))
-            return false;
-        tiers.push_back({m, w});
-    }
-    // 允许权重为空（新策略下通常不需要）
-    std::sort(tiers.begin(),
-              tiers.end(),
-              [](const Config::WeightTier& a, const Config::WeightTier& b)
-              { return a.minCode > b.minCode; });
     Config::setGeneratedOutputDir(dir);
     Config::setSyntaxOutputDir(edtSyntaxOutDir->text().trimmed());
     Config::setGraphsDir(edtGraphsDir->text().trimmed());
@@ -655,7 +622,6 @@ bool SettingsDialog::collectAndApply()
     }
     Config::setSemanticRootSelectionPolicy(edtSemRootPolicy->text().trimmed());
     Config::setSemanticChildOrderPolicy(edtSemChildOrder->text().trimmed());
-    Config::setWeightTiers(tiers);
     Config::setSkipBrace(chkSkipBrace->isChecked());
     Config::setSkipLine(chkSkipLine->isChecked());
     Config::setSkipBlock(chkSkipBlock->isChecked());
@@ -664,6 +630,12 @@ bool SettingsDialog::collectAndApply()
     Config::setSkipDouble(chkSkipDouble->isChecked());
     Config::setSkipTemplate(chkSkipTemplate->isChecked());
     Config::setEmitIdentifierLexeme(chkEmitIdLexeme->isChecked());
+    {
+        QVector<QString> names;
+        for (auto x : edtEmitIdLexemeNames->text().split(',', Qt::SkipEmptyParts))
+            names.push_back(x.trimmed());
+        Config::setEmitIdLexemeNames(names);
+    }
     {
         QVector<QString> names;
         for (auto x : edtIdentifierNames->text().split(',', Qt::SkipEmptyParts))

@@ -127,7 +127,8 @@ class Engine
                         const QString&         source,
                         const QSet<int>&       identifierCodes,
                         const QSet<int>&       blacklistCodes,
-                        const QMap<QString, int>& keywordLexemeMap = {});
+                        const QMap<QString, int>& keywordLexemeMap = {},
+                        const QSet<int>&       emitLexemeCodes = {});
     /**
      * @param {ParsedFile} pf - 解析后的正则文件
      * @return {QMap<QString, QVector<QString>>} 关键词规则名到关键词列表的映射

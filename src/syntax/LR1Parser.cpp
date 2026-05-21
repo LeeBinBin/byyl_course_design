@@ -746,7 +746,7 @@ ParseResult LR1Parser::parseWithSemantics(const QVector<QString>&               
     int           step = 0;
     int           ip   = 0;  // 输入位置索引
     QSet<QString> idNames;
-    for (auto s : Config::identifierTokenNames()) idNames.insert(s.trimmed().toLower());
+    for (auto s : Config::emitIdLexemeNames()) idNames.insert(s.trimmed().toLower());
     while (!input.isEmpty())
     {
         QString a   = input[0];

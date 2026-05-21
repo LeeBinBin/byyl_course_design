@@ -40,7 +40,6 @@ class SettingsDialog : public QDialog
     class QWidget* pageSemantic;
     QLineEdit*     edtOutDir;
     QPushButton*   btnBrowseOutDir;
-    QTableWidget*  tblTiers;
     QCheckBox*     chkSkipBrace;
     QCheckBox*     chkSkipLine;
     QCheckBox*     chkSkipBlock;
@@ -49,14 +48,16 @@ class SettingsDialog : public QDialog
     QCheckBox*     chkSkipDouble;
     QCheckBox*     chkSkipTemplate;
     QCheckBox*     chkEmitIdLexeme;
+    QWidget*       wEmitIdLexemeContainer;
+    QLineEdit*     edtEmitIdLexemeNames;
     QLineEdit*     edtIdentifierNames;
     QLineEdit*     edtKeywordNames;
     QCheckBox*     chkUseBlacklist;
+    QWidget*       wBlacklistContainer;
     QLineEdit*     edtBlacklist;
     QCheckBox*     chkUseDfaSkip;
+    QWidget*       wDfaSkipContainer;
     QLineEdit*     edtDfaSkipTokens;
-    QPushButton*   btnAddRow;
-    QPushButton*   btnDelRow;
     QPushButton*   btnDefaults;
     QPushButton*   btnSave;
     QPushButton*   btnCancel;
