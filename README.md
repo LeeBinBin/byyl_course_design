@@ -26,8 +26,8 @@
   - Windows：`build\\byyl.exe`
 - 测试：
   - 全量测试：`ctest --test-dir build -V`
-  - 仅运行某个测试：`ctest --test-dir build -V -R 'FA核心测试'`
-  - 仅运行多个测试：`ctest --test-dir build -V -R 'FA核心测试|LL1算法测试'`
+  - 仅运行某个测试：`ctest --test-dir build -V -R "Exp1 Task1"`
+  - 仅运行多个测试：`ctest --test-dir build -V -R "Exp1|Exp2"`
 - 全量格式化：`find . -type f \( -name "*.h" -o -name "*.cpp" \) -not -path "./build/*" -not -path "./generated/*" -print0 | xargs -0 -n 50 clang-format -i -style=file`
 
 
@@ -45,6 +45,10 @@
   - 语义动作导入（偶数行文件：产生式行 + 动作行）；
   - 语义语法树 AST 预览/导出（DOT），支持文本树视图（Qt Tree）；
   - 语法分析器代码生成。
+- 实验三（Mini-C编译器）：
+  - Mini-C语言完整词法分析流程；
+  - Mini-C语言完整语法分析流程；
+  - 支持注释跳过、关键字识别、标识符词素输出。
 
 ## 技术架构
 - 核心逻辑（`src/`）：
@@ -57,14 +61,14 @@
   - `Engine`：串联正则→自动机→词法/语法流程的引擎入口。
 - UI（`app/`）：
   - 页面与组件（`pages/`、`components/`），控制器按功能分层（`controllers/`）。
-  - 实验页签（`experiments/exp1` 与 `experiments/exp2`）覆盖编辑、表格、预览、代码生成与测试。
+  - 实验页签（`experiments/exp1`、`experiments/exp2`、`experiments/exp3`）覆盖编辑、表格、预览、代码生成与测试。
 - 测试（`tests/`）：
-  - 单元与集成测试覆盖自动机、词法、语法、代码生成与 UI；支持 `-DBYYL_BUILD_INTEGRATION_TESTS` 开关。
+  - 按实验分层组织（`exp1`、`exp2`、`exp3`），每个任务对应独立测试文件；支持 `-DBYYL_BUILD_INTEGRATION_TESTS` 开关。
 
 ## 使用
 ### 词法页签（实验一）
 - 步骤：
-  - 在“正则编辑”页签，点击“加载”选择示例正则（如 `tests/test_data/regex/tiny.regex` 或 `minic.regex`）。
+  - 在"正则编辑"页签，点击"加载"选择示例正则（如 `tests/test_data/regex/tiny.txt` 或 `minic.txt`）。
   - 点击“转换”，在“NFA/DFA/MinDFA”页签查看状态表与预览图；可用导出按钮生成 DOT/PNG。
   - 在“代码查看”页签查看组合词法分析器的生成代码（支持注释/字符串跳过与标识符词素输出）。
   - 在“测试与验证”页签，输入示例源文本（如 `tests/test_data/sample/tiny.txt` 或 `minic.txt`）并运行，得到 Token 序列；若匹配到 `identifier`、`number` 等，其源词素会紧随编码输出。
@@ -90,7 +94,7 @@
 - 语法代码：在实验二“语法代码查看”页签可导出语法分析器代码；生成输出目录可通过“设置”或 `config/lexer.json` 覆盖。
 
 ### 最小示例（Tiny）
-- 词法：加载 `tests/test_data/regex/tiny.regex` → 转换并预览 → 测试 `tests/test_data/sample/tiny.txt` → 获得 Token 序列。
+- 词法：加载 `tests/test_data/regex/tiny.txt` → 转换并预览 → 测试 `tests/test_data/sample/tiny.txt` → 获得 Token 序列。
 - 语法：加载 `tests/test_data/syntax/tiny.txt` → 导入语义动作说明 → 在“LR(1)分析过程”运行 → 在“LR(1)语法树”预览/导出。
 
 ## 目录结构
@@ -133,29 +137,33 @@ byyl/
 │  ├─ Engine.*              # 引擎入口：串联正则→自动机→词法/语法流程
 │  └─ model/                # 基础数据结构（字母表、自动机模型）
 ├─ tests/
-│  ├─ automata/
-│  │  └─ fa_core_test.cpp              # 自动机核心：Thompson/DFA/MinDFA 流程与正确性
-│  ├─ lexer/
-│  │  └─ longest_match_test.cpp       # 词法最长匹配与权重策略验证
-│  ├─ syntax/
-│  │  ├─ grammar_parser_test.cpp      # 文法解析（BNF、ε/EOF/增广后缀配置）
-│  │  ├─ ll1_test.cpp                 # LL(1) 构造与表验证
-│  │  ├─ lr1_test.cpp                 # LR(1) 项集、冲突策略（prefer_shift/reduce/error）
-│  │  ├─ lalr1_test.cpp              # LALR(1) 项集 DFA 与分析表（状态合并优化）
-│  │  ├─ syntax_parser_test.cpp       # 语法解析主流程
-│  │  ├─ lr1_semantic_ast_build_test.cpp   # 语义树 AST 构建
-│  │  ├─ lr1_semantic_tree_example_test.cpp# 语义树示例结构
-│  │  └─ lr1_semantic_tree_full_test.cpp   # 语义树完整结构
-│  ├─ codegen/
-│  │  └─ codegen_compile_run_test.cpp # 词法代码生成后编译/运行验证
-│  ├─ cli/
-│  │  └─ cli_regex_test.cpp           # 命令行正则流程测试
-│  └─ ui/
-│     └─ auto_test_ui.cpp             # UI 自动化测试（Qt Test）
+│  ├─ exp1/                 # 实验一：词法分析测试
+│  │  ├─ task1_regex_input.cpp        # 正则表达式输入解析测试
+│  │  ├─ task2_regex_operators.cpp    # 正则表达式运算符测试
+│  │  ├─ task4_nfa.cpp                # NFA构造测试 (Thompson算法)
+│  │  ├─ task5_dfa.cpp                # DFA构造测试 (子集构造法)
+│  │  ├─ task6_mindfa.cpp             # MinDFA最小化测试 (Hopcroft算法)
+│  │  ├─ task7_code_gen.cpp           # 代码生成测试
+│  │  ├─ task8_compile_run.cpp        # 编译运行测试
+│  │  └─ task9_tiny_test.cpp          # TINY完整流程测试
+│  ├─ exp2/                 # 实验二：语法分析测试
+│  │  ├─ task1_bnf_input.cpp          # BNF文法输入解析测试
+│  │  ├─ task2_first_follow.cpp       # FIRST/FOLLOW集合计算测试
+│  │  ├─ task3_lr1_dfa.cpp            # LR(1) DFA图构造测试
+│  │  ├─ task4_lalr1_dfa.cpp          # LALR(1) DFA图构造测试
+│  │  ├─ task5_lalr1_table.cpp        # LALR(1)解析表测试
+│  │  ├─ task6_syntax_process.cpp     # 语法分析过程测试
+│  │  ├─ task7_syntax_tree.cpp        # 语法树生成测试
+│  │  └─ task8_tiny_full.cpp          # TINY语法分析完整流程测试
+│  ├─ exp3/                 # 实验三：Mini-C编译器测试
+│  │  ├─ task1_minic_lexer.cpp        # Mini-C词法分析测试
+│  │  └─ task2_minic_parser.cpp       # Mini-C语法分析测试
+│  ├─ common/               # 共享测试工具
+│  │  └─ TestIO.h                     # 测试数据读取工具
+│  ├─ Tests.md              # 测试说明文档
 │  └─ test_data/            # 示例正则/语法与样例源文本/语义动作说明
 ├─ docs/
 │  ├─ Settings.md           # 配置项详解
-│  ├─ Tests.md              # 测试说明与常见问题
 │  └─ COMMENTING_GUIDE.md   # 注释/提交规范
 ├─（运行时生成输出目录不在仓库根，默认位于应用目录下，如 macOS `byyl.app/generated/lex`）
 ├─ CMakeLists.txt           # 构建脚本（Qt6 Widgets/Test、测试目标）
@@ -185,7 +193,7 @@ byyl/
 - `tests/*`：单元/集成测试目标（在 `CMakeLists.txt` 中注册），配合 `tests/test_data` 示例复现各流程。
 
 ### 数据与示例
-- `tests/test_data/regex/*.regex`：示例正则集合（如 `minic.regex`、`tiny.regex`）。
+- `tests/test_data/regex/*.txt`：示例正则集合（如 `minic.txt`、`tiny.txt`）。
 - `tests/test_data/sample/*.txt`：示例源文本样本（minic/tiny）。
 - `tests/test_data/syntax/*.txt`：示例文法（minic/tiny）。
 - `tests/test_data/semantic/语义动作说明.md`：语义动作文件使用说明与示例。
@@ -197,7 +205,7 @@ byyl/
 
 ## 测试目标
 - 测试覆盖 UI 流程、词法流水线、自动机核心（NFA/DFA/MinDFA）、语法（LL(1)/LR(1)/LALR(1)）与代码生成等主流程；支持按名称筛选与关闭集成测试的快速运行模式。
-- 详细说明（目录结构、运行方式、覆盖点与常见问题）见 `docs/Tests.md`。
+- 详细说明（目录结构、运行方式、覆盖点与常见问题）见 `tests/Tests.md`。
 
 ## 常见问题
 - Qt 查找失败：为 `cmake` 添加 Qt 路径（macOS：`-DCMAKE_PREFIX_PATH=$(brew --prefix qt)`；Windows：指向 Qt 安装的 MSVC 目录）。

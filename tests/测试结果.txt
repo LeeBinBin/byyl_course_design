@@ -1,0 +1,435 @@
+16:45:11: Starting E:\byyl\byyl_course_design\build\Desktop_Qt_6_11_0_MinGW_64_bit-Debug\TestRunner.exe...
+
+================================================================
+           byyl Compiler Course Design - Test Runner             
+================================================================
+
+  [INFO] TestRunner location: E:/byyl/byyl_course_design/build/Desktop_Qt_6_11_0_MinGW_64_bit-Debug
+  [INFO] Working directory:   E:/byyl/byyl_course_design/build/Desktop_Qt_6_11_0_MinGW_64_bit-Debug
+  [INFO] Project root (for tests): E:/byyl/byyl_course_design
+
+[ 1/18] Running: [Exp1-Task1] Regex Input Parser ...
+  OK PASS (12 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp1Task1_RegexInput *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp1Task1_RegexInput::initTestCase()
+  | PASS   : TestExp1Task1_RegexInput::test_simple_macro()
+  | PASS   : TestExp1Task1_RegexInput::test_single_token()
+  | PASS   : TestExp1Task1_RegexInput::test_group_token_B_suffix()
+  | PASS   : TestExp1Task1_RegexInput::test_multiple_rules()
+  | PASS   : TestExp1Task1_RegexInput::test_escape_in_rule()
+  | PASS   : TestExp1Task1_RegexInput::test_charset_rule()
+  | PASS   : TestExp1Task1_RegexInput::test_load_tiny_regex()
+  | PASS   : TestExp1Task1_RegexInput::test_load_minic_regex()
+  | PASS   : TestExp1Task1_RegexInput::test_empty_input()
+  | PASS   : TestExp1Task1_RegexInput::test_comment_line_skip()
+  | PASS   : TestExp1Task1_RegexInput::cleanupTestCase()
+  | Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted, 5ms
+  | ********* Finished testing of TestExp1Task1_RegexInput *********
+  | 
+  --- End Output ---
+
+[ 2/18] Running: [Exp1-Task2] Regex Operators ...
+  OK PASS (16 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp1Task2_Operators *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp1Task2_Operators::initTestCase()
+  | PASS   : TestExp1Task2_Operators::test_op_escape()
+  | PASS   : TestExp1Task2_Operators::test_op_concat()
+  | PASS   : TestExp1Task2_Operators::test_op_union()
+  | PASS   : TestExp1Task2_Operators::test_op_star()
+  | PASS   : TestExp1Task2_Operators::test_op_plus()
+  | PASS   : TestExp1Task2_Operators::test_op_charset()
+  | PASS   : TestExp1Task2_Operators::test_op_question()
+  | PASS   : TestExp1Task2_Operators::test_op_grouping()
+  | PASS   : TestExp1Task2_Operators::test_op_negation()
+  | PASS   : TestExp1Task2_Operators::test_id_pattern()
+  | PASS   : TestExp1Task2_Operators::test_number_pattern()
+  | PASS   : TestExp1Task2_Operators::test_keyword_case_insensitive()
+  | PASS   : TestExp1Task2_Operators::test_nested_grouping()
+  | PASS   : TestExp1Task2_Operators::test_complex_mix()
+  | PASS   : TestExp1Task2_Operators::cleanupTestCase()
+  | Totals: 16 passed, 0 failed, 0 skipped, 0 blacklisted, 9ms
+  | ********* Finished testing of TestExp1Task2_Operators *********
+  | 
+  --- End Output ---
+
+[ 3/18] Running: [Exp1-Task4] NFA Construction ...
+  OK PASS (11 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp1Task4_NFA *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp1Task4_NFA::initTestCase()
+  | PASS   : TestExp1Task4_NFA::test_single_symbol_nfa()
+  | PASS   : TestExp1Task4_NFA::test_union_nfa_structure()
+  | PASS   : TestExp1Task4_NFA::test_star_nfa_epsilon_loop()
+  | PASS   : TestExp1Task4_NFA::test_concat_nfa_chain()
+  | PASS   : TestExp1Task4_NFA::test_has_epsilon_edges()
+  | PASS   : TestExp1Task4_NFA::test_accept_state_exists()
+  | PASS   : TestExp1Task4_NFA::test_start_reachable()
+  | PASS   : TestExp1Task4_NFA::test_nfa_table_generation()
+  | SKIP   : TestExp1Task4_NFA::test_complex_expr_nfa() RegexParser failed to parse identifier rule (may be parser limitation)
+  | E:/byyl/byyl_course_design/tests/exp1/task4_nfa.cpp(356) : failure location
+  | PASS   : TestExp1Task4_NFA::test_nfa_dot_export()
+  | PASS   : TestExp1Task4_NFA::cleanupTestCase()
+  | Totals: 11 passed, 0 failed, 1 skipped, 0 blacklisted, 10ms
+  | ********* Finished testing of TestExp1Task4_NFA *********
+  | 
+  --- End Output ---
+
+[ 4/18] Running: [Exp1-Task5] DFA Construction ...
+  OK PASS (10 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp1Task5_DFA *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp1Task5_DFA::initTestCase()
+  | PASS   : TestExp1Task5_DFA::test_determinism_no_epsilon()
+  | PASS   : TestExp1Task5_DFA::test_unique_transition_per_symbol()
+  | PASS   : TestExp1Task5_DFA::test_state_count_bound()
+  | PASS   : TestExp1Task5_DFA::test_start_state_closure()
+  | PASS   : TestExp1Task5_DFA::test_alphabet_coverage()
+  | PASS   : TestExp1Task5_DFA::test_dfa_table_format()
+  | PASS   : TestExp1Task5_DFA::test_equivalence_with_nfa()
+  | PASS   : TestExp1Task5_DFA::test_dead_state_handling()
+  | PASS   : TestExp1Task5_DFA::cleanupTestCase()
+  | Totals: 10 passed, 0 failed, 0 skipped, 0 blacklisted, 19ms
+  | ********* Finished testing of TestExp1Task5_DFA *********
+  | 
+  --- End Output ---
+
+[ 5/18] Running: [Exp1-Task6] MinDFA Minimization ...
+  OK PASS (11 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp1Task6_MinDFA *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp1Task6_MinDFA::initTestCase()
+  | PASS   : TestExp1Task6_MinDFA::test_reduces_state_count()
+  | PASS   : TestExp1Task6_MinDFA::test_language_equivalence()
+  | PASS   : TestExp1Task6_MinDFA::test_all_states_reachable()
+  | PASS   : TestExp1Task6_MinDFA::test_start_valid()
+  | PASS   : TestExp1Task6_MinDFA::test_already_minimal_unchanged()
+  | PASS   : TestExp1Task6_MinDFA::test_single_state_dfa()
+  | PASS   : TestExp1Task6_MinDFA::test_accept_states_merged()
+  | PASS   : TestExp1Task6_MinDFA::test_mindfa_table_generation()
+  | PASS   : TestExp1Task6_MinDFA::test_tiny_identifier_mindfa()
+  | PASS   : TestExp1Task6_MinDFA::cleanupTestCase()
+  | Totals: 11 passed, 0 failed, 0 skipped, 0 blacklisted, 16ms
+  | ********* Finished testing of TestExp1Task6_MinDFA *********
+  | 
+  --- End Output ---
+
+[ 6/18] Running: [Exp1-Task7] Code Generation ...
+  OK PASS (10 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp1Task7_CodeGen *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp1Task7_CodeGen::initTestCase()
+  | PASS   : TestExp1Task7_CodeGen::test_single_token_code()
+  | PASS   : TestExp1Task7_CodeGen::test_contains_main_function()
+  | PASS   : TestExp1Task7_CodeGen::test_token_code_embedded()
+  | PASS   : TestExp1Task7_CodeGen::test_combined_multi_token()
+  | PASS   : TestExp1Task7_CodeGen::test_code_length_reasonable()
+  | PASS   : TestExp1Task7_CodeGen::test_empty_dfa_graceful()
+  | PASS   : TestExp1Task7_CodeGen::test_method_one_or_two_compliance()
+  | PASS   : TestExp1Task7_CodeGen::test_tiny_full_code_generation()
+  | PASS   : TestExp1Task7_CodeGen::cleanupTestCase()
+  | Totals: 10 passed, 0 failed, 0 skipped, 0 blacklisted, 44ms
+  | ********* Finished testing of TestExp1Task7_CodeGen *********
+  | 
+  --- End Output ---
+
+[ 7/18] Running: [Exp1-Task8] Compile and Run ...
+  OK PASS (12 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp1Task8_CompileRun *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp1Task8_CompileRun::initTestCase()
+  | PASS   : TestExp1Task8_CompileRun::test_single_scan_accept()
+  | PASS   : TestExp1Task8_CompileRun::test_single_scan_reject()
+  | PASS   : TestExp1Task8_CompileRun::test_multiple_keywords_priority()
+  | PASS   : TestExp1Task8_CompileRun::test_longest_match_wins()
+  | PASS   : TestExp1Task8_CompileRun::test_tiny_sample_tokens()
+  | PASS   : TestExp1Task8_CompileRun::test_comment_skipped()
+  | PASS   : TestExp1Task8_CompileRun::test_error_count_reasonable()
+  | PASS   : TestExp1Task8_CompileRun::test_output_format()
+  | PASS   : TestExp1Task8_CompileRun::test_empty_source()
+  | PASS   : TestExp1Task8_CompileRun::test_encoding_example_match()
+  | PASS   : TestExp1Task8_CompileRun::cleanupTestCase()
+  | Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted, 138ms
+  | ********* Finished testing of TestExp1Task8_CompileRun *********
+  | 
+  --- End Output ---
+
+[ 8/18] Running: [Exp1-Task9] TINY Pipeline Test ...
+  OK PASS (11 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp1Task9_TinyTest *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp1Task9_TinyTest::initTestCase()
+  | PASS   : TestExp1Task9_TinyTest::test_stepA_generate_tiny_scanner()
+  | PASS   : TestExp1Task9_TinyTest::test_stepB_compile_tiny_scanner()
+  | PASS   : TestExp1Task9_TinyTest::test_stepC_run_sample_tny()
+  | PASS   : TestExp1Task9_TinyTest::test_tiny_regex_parsed_correctly()
+  | PASS   : TestExp1Task9_TinyTest::test_all_tokens_have_minDFA()
+  | PASS   : TestExp1Task9_TinyTest::test_sample_tny_not_empty_output()
+  | PASS   : TestExp1Task9_TinyTest::test_sample_tny_err_count_acceptable()
+  | PASS   : TestExp1Task9_TinyTest::test_specific_tokens_correct()
+  | PASS   : TestExp1Task9_TinyTest::test_save_lex_file_format()
+  | PASS   : TestExp1Task9_TinyTest::cleanupTestCase()
+  | Totals: 11 passed, 0 failed, 0 skipped, 0 blacklisted, 1682ms
+  | ********* Finished testing of TestExp1Task9_TinyTest *********
+  | 
+  --- End Output ---
+
+[ 9/18] Running: [Exp2-Task1] BNF Grammar Input ...
+  OK PASS (12 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp2Task1_BNFInput *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp2Task1_BNFInput::initTestCase()
+  | PASS   : TestExp2Task1_BNFInput::test_simple_production()
+  | PASS   : TestExp2Task1_BNFInput::test_epsilon_production()
+  | PASS   : TestExp2Task1_BNFInput::test_multiple_productions()
+  | PASS   : TestExp2Task1_BNFInput::test_first_nonterminal_is_start()
+  | PASS   : TestExp2Task1_BNFInput::test_terminals_extracted()
+  | PASS   : TestExp2Task1_BNFInput::test_nonterminals_extracted()
+  | PASS   : TestExp2Task1_BNFInput::test_load_tiny_grammar()
+  | PASS   : TestExp2Task1_BNFInput::test_load_minic_grammar()
+  | PASS   : TestExp2Task1_BNFInput::test_syntax_error_detected()
+  | PASS   : TestExp2Task1_BNFInput::test_complex_rhs_splitting()
+  | PASS   : TestExp2Task1_BNFInput::cleanupTestCase()
+  | Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted, 13ms
+  | ********* Finished testing of TestExp2Task1_BNFInput *********
+  | 
+  --- End Output ---
+
+[10/18] Running: [Exp2-Task2] FIRST/FOLLOW Sets ...
+  OK PASS (13 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp2Task2_FirstFollow *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp2Task2_FirstFollow::initTestCase()
+  | PASS   : TestExp2Task2_FirstFollow::test_first_of_terminal()
+  | PASS   : TestExp2Task2_FirstFollow::test_first_of_epsilon()
+  | PASS   : TestExp2Task2_FirstFollow::test_first_union()
+  | PASS   : TestExp2Task2_FirstFollow::test_first_recursive()
+  | PASS   : TestExp2Task2_FirstFollow::test_follow_contains_dollar()
+  | PASS   : TestExp2Task2_FirstFollow::test_follow_propagation()
+  | PASS   : TestExp2Task2_FirstFollow::test_follow_through_epsilon()
+  | PASS   : TestExp2Task2_FirstFollow::test_tiny_grammar_first()
+  | PASS   : TestExp2Task2_FirstFollow::test_tiny_grammar_follow()
+  | PASS   : TestExp2Task2_FirstFollow::test_all_nonterminals_covered()
+  | PASS   : TestExp2Task2_FirstFollow::test_first_follow_as_rows()
+  | PASS   : TestExp2Task2_FirstFollow::cleanupTestCase()
+  | Totals: 13 passed, 0 failed, 0 skipped, 0 blacklisted, 22ms
+  | ********* Finished testing of TestExp2Task2_FirstFollow *********
+  | 
+  --- End Output ---
+
+[11/18] Running: [Exp2-Task3] LR(1) DFA Graph ...
+  OK PASS (10 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp2Task3_LR1DFA *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp2Task3_LR1DFA::initTestCase()
+  | PASS   : TestExp2Task3_LR1DFA::test_initial_item_set()
+  | PASS   : TestExp2Task3_LR1DFA::test_closure_complete()
+  | PASS   : TestExp2Task3_LR1DFA::test_goto_transitions()
+  | PASS   : TestExp2Task3_LR1DFA::test_state_count_reasonable()
+  | PASS   : TestExp2Task3_LR1DFA::test_edges_non_empty()
+  | PASS   : TestExp2Task3_LR1DFA::test_lookahead_sets_correct()
+  | PASS   : TestExp2Task3_LR1DFA::test_dot_export_format()
+  | PASS   : TestExp2Task3_LR1DFA::test_lr1_graph_consistency()
+  | PASS   : TestExp2Task3_LR1DFA::cleanupTestCase()
+  | Totals: 10 passed, 0 failed, 0 skipped, 0 blacklisted, 7110ms
+  | ********* Finished testing of TestExp2Task3_LR1DFA *********
+  | 
+  --- End Output ---
+
+[12/18] Running: [Exp2-Task4] LALR(1) DFA Graph ...
+  OK PASS (8 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp2Task4_LALR1DFA *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp2Task4_LALR1DFA::initTestCase()
+  | PASS   : TestExp2Task4_LALR1DFA::test_state_merge_reduction()
+  | PASS   : TestExp2Task4_LALR1DFA::test_core_states_equal()
+  | PASS   : TestExp2Task4_LALR1DFA::test_lookahead_union()
+  | PASS   : TestExp2Task4_LALR1DFA::test_lalr1_still_correct_for_tiny()
+  | PASS   : TestExp2Task4_LALR1DFA::test_no_new_conflicts_from_merge()
+  | SKIP   : TestExp2Task4_LALR1DFA::test_dot_export_valid() LALR1Builder::toDot() not implemented - DOT export feature not required for testing
+  | E:/byyl/byyl_course_design/tests/exp2/task4_lalr1_dfa.cpp(321) : failure location
+  | PASS   : TestExp2Task4_LALR1DFA::test_comparison_lr1_vs_lalr1()
+  | PASS   : TestExp2Task4_LALR1DFA::cleanupTestCase()
+  | Totals: 8 passed, 0 failed, 1 skipped, 0 blacklisted, 11194ms
+  | ********* Finished testing of TestExp2Task4_LALR1DFA *********
+  | 
+  --- End Output ---
+
+[13/18] Running: [Exp2-Task5] LALR(1) Parsing Table ...
+  OK PASS (10 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp2Task5_LALR1Table *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp2Task5_LALR1Table::initTestCase()
+  | PASS   : TestExp2Task5_LALR1Table::test_action_table_not_empty()
+  | PASS   : TestExp2Task5_LALR1Table::test_goto_table_not_empty()
+  | PASS   : TestExp2Task5_LALR1Table::test_shift_entries_exist()
+  | PASS   : TestExp2Task5_LALR1Table::test_reduce_entries_exist()
+  | PASS   : TestExp2Task5_LALR1Table::test_accept_entry_exists()
+  | PASS   : TestExp2Task5_LALR1Table::test_table_size_reasonable()
+  | PASS   : TestExp2Task5_LALR1Table::test_conflict_marking_if_any()
+  | PASS   : TestExp2Task5_LALR1Table::test_table_entries_accessible()
+  | PASS   : TestExp2Task5_LALR1Table::cleanupTestCase()
+  | Totals: 10 passed, 0 failed, 0 skipped, 0 blacklisted, 26759ms
+  | ********* Finished testing of TestExp2Task5_LALR1Table *********
+  | 
+  --- End Output ---
+
+[14/18] Running: [Exp2-Task6] Syntax Analysis Process ...
+  OK PASS (12 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp2Task6_SyntaxProcess *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp2Task6_SyntaxProcess::initTestCase()
+  | PASS   : TestExp2Task6_SyntaxProcess::test_successful_parse_read_stmt()
+  | PASS   : TestExp2Task6_SyntaxProcess::test_successful_parse_assign()
+  | PASS   : TestExp2Task6_SyntaxProcess::test_successful_parse_if_stmt()
+  | PASS   : TestExp2Task6_SyntaxProcess::test_steps_recorded()
+  | PASS   : TestExp2Task6_SyntaxProcess::test_shift_actions_present()
+  | PASS   : TestExp2Task6_SyntaxProcess::test_reduce_actions_present()
+  | PASS   : TestExp2Task6_SyntaxProcess::test_stack_evolution()
+  | PASS   : TestExp2Task6_SyntaxProcess::test_error_detection_missing_semicolon()
+  | PASS   : TestExp2Task6_SyntaxProcess::test_parse_tree_root_symbol()
+  | PASS   : TestExp2Task6_SyntaxProcess::test_empty_token_list()
+  | PASS   : TestExp2Task6_SyntaxProcess::cleanupTestCase()
+  | Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted, 7117ms
+  | ********* Finished testing of TestExp2Task6_SyntaxProcess *********
+  | 
+  --- End Output ---
+
+[15/18] Running: [Exp2-Task7] Syntax Tree Generation ...
+  OK PASS (10 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp2Task7_SyntaxTree *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp2Task7_SyntaxTree::initTestCase()
+  | PASS   : TestExp2Task7_SyntaxTree::test_tree_read_stmt_structure()
+  | PASS   : TestExp2Task7_SyntaxTree::test_tree_assign_stmt_structure()
+  | PASS   : TestExp2Task7_SyntaxTree::test_tree_depth_reasonable()
+  | PASS   : TestExp2Task7_SyntaxTree::test_tree_node_count_sufficient()
+  | PASS   : TestExp2Task7_SyntaxTree::test_tree_if_branches()
+  | PASS   : TestExp2Task7_SyntaxTree::test_tree_repeat_loop()
+  | PASS   : TestExp2Task7_SyntaxTree::test_all_terminals_in_leaves()
+  | PASS   : TestExp2Task7_SyntaxTree::test_dot_export_of_tree()
+  | PASS   : TestExp2Task7_SyntaxTree::cleanupTestCase()
+  | Totals: 10 passed, 0 failed, 0 skipped, 0 blacklisted, 30879ms
+  | ********* Finished testing of TestExp2Task7_SyntaxTree *********
+  | 
+  --- End Output ---
+
+[16/18] Running: [Exp2-Task8] TINY Full Pipeline ...
+  OK PASS (12 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp2Task8_TinyFull *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp2Task8_TinyFull::initTestCase()
+  | PASS   : TestExp2Task8_TinyFull::test_load_tiny_grammar_successfully()
+  | PASS   : TestExp2Task8_TinyFull::test_compute_first_follow_complete()
+  | PASS   : TestExp2Task8_TinyFull::test_build_lalr1_dfa_successfully()
+  | PASS   : TestExp2Task8_TinyFull::test_build_lalr1_table_successfully()
+  | PASS   : TestExp2Task8_TinyFull::test_prepare_token_sequence()
+  | PASS   : TestExp2Task8_TinyFull::test_parse_success_no_errors()
+  | PASS   : TestExp2Task8_TinyFull::test_syntax_tree_generated()
+  | PASS   : TestExp2Task8_TinyFull::test_tree_root_is_program()
+  | PASS   : TestExp2Task8_TinyFull::test_tree_contains_key_structures()
+  | PASS   : TestExp2Task8_TinyFull::test_end_to_end_consistency()
+  | PASS   : TestExp2Task8_TinyFull::cleanupTestCase()
+  | Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted, 31141ms
+  | ********* Finished testing of TestExp2Task8_TinyFull *********
+  | 
+  --- End Output ---
+
+[17/18] Running: [Exp3-Task1] Mini-C Lexer Test ...
+  OK PASS (9 tests)
+
+  --- Output ---
+  | ********* Start testing of TestExp3Task1_MiniCLexer *********
+  | Config: Using QtTest library 6.11.0, Qt 6.11.0 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+  | PASS   : TestExp3Task1_MiniCLexer::initTestCase()
+  | PASS   : TestExp3Task1_MiniCLexer::test_load_minic_regex_rules()
+  | PASS   : TestExp3Task1_MiniCLexer::test_build_minic_minDFAs()
+  | PASS   : TestExp3Task1_MiniCLexer::test_generate_minic_scanner()
+  | PASS   : TestExp3Task1_MiniCLexer::test_lex_minic_sample_program()
+  | PASS   : TestExp3Task1_MiniCLexer::test_minic_output_no_critical_errors()
+  | PASS   : TestExp3Task1_MiniCLexer::test_minic_specific_keywords()
+  | PASS   : TestExp3Task1_MiniCLexer::test_minic_comments_skipped()
+  | PASS   : TestExp3Task1_MiniCLexer::cleanupTestCase()
+  | Totals: 9 passed, 0 failed, 0 skipped, 0 blacklisted, 2583ms
+  | ********* Finished testing of TestExp3Task1_MiniCLexer *********
+  | 
+  --- End Output ---
+
+[18/18] Running: [Exp3-Task2] Mini-C Parser Test ...
+  !! FAIL (0/0 tests)
+
+  --- Output ---
+  | Test execution timeout (120s limit)
+  --- End Output ---
+
+================================================================
+                         Test Report                            
+================================================================
+
+  Total: 18 test suites | 189 test cases
+
+  Results:
+    |- PASS:      17 suites
+    |- FAIL:      1 suites
+    |- NOT FOUND: 0 suites
+    `- SKIPPED:   0 cases
+
+  Details:
+    [ 1] [PASS] [Exp1-Task1] Regex Input Parser     (12 tests)
+    [ 2] [PASS] [Exp1-Task2] Regex Operators        (16 tests)
+    [ 3] [PASS] [Exp1-Task4] NFA Construction       (11 tests)
+    [ 4] [PASS] [Exp1-Task5] DFA Construction       (10 tests)
+    [ 5] [PASS] [Exp1-Task6] MinDFA Minimization    (11 tests)
+    [ 6] [PASS] [Exp1-Task7] Code Generation        (10 tests)
+    [ 7] [PASS] [Exp1-Task8] Compile and Run        (12 tests)
+    [ 8] [PASS] [Exp1-Task9] TINY Pipeline Test     (11 tests)
+    [ 9] [PASS] [Exp2-Task1] BNF Grammar Input      (12 tests)
+    [10] [PASS] [Exp2-Task2] FIRST/FOLLOW Sets      (13 tests)
+    [11] [PASS] [Exp2-Task3] LR(1) DFA Graph        (10 tests)
+    [12] [PASS] [Exp2-Task4] LALR(1) DFA Graph      (8 tests)
+    [13] [PASS] [Exp2-Task5] LALR(1) Parsing Table  (10 tests)
+    [14] [PASS] [Exp2-Task6] Syntax Analysis Process (12 tests)
+    [15] [PASS] [Exp2-Task7] Syntax Tree Generation (10 tests)
+    [16] [PASS] [Exp2-Task8] TINY Full Pipeline     (12 tests)
+    [17] [PASS] [Exp3-Task1] Mini-C Lexer Test      (9 tests)
+    [18] [FAIL] [Exp3-Task2] Mini-C Parser Test     
+
+================================================================
+  1 test(s) FAILED. See details above.
+  Pass rate: 94.4%
+================================================================
+
+16:49:17: The command "E:\byyl\byyl_course_design\build\Desktop_Qt_6_11_0_MinGW_64_bit-Debug\TestRunner.exe" terminated with exit code 1.
